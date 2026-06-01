@@ -83,10 +83,10 @@ export default function Contact() {
 
           {/* ── Left: info panel ── */}
           <motion.div
-            initial={{ opacity: 0, x: -28 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.55 }}
+            transition={{ duration: 0.5 }}
             className="lg:col-span-2 pt-2"
           >
             <span className="text-xs font-semibold tracking-[0.22em] uppercase text-blue-400 mb-5 block">
@@ -135,10 +135,10 @@ export default function Contact() {
 
           {/* ── Right: form ── */}
           <motion.div
-            initial={{ opacity: 0, x: 28 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.55, delay: 0.1 }}
+            transition={{ duration: 0.5, delay: 0.08 }}
             className="lg:col-span-3"
           >
             {!sent ? (

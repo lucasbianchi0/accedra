@@ -147,7 +147,10 @@ export default function Services() {
     return () => window.removeEventListener("keydown", fn);
   }, []);
 
+  const canHover = () => window.matchMedia("(hover: hover)").matches;
+
   const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!canHover()) return;
     (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.3)";
   };
 
@@ -155,8 +158,8 @@ export default function Services() {
     <>
       <section id="servicios" className="py-20 lg:py-28 relative overflow-hidden bg-[#07101D]">
 
-        {/* Circuit-board cable grid — luminous on dark */}
-        <CableGrid />
+        {/* Circuit-board cable grid — desktop only (too heavy for mobile) */}
+        <div className="hidden md:block"><CableGrid /></div>
 
         {/* Ambient blue glow corners */}
         <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full pointer-events-none"
@@ -168,15 +171,15 @@ export default function Services() {
 
           {/* Header */}
           <div className="text-center mb-14">
-            <motion.p initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+            <motion.p initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }}
               className="text-xs font-semibold tracking-[0.22em] uppercase mb-3 text-blue-400">
               Lo que hacemos
             </motion.p>
-            <motion.h2 initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.07 }}
+            <motion.h2 initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ delay: 0.06 }}
               className="text-4xl md:text-5xl font-bold text-white mb-4">
               Soluciones IT end-to-end
             </motion.h2>
-            <motion.p initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.12 }}
+            <motion.p initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ delay: 0.11 }}
               className="text-gray-400 text-[15px] max-w-md mx-auto">
               Desde el cableado hasta la nube, cubrimos cada capa de tu infraestructura.
             </motion.p>
@@ -189,14 +192,14 @@ export default function Services() {
               return (
                 <motion.div
                   key={s.id}
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.45, delay: i * 0.08 }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  transition={{ duration: 0.4, delay: i * 0.07 }}
                   onClick={() => setSelected(s)}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = `0 24px 60px rgba(${BLUE_RGB},0.3), 0 8px 24px rgba(0,0,0,0.4)`; }}
+                  onMouseEnter={(e) => { if (!canHover()) return; (e.currentTarget as HTMLElement).style.boxShadow = `0 24px 60px rgba(${BLUE_RGB},0.3), 0 8px 24px rgba(0,0,0,0.4)`; }}
                   onMouseLeave={handleMouseLeave}
-                  className="group relative flex flex-col rounded-2xl cursor-pointer overflow-hidden border transition-all duration-300 hover:scale-[1.03]"
+                  className="group relative flex flex-col rounded-2xl cursor-pointer overflow-hidden border transition-all duration-300"
                   style={{
                     backgroundColor: "#0D1A2D",
                     borderColor: "rgba(255,255,255,0.09)",

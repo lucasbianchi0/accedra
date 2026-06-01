@@ -5,6 +5,7 @@ import { Award, Handshake, Layers, Clock } from "lucide-react";
 
 const BLUE = "#2B6FD4";
 const BLUE_RGB = "43,111,212";
+const canHover = () => window.matchMedia("(hover: hover)").matches;
 
 const pillars = [
   {
@@ -68,27 +69,27 @@ export default function WhyUs() {
         {/* Header */}
         <div className="text-center mb-16">
           <motion.p
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={{ once: true, amount: 0.3 }}
             className="text-xs font-semibold tracking-[0.22em] uppercase mb-3 text-blue-400"
           >
             Por qué Accedra
           </motion.p>
           <motion.h2
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.07 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ delay: 0.06 }}
             className="text-4xl md:text-5xl font-bold text-white mb-4"
           >
             El partner IT que tu empresa merece
           </motion.h2>
           <motion.p
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 12 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.12 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ delay: 0.11 }}
             className="text-gray-400 text-[15px] max-w-xl mx-auto"
           >
             No somos un proveedor más. Somos el equipo de IT que se convierte en parte de tu organización.
@@ -102,17 +103,19 @@ export default function WhyUs() {
             return (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.09 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ duration: 0.45, delay: i * 0.07 }}
                 onMouseEnter={e => {
+                  if (!canHover()) return;
                   const el = e.currentTarget as HTMLElement;
                   el.style.borderColor = `rgba(${BLUE_RGB},0.4)`;
                   el.style.boxShadow = `0 0 0 1px rgba(${BLUE_RGB},0.15), 0 24px 60px rgba(${BLUE_RGB},0.18)`;
                   el.style.transform = "translateY(-6px)";
                 }}
                 onMouseLeave={e => {
+                  if (!canHover()) return;
                   const el = e.currentTarget as HTMLElement;
                   el.style.borderColor = "rgba(255,255,255,0.07)";
                   el.style.boxShadow = "none";

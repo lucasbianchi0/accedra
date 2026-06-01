@@ -18,13 +18,15 @@ const partners = [
   { name: "Fortinet",           logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Fortinet_logo.svg/250px-Fortinet_logo.svg.png",                                                            filter: "brightness(1.1) saturate(1.1)" },
 ];
 
+const canHover = () => window.matchMedia("(hover: hover)").matches;
+
 export default function Partners() {
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [active, setActive] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!gridRef.current) return;
+    if (!canHover() || !gridRef.current) return;
     const rect = gridRef.current.getBoundingClientRect();
     setMouse({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   };
@@ -89,12 +91,11 @@ export default function Partners() {
           {partners.map((partner, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.45, delay: i * 0.05 }}
-              whileHover={{ y: -6, scale: 1.02 }}
-              className="relative z-10 group flex flex-col items-center justify-center p-5 md:p-8 rounded-2xl border border-white/[0.08] cursor-default transition-all duration-300 hover:border-blue-500/30"
+              viewport={{ once: true, amount: 0.1 }}
+              transition={{ duration: 0.4, delay: i * 0.035 }}
+              className="relative z-10 group flex flex-col items-center justify-center p-5 md:p-8 rounded-2xl border border-white/[0.08] cursor-default transition-all duration-300"
               style={{
                 background: "rgba(255,255,255,0.04)",
                 backdropFilter: "blur(12px)",
@@ -102,12 +103,18 @@ export default function Partners() {
                 boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
               }}
               onMouseEnter={e => {
+                if (!canHover()) return;
                 (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.08)";
                 (e.currentTarget as HTMLDivElement).style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.1), 0 20px 60px rgba(43,111,212,0.15)";
+                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(43,111,212,0.3)";
+                (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px) scale(1.02)";
               }}
               onMouseLeave={e => {
+                if (!canHover()) return;
                 (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)";
                 (e.currentTarget as HTMLDivElement).style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.06)";
+                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.08)";
+                (e.currentTarget as HTMLDivElement).style.transform = "translateY(0) scale(1)";
               }}
             >
               <div className="h-14 flex items-center justify-center w-full">
@@ -115,7 +122,7 @@ export default function Partners() {
                 <img
                   src={partner.logo}
                   alt={partner.name}
-                  className="max-h-10 max-w-[130px] w-auto h-auto object-contain transition-all duration-300 group-hover:scale-110"
+                  className="max-h-10 max-w-[130px] w-auto h-auto object-contain transition-all duration-300"
                   style={{ filter: partner.filter }}
                 />
               </div>
