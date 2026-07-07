@@ -1,10 +1,16 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+});
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "500"],
+  variable: "--font-montserrat",
 });
 
 export const metadata: Metadata = {
@@ -20,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`${inter.variable} scroll-smooth antialiased`}>
+    <html lang="es" className={`${inter.variable} ${montserrat.variable} scroll-smooth antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

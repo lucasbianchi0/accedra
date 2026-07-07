@@ -41,10 +41,10 @@ export default function Navbar() {
       >
         <div className="w-full px-6 lg:px-16 xl:px-24 flex items-center justify-between h-18 py-4">
           {/* Logo */}
-          <a href="#" className="flex-shrink-0">
+          <a href="#" onClick={() => setOpen(false)} className="flex-shrink-0">
             <div className="flex flex-col leading-none">
-              <span className="text-2xl font-bold text-white tracking-widest">ACCEDRA</span>
-              <span className="text-[10px] font-medium tracking-[0.25em] text-blue-400 uppercase">IT Solutions</span>
+              <span className="logo-word text-2xl text-white tracking-widest">ACCEDRA</span>
+              <span className="logo-sub text-[10px] tracking-[0.25em] text-blue-400 uppercase">IT Solutions</span>
             </div>
           </a>
 
@@ -137,22 +137,8 @@ export default function Navbar() {
             <div className="absolute bottom-0 left-0 w-64 h-64 pointer-events-none"
               style={{ background: `radial-gradient(circle at bottom left, rgba(${BLUE_RGB},0.10) 0%, transparent 70%)` }} />
 
-            {/* Header row: logo + close */}
-            <div className="relative flex items-center justify-between px-6 pt-5 pb-3 flex-shrink-0">
-              <a href="#" onClick={() => setOpen(false)} className="flex flex-col leading-none">
-                <span className="text-xl font-bold text-white tracking-widest">ACCEDRA</span>
-                <span className="text-[9px] font-medium tracking-[0.3em] text-blue-400 uppercase mt-0.5">IT Solutions</span>
-              </a>
-              <button
-                onClick={() => setOpen(false)}
-                className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)" }}
-              >
-                <X size={18} className="text-gray-300" />
-              </button>
-            </div>
-
-            <div className="mx-6 h-px flex-shrink-0" style={{ background: "rgba(255,255,255,0.06)" }} />
+            {/* Spacer for the fixed navbar (logo + close button live there — no duplicate here) */}
+            <div className="h-[72px] flex-shrink-0" />
 
             {/* Nav links — staggered */}
             <nav className="relative flex-1 flex flex-col justify-center px-6">
@@ -164,7 +150,7 @@ export default function Navbar() {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.06 + 0.08, duration: 0.28, ease: "easeOut" }}
-                  className="group flex items-center gap-5 py-[18px] border-b last:border-0"
+                  className="group flex items-center gap-5 py-[17px] px-3 -mx-3 rounded-2xl border-b last:border-0 transition-colors duration-200 hover:bg-white/[0.03] active:bg-white/[0.05]"
                   style={{ borderColor: "rgba(255,255,255,0.05)" }}
                 >
                   <span
@@ -207,6 +193,17 @@ export default function Navbar() {
               >
                 Hablar con un experto
                 <ArrowRight size={15} />
+              </a>
+              <a
+                href="https://www.linkedin.com/company/accedra-s.a."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 pt-1 text-gray-500 text-xs hover:text-blue-300 transition-colors"
+              >
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
+                  <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z" />
+                </svg>
+                Seguinos en LinkedIn
               </a>
             </div>
           </motion.div>

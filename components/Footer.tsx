@@ -13,8 +13,8 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="mb-5">
-              <span className="text-2xl font-bold text-white tracking-widest">ACCEDRA</span>
-              <span className="block text-[10px] font-medium tracking-[0.25em] text-blue-400 uppercase mt-0.5">
+              <span className="logo-word text-2xl text-white tracking-widest">ACCEDRA</span>
+              <span className="logo-sub block text-[10px] tracking-[0.25em] text-blue-400 uppercase mt-0.5">
                 IT Solutions
               </span>
             </div>

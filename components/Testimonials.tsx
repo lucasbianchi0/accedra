@@ -3,204 +3,134 @@
 import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
 
+const BLUE_RGB = "43,111,212";
+
+// ⚠️ Fotos de avatar de ejemplo (mock) — reemplazar por fotos reales autorizadas.
 const testimonials = [
   {
     quote:
-      "Se puede ver que todos los integrantes de ACCEDRA buscan dar valor agregado en cada proyecto. Se convirtieron en nuestro socio estratégico de confianza.",
+      "Se puede ver que todos los integrantes de Accedra buscan dar valor agregado en cada proyecto. Se convirtieron en nuestro socio estratégico de confianza.",
     name: "Germán C.",
-    role: "Gerente de IT",
-    company: "Mapfre Argentina",
-    initial: "M",
+    role: "Gerente de IT · Mapfre Argentina",
+    image: "https://randomuser.me/api/portraits/men/32.jpg",
     color: "#ef4444",
   },
   {
     quote:
-      "Hemos logrado incorporar tecnología para sostener el negocio de manera óptima. La calidad de servicio y el compromiso del equipo de Accedra es excepcional.",
-    name: "Sebastian S.",
-    role: "Director de Tecnología",
-    company: "Andreani",
-    initial: "A",
+      "Hemos logrado incorporar tecnología para sostener el negocio de manera óptima. La calidad de servicio y el compromiso del equipo es excepcional.",
+    name: "Sebastián S.",
+    role: "Director de Tecnología · Andreani",
+    image: "https://randomuser.me/api/portraits/men/45.jpg",
     color: "#f97316",
   },
   {
     quote:
-      "Se han convertido en nuestros socios estratégicos. Entienden nuestras necesidades técnicas y las traducen en soluciones que realmente funcionan para el negocio.",
+      "Entienden nuestras necesidades técnicas y las traducen en soluciones que realmente funcionan para el negocio. Socios estratégicos de verdad.",
     name: "Gustavo I.",
-    role: "IT Manager",
-    company: "Finning Argentina",
-    initial: "F",
+    role: "IT Manager · Finning Argentina",
+    image: "https://randomuser.me/api/portraits/men/76.jpg",
     color: "#d97706",
   },
 ];
 
-// Pre-computed deterministic ghost card data (avoids SSR hydration issues)
-const GHOST_COLORS = [
-  "#ef4444","#f97316","#f59e0b","#10b981","#3b82f6",
-  "#8b5cf6","#ec4899","#06b6d4","#84cc16","#f43f5e",
-  "#6366f1","#14b8a6","#a855f7","#22c55e","#0ea5e9",
-];
-const GHOST_INITIALS = "MABCDFGHJKLNPRSTUVWXYZ";
-const LINE_SETS = [
-  [100, 82, 55], [88, 70, 48], [95, 65, 52], [80, 75, 60],
-  [92, 68, 45], [85, 78, 58], [90, 72, 50], [97, 60, 42],
-];
-const GHOST_CARDS = Array.from({ length: 56 }, (_, i) => ({
-  color: GHOST_COLORS[i % GHOST_COLORS.length],
-  initial: GHOST_INITIALS[i % GHOST_INITIALS.length],
-  lines: LINE_SETS[i % LINE_SETS.length],
-  stars: i % 7 === 0 ? 4 : 5,
-}));
-
-function GhostReviews() {
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-      {/* Ghost card grid */}
-      <div
-        className="grid gap-3 p-4 absolute inset-0"
-        style={{
-          gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
-          gridTemplateRows: "repeat(7, minmax(0, 1fr))",
-          filter: "blur(3px)",
-          opacity: 0.45,
-        }}
-      >
-        {GHOST_CARDS.map((card, i) => (
-          <div
-            key={i}
-            className="rounded-xl p-2.5 flex flex-col gap-1.5"
-            style={{
-              background: "#0F2040",
-              border: "1px solid #1a3560",
-            }}
-          >
-            {/* Stars */}
-            <div className="flex gap-px">
-              {Array.from({ length: card.stars }).map((_, s) => (
-                <span key={s} style={{ color: "#f59e0b", fontSize: 6 }}>★</span>
-              ))}
-            </div>
-            {/* Text lines */}
-            <div className="space-y-1 flex-1">
-              <div className="h-1 rounded-full" style={{ width: `${card.lines[0]}%`, background: "#2a4a7a" }} />
-              <div className="h-1 rounded-full" style={{ width: `${card.lines[1]}%`, background: "#1f3d6a" }} />
-              <div className="h-1 rounded-full" style={{ width: `${card.lines[2]}%`, background: "#193260" }} />
-            </div>
-            {/* Avatar row */}
-            <div className="flex items-center gap-1">
-              <div
-                className="w-4 h-4 rounded-full flex-shrink-0 flex items-center justify-center"
-                style={{ background: card.color, fontSize: 5, color: "#fff", fontWeight: 700 }}
-              >
-                {card.initial}
-              </div>
-              <div className="space-y-0.5 flex-1">
-                <div className="h-1 rounded-full w-3/4" style={{ background: "#2a4a7a" }} />
-                <div className="h-0.5 rounded-full w-1/2" style={{ background: "#1f3d6a" }} />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Edge fades — hide outer rows/cols cleanly */}
-      <div className="absolute inset-0"
-        style={{ background: "linear-gradient(to right, #0D1A2D 0%, transparent 12%, transparent 88%, #0D1A2D 100%)" }} />
-      <div className="absolute inset-0"
-        style={{ background: "linear-gradient(to bottom, #0D1A2D 0%, transparent 14%, transparent 82%, #0D1A2D 100%)" }} />
-      {/* Center radial — slightly darkens behind the 3 cards so they pop */}
-      <div className="absolute inset-0"
-        style={{ background: "radial-gradient(ellipse 65% 55% at 50% 58%, rgba(13,26,45,0.7) 0%, transparent 100%)" }} />
-    </div>
-  );
-}
-
 export default function Testimonials() {
   return (
-    <section className="py-16 lg:py-24 bg-[#0D1A2D] relative overflow-hidden">
-      <GhostReviews />
+    <section className="py-20 lg:py-28 relative overflow-hidden bg-[#080F1C]">
+      {/* Grid background */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(rgba(${BLUE_RGB},0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(${BLUE_RGB},0.08) 1px, transparent 1px)`,
+          backgroundSize: "44px 44px",
+          maskImage: "radial-gradient(ellipse 85% 75% at 50% 40%, #000 15%, transparent 88%)",
+          WebkitMaskImage: "radial-gradient(ellipse 85% 75% at 50% 40%, #000 15%, transparent 88%)",
+        }}
+      />
+      {/* Glows */}
+      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[760px] h-[520px] rounded-full pointer-events-none blur-3xl"
+        style={{ background: `radial-gradient(circle, rgba(${BLUE_RGB},0.13) 0%, transparent 65%)` }} />
+      {/* Top hairline */}
+      <div className="absolute top-0 inset-x-0 h-px pointer-events-none"
+        style={{ background: `linear-gradient(90deg, transparent, rgba(${BLUE_RGB},0.35), transparent)` }} />
 
       <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-12 relative z-10">
-        <div className="text-center mb-16">
+        {/* Header */}
+        <div className="text-center mb-20">
           <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            className="text-xs font-semibold tracking-[0.2em] uppercase text-blue-400 mb-3"
-          >
-            Lo que dicen de nosotros
+            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }}
+            className="text-xs font-semibold tracking-[0.2em] uppercase text-blue-400 mb-3">
+            Testimonios
           </motion.p>
           <motion.h2
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ delay: 0.08 }}
-            className="text-4xl md:text-5xl font-bold text-white mb-5"
-          >
-            La voz de nuestros clientes
+            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ delay: 0.08 }}
+            className="text-4xl md:text-5xl font-bold text-white leading-tight mb-4">
+            La voz de{" "}
+            <span className="gradient-text">nuestros clientes</span>
           </motion.h2>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ delay: 0.15 }}
-            className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full"
-            style={{ background: "rgba(245,158,11,0.1)", border: "1px solid rgba(245,158,11,0.25)" }}
-          >
-            <div className="flex gap-0.5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <span key={i} className="text-amber-400 text-sm">★</span>
-              ))}
-            </div>
-            <span className="text-amber-300/80 text-xs font-semibold tracking-wide">100+ clientes satisfechos</span>
-          </motion.div>
+          <motion.p
+            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ delay: 0.14 }}
+            className="text-gray-400 text-[15px] max-w-md mx-auto">
+            Empresas líderes que confían su infraestructura crítica a nuestro equipo.
+          </motion.p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+        {/* Cards */}
+        <div className="grid md:grid-cols-3 gap-6 lg:gap-7">
           {testimonials.map((t, i) => (
             <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
+              key={t.name}
+              initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.1 }}
-              transition={{ duration: 0.45, delay: i * 0.1 }}
-              className="relative rounded-3xl p-8 flex flex-col transition-all duration-300 group"
-              style={{ background: "#0D1E38", border: "1px solid #1a3560" }}
-              onMouseEnter={e => { if (!window.matchMedia("(hover: hover)").matches) return; (e.currentTarget as HTMLElement).style.borderColor = "rgba(43,111,212,0.5)"; }}
-              onMouseLeave={e => { if (!window.matchMedia("(hover: hover)").matches) return; (e.currentTarget as HTMLElement).style.borderColor = "#1a3560"; }}
+              viewport={{ once: true, amount: 0.15 }}
+              transition={{ duration: 0.5, delay: i * 0.12 }}
+              className="group relative pt-8"
             >
-              {/* Stars */}
-              <div className="flex gap-0.5 mb-5">
-                {Array.from({ length: 5 }).map((_, s) => (
-                  <span key={s} className="text-amber-400 text-base">★</span>
-                ))}
-              </div>
-
-              <Quote size={28} className="text-blue-500/30 mb-4 flex-shrink-0" />
-
-              <p className="text-gray-200 leading-relaxed text-lg flex-1 mb-8 italic">
-                &ldquo;{t.quote}&rdquo;
-              </p>
-
-              <div className="w-12 h-px bg-blue-500/30 mb-6" />
-
-              <div className="flex items-center gap-4">
+              {/* Avatar — overlaps the top-left of the card */}
+              <div className="absolute top-0 left-8 z-20">
                 <div
-                  className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 shadow-lg text-white font-bold text-base"
-                  style={{ background: t.color }}
+                  className="w-16 h-16 rounded-full overflow-hidden"
+                  style={{ border: "4px solid #0B1422", boxShadow: `0 10px 30px ${t.color}55` }}
                 >
-                  {t.initial}
-                </div>
-                <div>
-                  <p className="text-white font-semibold text-base">{t.name}</p>
-                  <p className="text-gray-500 text-sm">{t.role}</p>
-                  <p className="text-blue-400 text-sm font-medium">{t.company}</p>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={t.image} alt={t.name} className="w-full h-full object-cover" draggable={false} />
                 </div>
               </div>
 
+              {/* Hover glow */}
               <div
-                className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                style={{ boxShadow: "inset 0 0 40px rgba(43,111,212,0.06)" }}
+                className="absolute -inset-1.5 top-6 rounded-[26px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none blur-xl"
+                style={{ background: `radial-gradient(circle at 50% 0%, rgba(${BLUE_RGB},0.22), transparent 70%)` }}
               />
+
+              {/* Card */}
+              <div
+                className="relative h-full rounded-3xl px-7 pt-14 pb-7 border transition-all duration-300 group-hover:-translate-y-1.5 flex flex-col"
+                style={{
+                  background: "rgba(255,255,255,0.035)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  borderColor: "rgba(255,255,255,0.09)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 30px rgba(0,0,0,0.3)",
+                }}
+              >
+                <Quote size={30} className="text-blue-500/25 absolute top-6 right-6" />
+
+                <p className="text-gray-200 text-[15px] leading-relaxed flex-1 mb-7">
+                  &ldquo;{t.quote}&rdquo;
+                </p>
+
+                <div className="pt-5 border-t border-white/[0.07] flex items-end justify-between gap-3">
+                  <div>
+                    <p className="text-white font-semibold text-[15px] leading-tight">{t.name}</p>
+                    <p className="text-gray-500 text-[12.5px] mt-0.5">{t.role}</p>
+                  </div>
+                  <div className="flex gap-0.5 flex-shrink-0">
+                    {Array.from({ length: 5 }).map((_, s) => (
+                      <span key={s} className="text-amber-400 text-sm">★</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
