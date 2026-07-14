@@ -1,16 +1,19 @@
 "use client";
 
+// scale ajusta el tamaño visual de logos cuadrados/emblema que, a igual altura,
+// se ven más chicos que un wordmark ancho.
 const clients = [
-  { name: "Accenture",      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Accenture.svg/250px-Accenture.svg.png" },
-  { name: "YPF",            logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/YPF_S.A._logo.svg/250px-YPF_S.A._logo.svg.png" },
-  { name: "BBVA",           logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/BBVA_logo_2025.svg/250px-BBVA_logo_2025.svg.png" },
-  { name: "Santander",      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Banco_Santander_Logotipo.svg/250px-Banco_Santander_Logotipo.svg.png" },
-  { name: "Mapfre",         logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Logo_Mapfre_2026.svg/250px-Logo_Mapfre_2026.svg.png" },
-  { name: "Finning",        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Finning.svg/250px-Finning.svg.png" },
-  { name: "Banco Galicia",  logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Grupo_Financiero_Galicia.svg/250px-Grupo_Financiero_Galicia.svg.png" },
-  { name: "Techint",        logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Techint_logo.svg/250px-Techint_logo.svg.png" },
-  { name: "Andreani",       logo: "/logos/andreani.svg" },
-  { name: "Banco Provincia", logo: "/logos/provincia.svg" },
+  { name: "Andreani Logística",  logo: "/logos/andreani.svg",  scale: 1 },
+  { name: "Finning",             logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Finning.svg/250px-Finning.svg.png", scale: 1 },
+  { name: "CNP Seguros",         logo: "/logos/cnp.png",       scale: 1.35 },
+  { name: "Banco Provincia",     logo: "/logos/provincia.svg", scale: 1 },
+  { name: "Volkswagen",          logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Volkswagen_logo_2019.svg/250px-Volkswagen_logo_2019.svg.png", scale: 1.3 },
+  { name: "Hipódromo Argentino", logo: "/logos/hipodromo.svg", scale: 1.05 },
+  { name: "Banco Macro",         logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Banco%20macro%20logo%20azul.svg?width=240", scale: 1 },
+  { name: "Mapfre",              logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Logo_Mapfre_2026.svg/250px-Logo_Mapfre_2026.svg.png", scale: 1 },
+  { name: "Accenture",           logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Accenture.svg/250px-Accenture.svg.png", scale: 1 },
+  { name: "Techint",             logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Techint_logo.svg/250px-Techint_logo.svg.png", scale: 1 },
+  { name: "Hausler",             logo: "/logos/hausler.svg",   scale: 1 },
 ];
 
 export default function ClientsBar() {
@@ -22,16 +25,20 @@ export default function ClientsBar() {
         <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#F1F5F9] to-transparent z-10 pointer-events-none" />
         <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#F1F5F9] to-transparent z-10 pointer-events-none" />
 
-        <div className="flex animate-marquee">
+        <div className="flex w-max animate-marquee">
           {doubled.map((client, i) => (
-            <div key={i} className="flex-shrink-0 mx-5 sm:mx-10">
-              <div className="h-10 sm:h-14 flex items-center justify-center w-28 sm:w-44">
+            <div key={i} className="flex-shrink-0 mx-4 sm:mx-7">
+              <div className="h-12 sm:h-16 flex items-center justify-center w-32 sm:w-44">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={client.logo}
                   alt={client.name}
-                  className="max-h-7 sm:max-h-10 max-w-24 sm:max-w-36 w-auto h-auto object-contain"
-                  style={{ opacity: 0.85 }}
+                  className="w-auto object-contain"
+                  style={{
+                    height: `calc(clamp(22px, 3.2vw, 34px) * ${client.scale ?? 1})`,
+                    maxWidth: "160px",
+                    opacity: 0.85,
+                  }}
                 />
               </div>
             </div>

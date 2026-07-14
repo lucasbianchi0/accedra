@@ -2,6 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import { whatsappLink } from "@/lib/whatsapp";
 
 export default function WhatsAppButton() {
   const [visible, setVisible] = useState(false);
@@ -15,7 +16,7 @@ export default function WhatsAppButton() {
     <AnimatePresence>
       {visible && (
         <motion.a
-          href="https://wa.link/78b9n9"
+          href={whatsappLink()}
           target="_blank"
           rel="noopener noreferrer"
           initial={{ opacity: 0, scale: 0.5, y: 24 }}

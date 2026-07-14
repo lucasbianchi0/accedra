@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowLeft, MapPin, ArrowUpRight } from "lucide-react";
+import { useT } from "@/lib/i18n/useT";
 
 function LinkedInIcon({ className }: { className?: string }) {
   return (
@@ -19,47 +20,20 @@ const px = (id: number) =>
   `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=1100`;
 
 // ⚠️ CONTENIDO DE EJEMPLO — reemplazar por fotos y trabajos reales de Accedra.
+// El texto (tag/title/text) sale del diccionario por índice (t.whyUs.works[i]);
+// acá quedan solo la imagen y la ubicación (no traducibles).
 const works = [
-  {
-    tag: "Capacitación",
-    title: "Jornada de capacitación en ciberseguridad",
-    text: "Formamos al equipo de IT de un cliente enterprise en prevención de amenazas y buenas prácticas de seguridad.",
-    location: "Buenos Aires",
-    image: px(3184291),
-  },
-  {
-    tag: "Seguridad IT",
-    title: "Firewall perimetral de nueva generación",
-    text: "Diseño e implementación de una arquitectura Zero Trust con Palo Alto para proteger la operación crítica.",
-    location: "CABA",
-    image: px(1181244),
-  },
-  {
-    tag: "Infraestructura",
-    title: "Cableado estructurado certificado",
-    text: "Instalación completa de cableado y networking en la nueva sede corporativa, lista para escalar.",
-    location: "Córdoba",
-    image: px(4682189),
-  },
-  {
-    tag: "Firma Digital",
-    title: "Despliegue de firma biométrica",
-    text: "Digitalización documental con validez legal para miles de operaciones mensuales, sin papel ni demoras.",
-    location: "Rosario",
-    image: px(9929279),
-  },
-  {
-    tag: "Networking",
-    title: "Renovación de red corporativa",
-    text: "Wireless de alta densidad y switching Cisco para conectar todas las sucursales con SLA garantizado.",
-    location: "Mendoza",
-    image: px(256381),
-  },
+  { location: "Buenos Aires", image: px(3184291) },
+  { location: "CABA", image: px(1181244) },
+  { location: "Córdoba", image: px(4682189) },
+  { location: "Rosario", image: px(9929279) },
+  { location: "Mendoza", image: px(256381) },
 ];
 
 const AUTO_MS = 5000;
 
 export default function WhyUs() {
+  const t = useT();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const len = works.length;
@@ -73,6 +47,7 @@ export default function WhyUs() {
   }, [paused, len]);
 
   const w = works[index];
+  const wt = t.whyUs.works[index];
 
   return (
     <section id="nosotros" className="py-20 lg:py-28 bg-[#0D1A2D] relative overflow-hidden">
@@ -102,23 +77,21 @@ export default function WhyUs() {
             transition={{ duration: 0.5 }}
           >
             <p className="text-sm font-semibold tracking-[0.22em] uppercase mb-5 text-blue-400">
-              Nuestro trabajo
+              {t.whyUs.eyebrow}
             </p>
             <h2 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-white leading-[1.06] mb-6">
-              Los proyectos{" "}
-              <span className="gradient-text">hablan por nosotros.</span>
+              {t.whyUs.titlePre}{" "}
+              <span className="gradient-text">{t.whyUs.titleHighlight}</span>
             </h2>
             <p className="text-gray-300 text-lg leading-relaxed max-w-lg mb-9">
-              15 años y más de 400 proyectos: capacitaciones, despliegues de seguridad,
-              redes e infraestructura crítica para las empresas líderes de Argentina.
-              Esto es una muestra de lo que hacemos cada día.
+              {t.whyUs.body}
             </p>
             <a
               href="#contacto"
               className="inline-flex items-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white transition-all duration-200 hover:gap-3"
               style={{ background: BLUE, boxShadow: `0 8px 28px rgba(${BLUE_RGB},0.35)` }}
             >
-              Hablemos de tu proyecto
+              {t.whyUs.cta}
               <ArrowRight size={17} />
             </a>
           </motion.div>
@@ -146,7 +119,7 @@ export default function WhyUs() {
                   transition={{ duration: 0.7, ease: "easeInOut" }}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={w.image} alt={w.title} className="absolute inset-0 w-full h-full object-cover" draggable={false} />
+                  <img src={w.image} alt={wt.title} className="absolute inset-0 w-full h-full object-cover" draggable={false} />
                   <div className="absolute inset-0"
                     style={{ background: "linear-gradient(to top, rgba(7,14,26,0.96) 8%, rgba(7,14,26,0.55) 45%, rgba(7,14,26,0.15) 100%)" }} />
 
@@ -155,16 +128,16 @@ export default function WhyUs() {
                     <div className="flex items-center gap-2.5 mb-3">
                       <span className="text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"
                         style={{ background: `rgba(${BLUE_RGB},0.25)`, color: "#CFE2FF", border: `1px solid rgba(${BLUE_RGB},0.5)`, backdropFilter: "blur(4px)" }}>
-                        {w.tag}
+                        {wt.tag}
                       </span>
                       <span className="text-gray-400 text-xs flex items-center gap-1">
                         <MapPin size={11} /> {w.location}
                       </span>
                     </div>
                     <h3 className="text-white text-2xl sm:text-[26px] font-bold leading-tight mb-2.5 max-w-lg">
-                      {w.title}
+                      {wt.title}
                     </h3>
-                    <p className="text-gray-300 text-[14px] leading-relaxed max-w-md">{w.text}</p>
+                    <p className="text-gray-300 text-[14px] leading-relaxed max-w-md">{wt.text}</p>
                   </div>
                 </motion.div>
               </AnimatePresence>
@@ -204,7 +177,7 @@ export default function WhyUs() {
             {/* Follow on LinkedIn */}
             <div className="flex justify-between items-center mt-5 gap-4">
               <p className="text-gray-500 text-[13px] hidden sm:block">
-                Seguí todos nuestros proyectos en LinkedIn.
+                {t.whyUs.followText}
               </p>
               <a
                 href="https://www.linkedin.com/company/accedra-s.a."
@@ -214,7 +187,7 @@ export default function WhyUs() {
                 style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)" }}
               >
                 <LinkedInIcon className="text-blue-400" />
-                Seguinos en LinkedIn
+                {t.whyUs.followButton}
                 <ArrowUpRight size={14} className="text-gray-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
             </div>

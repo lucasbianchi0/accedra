@@ -3,18 +3,21 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X, Phone, ArrowRight } from "lucide-react";
+import { useT } from "@/lib/i18n/useT";
+import LangSwitcher from "@/components/LangSwitcher";
 
 const BLUE_RGB = "43,111,212";
 
-const links = [
-  { label: "Servicios", href: "#servicios" },
-  { label: "Clientes", href: "#clientes" },
-  { label: "Partners", href: "#partners" },
-  { label: "Nosotros", href: "#nosotros" },
-  { label: "Contacto", href: "#contacto" },
-];
+const linkHrefs = [
+  { key: "services", href: "/#servicios" },
+  { key: "partners", href: "/#partners" },
+  { key: "about", href: "/#nosotros" },
+  { key: "contact", href: "/#contacto" },
+] as const;
 
 export default function Navbar() {
+  const t = useT();
+  const links = linkHrefs.map((l) => ({ href: l.href, label: t.nav[l.key] }));
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -41,7 +44,7 @@ export default function Navbar() {
       >
         <div className="w-full px-6 lg:px-16 xl:px-24 flex items-center justify-between h-18 py-4">
           {/* Logo */}
-          <a href="#" onClick={() => setOpen(false)} className="flex-shrink-0">
+          <a href="/" onClick={() => setOpen(false)} className="flex-shrink-0">
             <div className="flex flex-col leading-none">
               <span className="logo-word text-2xl text-white tracking-widest">ACCEDRA</span>
               <span className="logo-sub text-[10px] tracking-[0.25em] text-blue-400 uppercase">IT Solutions</span>
@@ -68,11 +71,16 @@ export default function Navbar() {
               <Phone size={13} />
               <span>(+54 11) 5365-9887</span>
             </a>
+            <LangSwitcher variant="desktop" />
             <a
-              href="#contacto"
-              className="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/30"
+              href="/#contacto"
+              className="relative overflow-hidden shine text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-200 hover:-translate-y-0.5"
+              style={{
+                background: "#2B6FD4",
+                boxShadow: "0 8px 28px rgba(43,111,212,0.35)",
+              }}
             >
-              Hablar con un experto
+              {t.nav.cta}
             </a>
           </div>
 
@@ -173,6 +181,10 @@ export default function Navbar() {
             {/* Bottom: phone + CTA */}
             <div className="relative px-6 pb-10 flex-shrink-0 space-y-3">
               <div className="h-px mb-5" style={{ background: "rgba(255,255,255,0.06)" }} />
+              <div className="flex items-center justify-between gap-3 pb-1">
+                <span className="text-gray-500 text-xs font-semibold uppercase tracking-[0.14em]">{t.nav.language}</span>
+                <LangSwitcher variant="mobile" />
+              </div>
               <a href="tel:+541153659887" className="flex items-center gap-3 group">
                 <div
                   className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -183,12 +195,12 @@ export default function Navbar() {
                 <span className="text-gray-400 text-sm group-hover:text-gray-200 transition-colors">(+54 11) 5365-9887</span>
               </a>
               <a
-                href="#contacto"
+                href="/#contacto"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-2.5 w-full py-4 rounded-2xl text-white font-semibold text-[15px] transition-opacity hover:opacity-90 active:scale-[0.99]"
                 style={{
-                  background: `linear-gradient(135deg, #4f8ef7 0%, #2B6FD4 50%, #1a4fa0 100%)`,
-                  boxShadow: `0 8px 32px rgba(${BLUE_RGB},0.4), inset 0 1px 0 rgba(255,255,255,0.15)`,
+                  background: `#2B6FD4`,
+                  boxShadow: `0 8px 28px rgba(${BLUE_RGB},0.35)`,
                 }}
               >
                 Hablar con un experto

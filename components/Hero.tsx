@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { useT } from "@/lib/i18n/useT";
 
 const stats = [
-  { value: "15", suffix: "+", label: "Años de experiencia" },
-  { value: "400", suffix: "+", label: "Proyectos entregados" },
-  { value: "12", suffix: "+", label: "Partners tecnológicos" },
-  { value: "100", suffix: "+", label: "Clientes activos" },
+  { value: "17", suffix: "+" },
+  { value: "400", suffix: "+" },
+  { value: "26", suffix: "+" },
+  { value: "100", suffix: "+" },
 ];
 
 function Counter({ value, suffix }: { value: string; suffix: string }) {
@@ -50,27 +51,48 @@ function Counter({ value, suffix }: { value: string; suffix: string }) {
   );
 }
 
+const HERO_POSTER =
+  "https://images.pexels.com/photos/4682189/pexels-photo-4682189.jpeg?auto=compress&cs=tinysrgb&w=1920";
+
 export default function Hero() {
+  const t = useT();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoPlaying, setVideoPlaying] = useState(false);
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.playbackRate = 0.75;
-    }
+    const v = videoRef.current;
+    if (!v) return;
+    v.playbackRate = 0.75;
+    // Try to autoplay. In Low Power Mode / when autoplay is blocked this rejects
+    // silently and the static image stays visible (no black frame, no play button).
+    const p = v.play();
+    if (p !== undefined) p.catch(() => {});
   }, []);
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Video background */}
-      <div className="absolute inset-0 z-0">
+      {/* Video background (with a static image fallback that always renders) */}
+      <div className="absolute inset-0 z-0 bg-[#0D1A2D]">
+        {/* Static fallback — always visible; covers Low Power Mode / blocked autoplay */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={HERO_POSTER}
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
         <video
           ref={videoRef}
           autoPlay
           muted
           loop
           playsInline
-          poster="https://images.pexels.com/photos/4682189/pexels-photo-4682189.jpeg?auto=compress&cs=tinysrgb&w=1920"
-          className="w-full h-full object-cover"
+          preload="auto"
+          poster={HERO_POSTER}
+          onPlaying={() => setVideoPlaying(true)}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+            videoPlaying ? "opacity-100" : "opacity-0"
+          }`}
         >
           <source
             src="https://videos.pexels.com/video-files/5028622/5028622-hd_1920_1080_25fps.mp4"
@@ -97,7 +119,7 @@ export default function Hero() {
             className="inline-flex items-center gap-2 badge-shimmer border border-blue-500/30 text-blue-300 text-xs font-semibold tracking-widest uppercase px-4 py-2 rounded-full mb-8"
           >
             <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
-            15 años liderando la transformación IT en Argentina
+            {t.hero.badge}
           </motion.div>
 
           {/* Headline */}
@@ -107,10 +129,10 @@ export default function Hero() {
             transition={{ duration: 0.7, delay: 0.1 }}
             className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.08] tracking-tight mb-6"
           >
-            Infraestructura IT<br className="hidden sm:block" />{" "}
-            <span className="gradient-text">para empresas</span>
+            {t.hero.titlePre}<br className="hidden sm:block" />{" "}
+            <span className="gradient-text">{t.hero.titleHighlight}</span>
             <br className="hidden sm:block" />{" "}
-            que lideran.
+            {t.hero.titlePost}
           </motion.h1>
 
           {/* Subheadline */}
@@ -120,9 +142,8 @@ export default function Hero() {
             transition={{ duration: 0.6, delay: 0.25 }}
             className="text-lg md:text-xl text-gray-400 leading-relaxed mb-10 max-w-2xl"
           >
-            Integramos las mejores tecnologías del mundo —{" "}
-            <span className="text-gray-200 font-medium">Cisco, Microsoft, Palo Alto, Dell EMC</span> —
-            para que tu empresa opere con la infraestructura que merece.
+            {t.hero.subtitlePre}
+            <span className="text-gray-200 font-medium">{t.hero.subtitleStrong}</span>.
           </motion.p>
 
           {/* CTAs */}
@@ -136,14 +157,14 @@ export default function Hero() {
               href="#contacto"
               className="relative overflow-hidden shine inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0 group text-base"
             >
-              Hablar con un experto
+              {t.services.ctaButton}
               <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </a>
             <a
               href="#servicios"
               className="inline-flex items-center justify-center gap-2 border border-white/20 hover:border-white/40 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 hover:bg-white/5 text-base"
             >
-              Ver servicios
+              {t.hero.ctaServices}
             </a>
           </motion.div>
         </div>
@@ -163,27 +184,12 @@ export default function Hero() {
               <div className="text-3xl md:text-4xl font-bold text-white mb-1">
                 <Counter value={s.value} suffix={s.suffix} />
               </div>
-              <div className="text-xs text-gray-400 font-medium tracking-wide">{s.label}</div>
+              <div className="text-xs text-gray-400 font-medium tracking-wide">{t.hero.stats[i]}</div>
             </div>
           ))}
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-1 text-gray-500"
-      >
-        <span className="text-xs tracking-widest uppercase">Scroll</span>
-        <motion.div
-          animate={{ y: [0, 6, 0] }}
-          transition={{ repeat: Infinity, duration: 1.5 }}
-        >
-          <ChevronDown size={16} />
-        </motion.div>
-      </motion.div>
     </section>
   );
 }

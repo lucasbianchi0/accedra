@@ -1,68 +1,37 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Network, SquarePen, LayoutDashboard, ShieldCheck, ArrowRight } from "lucide-react";
+import { useT } from "@/lib/i18n/useT";
 
 const BLUE_RGB = "43,111,212";
 
 const photo = (id: number) =>
   `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=900`;
 
+// Metadatos no traducibles (icono, slug, foto, destacado). El título y los
+// items salen del diccionario por índice (t.services.columns[i]).
 const columns = [
-  {
-    icon: Network,
-    title: "Networking",
-    slug: "networking",
-    photo: photo(4682189),
-    items: [
-      "Switching & Routing",
-      "Wireless",
-      "Telefonía IP",
-      "Seguridad",
-      "Contingencia & Entorno",
-      "Cableado estructurado",
-    ],
-  },
-  {
-    icon: SquarePen,
-    title: "Firma Biométrica",
-    slug: "firma-biometrica",
-    featured: true,
-    photo: photo(9929279),
-    items: [
-      "Transformación Digital",
-      "Soluciones de Factoring Digital",
-      "Firma Digital Biométrica",
-      "eSignAnyWhere",
-      "Soluciones Mobile",
-      "Multi biometría",
-    ],
-  },
-  {
-    icon: LayoutDashboard,
-    title: "Consultoría",
-    slug: "consultoria",
-    photo: photo(577210),
-    items: [
-      "Colaboración",
-      "Power BI",
-      "Dynamics 365",
-      "SharePoint",
-      "Office 365",
-      "Gestión Documental",
-    ],
-  },
-  {
-    icon: ShieldCheck,
-    title: "Seguridad",
-    slug: "seguridad",
-    photo: photo(1181244),
-    items: ["Cisco", "Palo Alto", "Umbrella", "AMP", "Cloud Security"],
-  },
+  { icon: Network, slug: "networking", photo: photo(4682189) },
+  { icon: SquarePen, slug: "firma-biometrica", featured: true, photo: photo(9929279) },
+  { icon: LayoutDashboard, slug: "consultoria", photo: photo(577210) },
+  { icon: ShieldCheck, slug: "seguridad", photo: photo(1181244) },
 ];
 
 export default function Services() {
+  const t = useT();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
   return (
     <section id="servicios" className="py-20 lg:py-28 relative overflow-hidden bg-gradient-to-b from-[#0A1424] to-[#07101D]">
 
@@ -81,17 +50,17 @@ export default function Services() {
           <motion.p
             initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }}
             className="text-xs font-semibold tracking-[0.22em] uppercase mb-3 text-blue-400">
-            Lo que hacemos
+            {t.services.eyebrow}
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ delay: 0.06 }}
             className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Soluciones IT end-to-end
+            {t.services.title}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ delay: 0.11 }}
             className="text-gray-400 text-[15px] max-w-md mx-auto">
-            Desde el cableado hasta la nube, cubrimos cada capa de tu infraestructura.
+            {t.services.subtitle}
           </motion.p>
         </div>
 
@@ -99,9 +68,10 @@ export default function Services() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
           {columns.map((col, i) => {
             const Icon = col.icon;
+            const cd = t.services.columns[i];
             return (
               <motion.div
-                key={col.title}
+                key={col.slug}
                 initial={{ opacity: 0, y: 22 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.15 }}
@@ -114,8 +84,12 @@ export default function Services() {
                   style={{ background: `radial-gradient(circle at 50% 0%, rgba(${BLUE_RGB},0.28), transparent 70%)` }}
                 />
 
-                {/* Lift wrapper — transforms (no clipping) so the rounded+overflow card never transforms */}
-                <div className="relative h-full transition-transform duration-300 group-hover:-translate-y-1.5 transform-gpu">
+                {/* Whole card is a single link to its solution page */}
+                <Link
+                  href={`/soluciones/${col.slug}`}
+                  aria-label={`${t.services.viewSolution}: ${cd.title}`}
+                  className="relative block h-full transition-transform duration-300 group-hover:-translate-y-1.5 transform-gpu"
+                >
                 {/* Card — clips (no transform), solid bg so the image fade meets the body seamlessly */}
                 <div
                   className="relative h-full rounded-3xl overflow-hidden border flex flex-col"
@@ -136,7 +110,7 @@ export default function Services() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={col.photo}
-                    alt={col.title}
+                    alt={cd.title}
                     draggable={false}
                     className="absolute top-0 inset-x-0 h-44 w-full object-cover pointer-events-none z-[1] transition-transform duration-500 group-hover:scale-105"
                     style={{
@@ -151,7 +125,7 @@ export default function Services() {
                       className="absolute top-4 right-4 z-10 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
                       style={{ background: `rgba(${BLUE_RGB},0.3)`, color: "#EAF2FE", border: `1px solid rgba(${BLUE_RGB},0.5)`, backdropFilter: "blur(4px)" }}
                     >
-                      Diferencial
+                      {t.services.featuredBadge}
                     </span>
                   )}
 
@@ -170,42 +144,48 @@ export default function Services() {
                       <Icon size={22} strokeWidth={1.7} style={{ color: "#3B8EF0" }} />
                     </div>
 
-                    {/* Title (clickable → solution page) */}
-                    <Link href={`/soluciones/${col.slug}`} className="w-fit">
-                      <h3 className="text-white text-xl font-bold tracking-tight uppercase mb-4 hover:text-blue-200 transition-colors">
-                        {col.title}
-                      </h3>
-                    </Link>
+                    {/* Title */}
+                    <h3 className="w-fit text-white text-xl font-bold tracking-tight uppercase mb-4 group-hover:text-blue-200 transition-colors">
+                      {cd.title}
+                    </h3>
 
-                    {/* Items (each clickable → solution page) */}
+                    {/* Items */}
                     <ul className="divide-y divide-white/[0.06] mb-5">
-                      {col.items.map((item) => (
-                        <li key={item}>
-                          <Link
-                            href={`/soluciones/${col.slug}`}
-                            className="flex items-center gap-2.5 py-2.5 group/item"
-                          >
+                      {cd.items.map((item) => {
+                        const link = (
+                          <div className="flex items-center gap-2.5 py-2.5">
                             <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors duration-200"
                               style={{ background: `rgba(${BLUE_RGB},0.55)` }} />
-                            <span className="text-gray-400 text-[14px] leading-none transition-colors duration-200 group-hover/item:text-blue-200">
+                            <span className="text-gray-400 text-[14px] leading-none transition-colors duration-200 group-hover:text-blue-100">
                               {item}
                             </span>
-                          </Link>
-                        </li>
-                      ))}
+                          </div>
+                        );
+                        // Staggered scroll reveal only on mobile; static on desktop.
+                        return isMobile ? (
+                          <motion.li
+                            key={item}
+                            initial={{ opacity: 0, y: 18 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-45% 0px -45% 0px" }}
+                            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                          >
+                            {link}
+                          </motion.li>
+                        ) : (
+                          <li key={item}>{link}</li>
+                        );
+                      })}
                     </ul>
 
                     {/* Ver solución */}
-                    <Link
-                      href={`/soluciones/${col.slug}`}
-                      className="mt-auto inline-flex items-center gap-1.5 text-[13px] font-semibold text-blue-300 hover:text-white transition-colors group/link"
-                    >
-                      Ver solución
-                      <ArrowRight size={13} className="transition-transform group-hover/link:translate-x-0.5" />
-                    </Link>
+                    <span className="mt-auto inline-flex items-center gap-1.5 text-[13px] font-semibold text-blue-300 group-hover:text-white transition-colors">
+                      {t.services.viewSolution}
+                      <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                    </span>
                   </div>
                 </div>
-                </div>
+                </Link>
               </motion.div>
             );
           })}
@@ -216,13 +196,13 @@ export default function Services() {
           initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
           className="mt-16 flex flex-col sm:flex-row items-center justify-center gap-4 text-center"
         >
-          <p className="text-gray-500 text-[15px]">¿No sabés por dónde empezar?</p>
+          <p className="text-gray-500 text-[15px]">{t.services.ctaText}</p>
           <a
             href="#contacto"
             className="inline-flex items-center gap-2 text-sm font-semibold text-white group px-6 py-3 rounded-full transition-all duration-200 hover:gap-3"
             style={{ background: "#2B6FD4", boxShadow: `0 8px 28px rgba(${BLUE_RGB},0.35)` }}
           >
-            Hablá con un experto
+            {t.services.ctaButton}
             <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
           </a>
         </motion.div>

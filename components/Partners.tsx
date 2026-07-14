@@ -2,25 +2,32 @@
 
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
+import { ShieldCheck } from "lucide-react";
+import { useT } from "@/lib/i18n/useT";
 
 const partners = [
-  { name: "Cisco",              logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Cisco_logo_blue_2016.svg/250px-Cisco_logo_blue_2016.svg.png",                                              filter: "brightness(1.1) saturate(1.1)" },
-  { name: "Microsoft",          logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Microsoft_logo_%282012%29.svg/250px-Microsoft_logo_%282012%29.svg.png",                                    filter: "brightness(1.1) saturate(1.1)" },
-  { name: "Palo Alto Networks", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/PaloAltoNetworks_2020_Logo.svg/250px-PaloAltoNetworks_2020_Logo.svg.png",                                  filter: "brightness(1.1) saturate(1.1)" },
-  { name: "Dell EMC",           logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Dell_EMC_logo.svg/250px-Dell_EMC_logo.svg.png",                                                            filter: "brightness(1.3) saturate(1.1)" },
-  { name: "Nutanix",            logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Nutanix-Logo-Charcoal-Gray-Digital.svg/250px-Nutanix-Logo-Charcoal-Gray-Digital.svg.png",                  filter: "brightness(0) invert(1)" },
-  { name: "IBM",                logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/IBM_logo.svg/250px-IBM_logo.svg.png",                                                                      filter: "brightness(1.2) saturate(1.1)" },
-  { name: "Cisco Meraki",       logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Meraki_Logo_2016.svg/250px-Meraki_Logo_2016.svg.png",                                                      filter: "brightness(1.1) saturate(0.9)" },
-  { name: "Wacom",              logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Wacom_logo.svg/250px-Wacom_logo.svg.png",                                                                  filter: "brightness(0) invert(1)" },
-  { name: "VMware",             logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Vmware.svg/250px-Vmware.svg.png",                                                                          filter: "brightness(1.1) saturate(1.1)" },
-  { name: "Oracle",             logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Oracle_logo.svg/250px-Oracle_logo.svg.png",                                                                filter: "brightness(1.1) saturate(1.1)" },
-  { name: "Power BI",           logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/New_Power_BI_Logo.svg/250px-New_Power_BI_Logo.svg.png",                                                    filter: "brightness(1.1) saturate(1.1)" },
-  { name: "Fortinet",           logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Fortinet_logo.svg/250px-Fortinet_logo.svg.png",                                                            filter: "brightness(1.1) saturate(1.1)" },
+  { name: "Cisco",              logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Cisco_logo_blue_2016.svg/250px-Cisco_logo_blue_2016.svg.png",                                              filter: "brightness(1.1) saturate(1.1)", blurb: "Líder mundial en redes empresariales: switching, routing y conectividad de alta disponibilidad." },
+  { name: "Microsoft",          logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Microsoft_logo_%282012%29.svg/250px-Microsoft_logo_%282012%29.svg.png",                                    filter: "brightness(1.1) saturate(1.1)", blurb: "Nube Azure, identidad y productividad corporativa con gobernanza y seguridad integradas." },
+  { name: "Palo Alto Networks", logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Palo-Alto-Networks-logo.svg?width=240",     filter: "brightness(1.1) saturate(1.1)", blurb: "Firewalls de nueva generación y seguridad Zero Trust para proteger toda la red." },
+  { name: "Nutanix",            logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Nutanix-Logo-Charcoal-Gray-Digital.svg/250px-Nutanix-Logo-Charcoal-Gray-Digital.svg.png", filter: "brightness(0) invert(1)", blurb: "Infraestructura hiperconvergente y nube híbrida que simplifica el datacenter." },
+  { name: "Wacom",              logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Wacom_logo.svg/250px-Wacom_logo.svg.png",                                                 filter: "brightness(0) invert(1)", blurb: "Tabletas de firma y digitalización biométrica para trámites 100% digitales." },
+  { name: "Pure Storage",       logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Pure-storage-vector-logo.svg?width=240",     filter: "brightness(0) invert(1)", blurb: "Almacenamiento all-flash de alto rendimiento con eficiencia y simplicidad de gestión." },
+  { name: "Vicarius",           logo: "https://www.google.com/s2/favicons?domain=vicarius.io&sz=128",                                    filter: "brightness(1.1) saturate(1.1)", blurb: "Gestión y remediación automática de vulnerabilidades en tiempo real." },
+  { name: "Verge.IO",           logo: "https://www.google.com/s2/favicons?domain=verge.io&sz=128",                                       filter: "brightness(1.1) saturate(1.1)", blurb: "Virtualización e infraestructura definida por software en una sola plataforma." },
+  { name: "APC by Schneider",   logo: "https://commons.wikimedia.org/wiki/Special:FilePath/APC%20by%20Schneider%20Electric.png?width=240", filter: "brightness(1.1) saturate(1.1)", blurb: "Energía ininterrumpida (UPS) y protección eléctrica para infraestructura crítica." },
+  { name: "HPE Aruba",          logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Hpe-aruba-networking-logo.svg?width=240",     filter: "brightness(1.1) saturate(1.1)", blurb: "Redes Wi-Fi empresariales y acceso seguro con inteligencia en el borde." },
+  { name: "CommScope",          logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Commscope-logo.png?width=240",                filter: "brightness(0) invert(1)", blurb: "Cableado estructurado e infraestructura de conectividad de misión crítica." },
+  { name: "Dahua",              logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Dahua%20Technology%20logo.svg?width=240",     filter: "brightness(1.1) saturate(1.1)", blurb: "Videovigilancia y soluciones de seguridad electrónica basadas en IA." },
+  { name: "Hikvision",          logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Hikvision%20logo.svg?width=240",             filter: "brightness(1.1) saturate(1.1)", blurb: "Cámaras IP y sistemas de videovigilancia inteligente para todo tipo de entorno." },
+  { name: "TP-Link",            logo: "https://www.google.com/s2/favicons?domain=tp-link.com&sz=128",                                    filter: "brightness(1.1) saturate(1.1)", blurb: "Networking y conectividad Wi-Fi confiable para empresas y sucursales." },
+  { name: "Namirial",           logo: "https://www.google.com/s2/favicons?domain=namirial.com&sz=128",                                   filter: "brightness(1.1) saturate(1.1)", blurb: "Firma electrónica y digitalización de procesos con validez legal." },
+  { name: "Check Point",        logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Check%20Point%20logo%202022.svg?width=240",  filter: "brightness(1.1) saturate(1.1)", blurb: "Ciberseguridad y protección perimetral de red con prevención de amenazas avanzada." },
 ];
 
 const canHover = () => window.matchMedia("(hover: hover)").matches;
 
 export default function Partners() {
+  const t = useT();
   const [mouse, setMouse] = useState({ x: 0, y: 0 });
   const [active, setActive] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -47,7 +54,7 @@ export default function Partners() {
             viewport={{ once: true }}
             className="text-xs font-semibold tracking-[0.2em] uppercase text-blue-400 mb-3"
           >
-            Ecosistema tecnológico
+            {t.partners.eyebrow}
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 16 }}
@@ -56,7 +63,7 @@ export default function Partners() {
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-5xl font-bold text-white mb-4"
           >
-            Integramos las mejores tecnologías
+            {t.partners.title}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 16 }}
@@ -65,7 +72,7 @@ export default function Partners() {
             transition={{ delay: 0.2 }}
             className="text-gray-400 max-w-xl mx-auto"
           >
-            Partners certificados y distribuidores autorizados de las marcas líderes del mercado IT.
+            {t.partners.subtitle}
           </motion.p>
         </div>
 
@@ -91,54 +98,73 @@ export default function Partners() {
           {partners.map((partner, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.1 }}
-              transition={{ duration: 0.4, delay: i * 0.035 }}
-              className="relative z-10 group flex flex-col items-center justify-center p-5 md:p-8 rounded-2xl border border-white/[0.08] cursor-default transition-all duration-300"
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
-              }}
-              onMouseEnter={e => {
-                if (!canHover()) return;
-                (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.08)";
-                (e.currentTarget as HTMLDivElement).style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.1), 0 20px 60px rgba(43,111,212,0.15)";
-                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(43,111,212,0.3)";
-                (e.currentTarget as HTMLDivElement).style.transform = "translateY(-4px) scale(1.02)";
-              }}
-              onMouseLeave={e => {
-                if (!canHover()) return;
-                (e.currentTarget as HTMLDivElement).style.background = "rgba(255,255,255,0.04)";
-                (e.currentTarget as HTMLDivElement).style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.06)";
-                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.08)";
-                (e.currentTarget as HTMLDivElement).style.transform = "translateY(0) scale(1)";
-              }}
+              initial={{ opacity: 0, y: 14, scale: 0.96 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.5, delay: (i % 4) * 0.07, ease: [0.22, 1, 0.36, 1] }}
+              className="flip-card relative z-10 h-[132px] md:h-[168px] cursor-default"
             >
-              <div className="h-14 flex items-center justify-center w-full">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={partner.logo}
-                  alt={partner.name}
-                  className="max-h-10 max-w-[130px] w-auto h-auto object-contain transition-all duration-300"
-                  style={{ filter: partner.filter }}
-                />
+              <div className="flip-inner">
+                {/* Front — logo */}
+                <div
+                  className="flip-face flip-front border border-white/[0.08]"
+                  style={{
+                    backgroundColor: "rgba(255,255,255,0.04)",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+                  }}
+                >
+                  <div className="h-14 flex items-center justify-center w-full px-5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={partner.logo}
+                      alt={partner.name}
+                      className="max-h-10 max-w-[130px] w-auto h-auto object-contain"
+                      style={{ filter: partner.filter }}
+                    />
+                  </div>
+                </div>
+
+                {/* Back — descripción (solo desktop, en hover) */}
+                <div
+                  className="flip-face flip-back flex-col text-center px-5 md:px-6 border border-blue-500/30"
+                  style={{
+                    background: "linear-gradient(160deg, rgba(43,111,212,0.18), rgba(13,26,45,0.92))",
+                    backdropFilter: "blur(12px)",
+                    WebkitBackdropFilter: "blur(12px)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1), 0 20px 60px rgba(43,111,212,0.2)",
+                  }}
+                >
+                  <p className="text-sm font-semibold text-white mb-1.5">{partner.name}</p>
+                  <p className="text-[13px] text-gray-300 leading-relaxed">{t.partners.blurbs[i]}</p>
+                </div>
               </div>
             </motion.div>
           ))}
         </div>
 
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
-          className="text-center text-gray-600 text-xs mt-10"
+          transition={{ delay: 0.4 }}
+          className="mt-12 flex justify-center"
         >
-          Relaciones certificadas y distribuciones autorizadas.
-        </motion.p>
+          <div
+            className="pill-premium inline-flex items-center gap-2.5 pl-3.5 pr-4 py-2 rounded-full border border-blue-500/20"
+            style={{
+              background: "linear-gradient(135deg, rgba(43,111,212,0.10), rgba(255,255,255,0.02))",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+            }}
+          >
+            <ShieldCheck size={16} className="text-blue-400 flex-shrink-0 relative z-10" />
+            <span className="relative z-10 text-gray-300 text-[13px] font-medium">
+              {t.partners.pill}
+            </span>
+          </div>
+        </motion.div>
 
       </div>
     </section>
