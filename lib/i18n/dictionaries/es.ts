@@ -2,7 +2,7 @@
 // en.ts y pt.ts deben replicar exactamente estas claves (solo cambian los valores).
 export const es = {
   nav: {
-    services: "Servicios",
+    services: "Soluciones",
     partners: "Partners",
     about: "Nosotros",
     contact: "Contacto",
@@ -41,28 +41,31 @@ export const es = {
     columns: [
       {
         title: "Networking",
+        desc: "Infraestructura de red robusta y de alta disponibilidad, del cableado a la nube.",
         items: [
           "Switching & Routing",
           "Wireless",
           "Telefonía IP",
-          "Seguridad",
-          "Contingencia & Entorno",
-          "Cableado estructurado",
+          "Seguridad de red",
+          "Contingencia",
+          "Cableado",
         ],
       },
       {
         title: "Firma Biométrica",
+        desc: "Firma electrónica, biométrica y digital con validez legal y trazabilidad total.",
         items: [
-          "Transformación Digital",
-          "Soluciones de Factoring Digital",
-          "Firma Digital Biométrica",
-          "eSignAnyWhere",
-          "Soluciones Mobile",
-          "Multi biometría",
+          "Transformación digital",
+          "Factoring digital",
+          "Firma biométrica",
+          "eSignAnywhere",
+          "Firma mobile",
+          "Multibiometría",
         ],
       },
       {
         title: "Consultoría",
+        desc: "Ecosistema Microsoft y analítica que convierten tus datos en decisiones.",
         items: [
           "Colaboración",
           "Power BI",
@@ -74,7 +77,20 @@ export const es = {
       },
       {
         title: "Seguridad",
+        desc: "Ciberseguridad de nivel corporativo en cada capa, con arquitectura Zero Trust.",
         items: ["Cisco", "Palo Alto", "Umbrella", "AMP", "Cloud Security"],
+      },
+      {
+        title: "Software & AI",
+        desc: "Software a medida e inteligencia artificial aplicada a tus procesos.",
+        items: [
+          "Desarrollo a medida",
+          "Integraciones & APIs",
+          "Modelos de IA / ML",
+          "Chatbots & Copilotos",
+          "Data & Analytics",
+          "Automatización",
+        ],
       },
     ],
   },
@@ -224,16 +240,19 @@ export const es = {
       "Seguridad IT",
       "Firma Biométrica",
       "Consultoría Microsoft",
+      "Software & AI",
     ],
     companyTitle: "Empresa",
     companyItems: ["Sobre Accedra", "Partners", "Clientes", "Contacto"],
     rights: "Todos los derechos reservados.",
-    madeIn: "Hecho con precisión en Buenos Aires, Argentina.",
+    madeIn: "Hecho por Accedra en Buenos Aires, Argentina.",
   },
 
   // Chrome de las landings de soluciones (solo páginas base, no industria)
   solution: {
     ctaPrimary: "Solicitar asesoramiento",
+    ctaSeeSolution: "Ver soluciones",
+    home: "Inicio",
     whatsapp: "WhatsApp",
     painsEyebrow: "El problema",
     painsFooter: "Si te reconocés en alguna, podemos ayudarte.",
@@ -248,7 +267,7 @@ export const es = {
     ctaBody:
       "Contanos tu desafío y un experto de Accedra te contacta en menos de 24 horas hábiles.",
     ctaPrimary2: "Coordinar una reunión",
-    ctaSecondary: "Ver otras soluciones",
+    ctaSecondary: "Ver soluciones",
   },
 };
 

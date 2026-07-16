@@ -11,9 +11,12 @@
   box-sizing: border-box;
 }
 
+/* Scroll suave para los anclajes internos (#capacidades, #contacto, etc.).
+   Se desactiva solo para quien tenga "Reducir movimiento" (ver más abajo). */
 html {
   scroll-behavior: smooth;
 }
+
 
 body {
   background: #ffffff;
@@ -33,29 +36,29 @@ body {
 }
 
 @keyframes marquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 
+/* Marquesina de clientes: siempre en movimiento (sin pausa en hover) y
+   acelerada por GPU para que corra fluida en todas las plataformas. */
 .animate-marquee {
   animation: marquee 34s linear infinite;
-}
-
-.animate-marquee:hover {
-  animation-play-state: paused;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 @keyframes marquee-reverse {
-  0% { transform: translateX(-50%); }
-  100% { transform: translateX(0); }
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0, 0, 0); }
 }
 
 .animate-marquee-reverse {
   animation: marquee-reverse 22s linear infinite;
-}
-
-.animate-marquee-reverse:hover {
-  animation-play-state: paused;
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* Logo typography — Montserrat Light (ACCEDRA) + Medium (IT SOLUTIONS) */
@@ -104,6 +107,47 @@ body {
 }
 .shine:hover::after { transform: translateX(120%); }
 
+/* Beams verticales que caen (fondo de secciones oscuras) */
+@keyframes beam-fall {
+  0% { transform: translateY(-120%); opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { transform: translateY(120%); opacity: 0; }
+}
+.beam { animation: beam-fall 6s ease-in-out infinite; }
+
+/* Glow azul que recorre las ilustraciones en secuencia (la parte azul "brilla") */
+@keyframes accent-glow {
+  0%, 60%, 100% { filter: drop-shadow(0 0 0 rgba(90,162,245,0)) brightness(1) saturate(1); }
+  28% { filter: drop-shadow(0 0 12px rgba(90,162,245,0.75)) brightness(1.12) saturate(1.35); }
+}
+.animate-illus {
+  animation: accent-glow 3.4s ease-in-out infinite;
+  will-change: filter;
+}
+@media (prefers-reduced-motion: reduce) { .animate-illus { animation: none; } }
+
+/* Luz que viaja por la línea de continuidad del proceso */
+@keyframes beam-travel {
+  0% { left: -2%; opacity: 0; }
+  12% { opacity: 1; }
+  88% { opacity: 1; }
+  100% { left: 102%; opacity: 0; }
+}
+.beam-travel { animation: beam-travel 4.5s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+@media (prefers-reduced-motion: reduce) { .beam-travel { animation: none; opacity: 0; } }
+
+/* Glow que respira */
+@keyframes soft-pulse {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+.animate-soft-pulse { animation: soft-pulse 3.6s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .beam, .animate-soft-pulse { animation: none; }
+}
+
 /* Premium pill: auto light-sweep + soft breathing glow */
 @keyframes pill-sheen {
   0%        { transform: translateX(-160%) skewX(-12deg); }
@@ -146,6 +190,19 @@ a, button {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Excepción: la marquesina de clientes debe girar siempre, en todas las
+     plataformas — incluso con "Reducir movimiento" activado en el SO. */
+  .animate-marquee {
+    animation: marquee 34s linear infinite !important;
+    animation-duration: 34s !important;
+    animation-iteration-count: infinite !important;
+  }
+  .animate-marquee-reverse {
+    animation: marquee-reverse 22s linear infinite !important;
+    animation-duration: 22s !important;
+    animation-iteration-count: infinite !important;
   }
 }
 
@@ -252,4 +309,33 @@ a, button {
 }
 .animate-lang-pop {
   animation: lang-pop 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Ilustraciones de soluciones: la parte azul "brilla" en secuencia
+   (card 1 → 5, en orden) y repite. El delay lo fija cada card con --seq-delay. */
+@keyframes svc-accent {
+  0%, 26%, 100% { filter: brightness(1) saturate(1) drop-shadow(0 0 0 rgba(90,162,245,0)); }
+  10% { filter: brightness(1.5) saturate(1.7) drop-shadow(0 0 26px rgba(90,162,245,0.95)); }
+  16% { filter: brightness(1.22) saturate(1.3) drop-shadow(0 0 12px rgba(90,162,245,0.5)); }
+}
+.svc-accent {
+  animation: svc-accent 5s ease-in-out infinite;
+  animation-delay: var(--seq-delay, 0s);
+  will-change: filter;
+}
+@media (prefers-reduced-motion: reduce) {
+  .svc-accent { animation: none; }
+}
+
+/* Ken Burns sutil para las portadas de video/poster (da vida sin distraer) */
+@keyframes hero-zoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.07); }
+}
+.hero-zoom {
+  animation: hero-zoom 22s ease-out forwards;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-zoom { animation: none; }
 }

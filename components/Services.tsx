@@ -1,36 +1,27 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Network, SquarePen, LayoutDashboard, ShieldCheck, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
+import ServiceIllustration from "@/components/ServiceIllustration";
 
 const BLUE_RGB = "43,111,212";
 
-const photo = (id: number) =>
-  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=900`;
-
-// Metadatos no traducibles (icono, slug, foto, destacado). El título y los
-// items salen del diccionario por índice (t.services.columns[i]).
+// Metadatos no traducibles (slug, destacado). El título y los items salen del
+// diccionario por índice (t.services.columns[i]); la ilustración custom se
+// resuelve por slug en <ServiceIllustration />.
 const columns = [
-  { icon: Network, slug: "networking", photo: photo(4682189) },
-  { icon: SquarePen, slug: "firma-biometrica", featured: true, photo: photo(9929279) },
-  { icon: LayoutDashboard, slug: "consultoria", photo: photo(577210) },
-  { icon: ShieldCheck, slug: "seguridad", photo: photo(1181244) },
+  { slug: "networking" },
+  { slug: "firma-biometrica", featured: true },
+  { slug: "consultoria" },
+  { slug: "seguridad" },
+  { slug: "software-ai" },
 ];
 
 export default function Services() {
   const t = useT();
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
-    const update = () => setIsMobile(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
 
   return (
     <section id="servicios" className="py-20 lg:py-28 relative overflow-hidden bg-gradient-to-b from-[#0A1424] to-[#07101D]">
@@ -38,9 +29,9 @@ export default function Services() {
       {/* Premium aurora background */}
       <div className="absolute inset-x-0 top-0 h-[520px] pointer-events-none"
         style={{ background: `radial-gradient(ellipse 60% 100% at 50% 0%, rgba(${BLUE_RGB},0.15) 0%, transparent 70%)` }} />
-      <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full pointer-events-none blur-2xl animate-float"
+      <div className="hidden sm:block absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full pointer-events-none blur-2xl animate-float"
         style={{ background: `radial-gradient(circle, rgba(80,140,240,0.10) 0%, transparent 70%)` }} />
-      <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] rounded-full pointer-events-none blur-2xl animate-float-slow"
+      <div className="hidden sm:block absolute -bottom-32 -left-32 w-[500px] h-[500px] rounded-full pointer-events-none blur-2xl animate-float-slow"
         style={{ background: `radial-gradient(circle, rgba(${BLUE_RGB},0.09) 0%, transparent 70%)` }} />
 
       <div className="relative z-10 max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-12">
@@ -64,127 +55,94 @@ export default function Services() {
           </motion.p>
         </div>
 
-        {/* Glass cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch">
+        {/* Bento — 3 arriba (tercios) + 2 abajo (mitades, más anchas). Cards compactas. */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-5">
           {columns.map((col, i) => {
-            const Icon = col.icon;
             const cd = t.services.columns[i];
+            const featured = !!col.featured;
+            const wide = i >= 3; // las 2 de abajo ocupan media fila cada una
             return (
               <motion.div
                 key={col.slug}
-                initial={{ opacity: 0, y: 22 }}
+                initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.15 }}
-                transition={{ duration: 0.45, delay: i * 0.09 }}
-                className="group relative h-full"
+                viewport={{ once: true, amount: 0.12 }}
+                transition={{ duration: 0.5, delay: (i % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                className={`group relative ${wide ? "lg:col-span-3" : "lg:col-span-2"}`}
               >
                 {/* Hover glow */}
                 <div
-                  className="absolute -inset-1.5 rounded-[26px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none blur-xl"
-                  style={{ background: `radial-gradient(circle at 50% 0%, rgba(${BLUE_RGB},0.28), transparent 70%)` }}
+                  className="absolute -inset-1.5 rounded-[28px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none blur-2xl"
+                  style={{ background: `radial-gradient(circle at 50% 0%, rgba(${BLUE_RGB},0.26), transparent 70%)` }}
                 />
 
-                {/* Whole card is a single link to its solution page */}
                 <Link
                   href={`/soluciones/${col.slug}`}
                   aria-label={`${t.services.viewSolution}: ${cd.title}`}
                   className="relative block h-full transition-transform duration-300 group-hover:-translate-y-1.5 transform-gpu"
                 >
-                {/* Card — clips (no transform), solid bg so the image fade meets the body seamlessly */}
-                <div
-                  className="relative h-full rounded-3xl overflow-hidden border flex flex-col"
-                  style={{
-                    background: "#0D1A2D",
-                    borderColor: col.featured ? `rgba(${BLUE_RGB},0.4)` : "rgba(255,255,255,0.09)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 30px rgba(0,0,0,0.3)",
-                  }}
-                >
-                  {/* Featured blue tint (over solid bg, fades out before the seam) */}
-                  {col.featured && (
-                    <div className="absolute inset-0 pointer-events-none z-[1]"
-                      style={{ background: `linear-gradient(160deg, rgba(${BLUE_RGB},0.14) 0%, transparent 38%)` }} />
-                  )}
-
-                  {/* Floating photo — a single masked image that fades to transparent into the card's
-                      solid bg. No wrapper box and no fade layer, so there is no edge to reveal. */}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={col.photo}
-                    alt={cd.title}
-                    draggable={false}
-                    className="absolute top-0 inset-x-0 h-44 w-full object-cover pointer-events-none z-[1] transition-transform duration-500 group-hover:scale-105"
+                  <div
+                    className="relative h-full rounded-[24px] overflow-hidden border flex flex-col transition-colors duration-300 group-hover:border-blue-500/40"
                     style={{
-                      maskImage: "linear-gradient(to bottom, #000 42%, transparent 92%)",
-                      WebkitMaskImage: "linear-gradient(to bottom, #000 42%, transparent 92%)",
+                      background: "#0D1A2D",
+                      borderColor: featured ? `rgba(${BLUE_RGB},0.45)` : "rgba(255,255,255,0.09)",
+                      boxShadow: featured
+                        ? `inset 0 1px 0 rgba(255,255,255,0.08), 0 18px 48px rgba(0,0,0,0.38), 0 0 0 1px rgba(${BLUE_RGB},0.15)`
+                        : "inset 0 1px 0 rgba(255,255,255,0.06), 0 10px 30px rgba(0,0,0,0.3)",
                     }}
-                  />
+                  >
+                    {/* Featured: tinte + glow superior */}
+                    {featured && (
+                      <>
+                        <div className="absolute inset-0 pointer-events-none z-[1]"
+                          style={{ background: `linear-gradient(160deg, rgba(${BLUE_RGB},0.15) 0%, transparent 44%)` }} />
+                        <div className="absolute -top-14 left-1/2 -translate-x-1/2 w-[320px] h-[180px] rounded-full pointer-events-none blur-3xl z-[1]"
+                          style={{ background: `radial-gradient(circle, rgba(${BLUE_RGB},0.18) 0%, transparent 70%)` }} />
+                      </>
+                    )}
 
-                  {/* Featured badge */}
-                  {col.featured && (
-                    <span
-                      className="absolute top-4 right-4 z-10 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full"
-                      style={{ background: `rgba(${BLUE_RGB},0.3)`, color: "#EAF2FE", border: `1px solid rgba(${BLUE_RGB},0.5)`, backdropFilter: "blur(4px)" }}
-                    >
-                      {t.services.featuredBadge}
-                    </span>
-                  )}
-
-                  {/* Content — flows over the card's continuous solid surface */}
-                  <div className="relative z-[2] pt-[116px] px-6 pb-6 flex-1 flex flex-col">
-                    {/* Icon chip */}
+                    {/* Ilustración custom (mini-panel de producto) */}
                     <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-105"
-                      style={{
-                        background: `rgba(${BLUE_RGB},0.15)`,
-                        border: `1px solid rgba(${BLUE_RGB},0.3)`,
-                        backdropFilter: "blur(8px)",
-                        boxShadow: "0 6px 20px rgba(0,0,0,0.35)",
-                      }}
+                      className="relative z-[2] h-40 flex items-center justify-center overflow-hidden"
+                      style={{ background: `linear-gradient(160deg, rgba(${BLUE_RGB},0.30) 0%, rgba(13,26,45,0) 78%)` }}
                     >
-                      <Icon size={22} strokeWidth={1.7} style={{ color: "#3B8EF0" }} />
+                      <div
+                        className="scale-[0.72] transition-transform duration-500 group-hover:scale-[0.78]"
+                        style={{ filter: "drop-shadow(0 16px 26px rgba(0,0,0,0.28))", "--seq-delay": `${i}s` } as CSSProperties}
+                      >
+                        <ServiceIllustration slug={col.slug} />
+                      </div>
                     </div>
 
-                    {/* Title */}
-                    <h3 className="w-fit text-white text-xl font-bold tracking-tight uppercase mb-4 group-hover:text-blue-200 transition-colors">
-                      {cd.title}
-                    </h3>
+                    {/* Badge Diferencial */}
+                    {featured && (
+                      <span
+                        className="absolute top-4 right-4 z-10 text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
+                        style={{ background: `rgba(${BLUE_RGB},0.32)`, color: "#EAF2FE", border: `1px solid rgba(${BLUE_RGB},0.55)`, backdropFilter: "blur(6px)" }}
+                      >
+                        {t.services.featuredBadge}
+                      </span>
+                    )}
 
-                    {/* Items */}
-                    <ul className="divide-y divide-white/[0.06] mb-5">
-                      {cd.items.map((item) => {
-                        const link = (
-                          <div className="flex items-center gap-2.5 py-2.5">
-                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors duration-200"
-                              style={{ background: `rgba(${BLUE_RGB},0.55)` }} />
-                            <span className="text-gray-400 text-[14px] leading-none transition-colors duration-200 group-hover:text-blue-100">
-                              {item}
-                            </span>
-                          </div>
-                        );
-                        // Staggered scroll reveal only on mobile; static on desktop.
-                        return isMobile ? (
-                          <motion.li
-                            key={item}
-                            initial={{ opacity: 0, y: 18 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, margin: "-45% 0px -45% 0px" }}
-                            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                          >
-                            {link}
-                          </motion.li>
-                        ) : (
-                          <li key={item}>{link}</li>
-                        );
-                      })}
-                    </ul>
-
-                    {/* Ver solución */}
-                    <span className="mt-auto inline-flex items-center gap-1.5 text-[13px] font-semibold text-blue-300 group-hover:text-white transition-colors">
-                      {t.services.viewSolution}
-                      <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
-                    </span>
+                    {/* Contenido — título + lista de servicios (2 columnas en las anchas) */}
+                    <div className="relative z-[2] px-6 pt-5 pb-6 flex-1 flex flex-col">
+                      <h3 className="text-white text-lg font-bold tracking-tight uppercase mb-3 group-hover:text-blue-200 transition-colors">
+                        {cd.title}
+                      </h3>
+                      <ul className="mb-5 grid grid-cols-2 gap-x-6 gap-y-3.5">
+                        {cd.items.map((item) => (
+                          <li key={item} className="flex items-center gap-2.5">
+                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: `rgba(${BLUE_RGB},0.6)` }} />
+                            <span className="text-gray-300 text-[14px] leading-tight group-hover:text-blue-100 transition-colors">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <span className="mt-auto inline-flex items-center gap-1.5 text-[13px] font-semibold text-blue-300 group-hover:text-white transition-colors">
+                        {t.services.viewSolution}
+                        <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
+                      </span>
+                    </div>
                   </div>
-                </div>
                 </Link>
               </motion.div>
             );

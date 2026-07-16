@@ -45,7 +45,7 @@ export function getLocalizedSolution(base: Solution, lang: Lang): Solution {
     intro: t.intro,
     painsTitle: t.painsTitle,
     pains: t.pains,
-    capabilities: base.capabilities.map((c, i) => t.capabilities[i] ?? c),
+    capabilities: base.capabilities.map((c, i) => ({ ...c, ...(t.capabilities[i] ?? {}) })),
     benefitsTitle: t.benefitsTitle,
     benefits: t.benefits,
     industries: t.industries ?? base.industries,

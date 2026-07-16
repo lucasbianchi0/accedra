@@ -2,7 +2,7 @@ import type { Dict } from "./es";
 
 export const pt: Dict = {
   nav: {
-    services: "Serviços",
+    services: "Soluções",
     partners: "Partners",
     about: "Sobre nós",
     contact: "Contato",
@@ -41,6 +41,7 @@ export const pt: Dict = {
     columns: [
       {
         title: "Networking",
+        desc: "Infraestrutura de rede robusta e de alta disponibilidade, do cabeamento à nuvem.",
         items: [
           "Switching & Routing",
           "Wireless",
@@ -52,6 +53,7 @@ export const pt: Dict = {
       },
       {
         title: "Assinatura Biométrica",
+        desc: "Assinatura eletrônica, biométrica e digital com validade legal e rastreabilidade total.",
         items: [
           "Transformação Digital",
           "Soluções de Factoring Digital",
@@ -63,6 +65,7 @@ export const pt: Dict = {
       },
       {
         title: "Consultoria",
+        desc: "O ecossistema Microsoft e análise que transformam seus dados em decisões.",
         items: [
           "Colaboração",
           "Power BI",
@@ -74,7 +77,20 @@ export const pt: Dict = {
       },
       {
         title: "Segurança",
+        desc: "Cibersegurança de nível corporativo em cada camada, com arquitetura Zero Trust.",
         items: ["Cisco", "Palo Alto", "Umbrella", "AMP", "Cloud Security"],
+      },
+      {
+        title: "Software & AI",
+        desc: "Software sob medida e inteligência artificial aplicada aos seus processos.",
+        items: [
+          "Desenvolvimento sob medida",
+          "Integrações & APIs",
+          "Modelos de IA / ML",
+          "Chatbots & Copilotos",
+          "Data & Analytics",
+          "Automação",
+        ],
       },
     ],
   },
@@ -224,6 +240,7 @@ export const pt: Dict = {
       "Segurança de TI",
       "Assinatura Biométrica",
       "Consultoria Microsoft",
+      "Software & AI",
     ],
     companyTitle: "Empresa",
     companyItems: ["Sobre a Accedra", "Partners", "Clientes", "Contato"],
@@ -234,6 +251,8 @@ export const pt: Dict = {
   // Chrome de las landings de soluciones (solo páginas base, no industria)
   solution: {
     ctaPrimary: "Solicitar assessoria",
+    ctaSeeSolution: "Ver soluções",
+    home: "Início",
     whatsapp: "WhatsApp",
     painsEyebrow: "O problema",
     painsFooter: "Se você se reconhece em alguma delas, podemos ajudar.",

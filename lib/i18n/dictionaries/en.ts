@@ -2,7 +2,7 @@ import type { Dict } from "./es";
 
 export const en: Dict = {
   nav: {
-    services: "Services",
+    services: "Solutions",
     partners: "Partners",
     about: "About",
     contact: "Contact",
@@ -41,6 +41,7 @@ export const en: Dict = {
     columns: [
       {
         title: "Networking",
+        desc: "Robust, high-availability network infrastructure — from cabling to the cloud.",
         items: [
           "Switching & Routing",
           "Wireless",
@@ -52,6 +53,7 @@ export const en: Dict = {
       },
       {
         title: "Biometric Signature",
+        desc: "Electronic, biometric and digital signature with legal validity and full traceability.",
         items: [
           "Digital Transformation",
           "Digital Factoring Solutions",
@@ -63,6 +65,7 @@ export const en: Dict = {
       },
       {
         title: "Consulting",
+        desc: "The Microsoft ecosystem and analytics that turn your data into decisions.",
         items: [
           "Collaboration",
           "Power BI",
@@ -74,7 +77,20 @@ export const en: Dict = {
       },
       {
         title: "Security",
+        desc: "Enterprise-grade cybersecurity at every layer, with Zero Trust architecture.",
         items: ["Cisco", "Palo Alto", "Umbrella", "AMP", "Cloud Security"],
+      },
+      {
+        title: "Software & AI",
+        desc: "Custom software and artificial intelligence applied to your processes.",
+        items: [
+          "Custom development",
+          "Integrations & APIs",
+          "AI / ML models",
+          "Chatbots & Copilots",
+          "Data & Analytics",
+          "Automation",
+        ],
       },
     ],
   },
@@ -224,6 +240,7 @@ export const en: Dict = {
       "IT Security",
       "Biometric Signature",
       "Microsoft Consulting",
+      "Software & AI",
     ],
     companyTitle: "Company",
     companyItems: ["About Accedra", "Partners", "Clients", "Contact"],
@@ -234,6 +251,8 @@ export const en: Dict = {
   // Chrome de las landings de soluciones (solo páginas base, no industria)
   solution: {
     ctaPrimary: "Request advice",
+    ctaSeeSolution: "View solutions",
+    home: "Home",
     whatsapp: "WhatsApp",
     painsEyebrow: "The problem",
     painsFooter: "If any of these sound familiar, we can help.",

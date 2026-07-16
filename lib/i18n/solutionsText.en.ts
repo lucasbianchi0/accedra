@@ -157,4 +157,43 @@ export const SOLUTIONS_EN: Record<string, SolutionText> = {
     metaDescription:
       "Enterprise-grade cybersecurity: next-generation firewalls, Zero Trust, Cisco Umbrella and AMP, endpoint and email protection.",
   },
+
+  "software-ai": {
+    name: "Software & AI",
+    eyebrow: "IT Solutions",
+    title: "Custom software and",
+    highlight: "artificial intelligence.",
+    subtitle:
+      "We build the software your operation needs and embed artificial intelligence into your processes — from idea to production, with a partner that gets involved.",
+    introTitle: "From manual process to intelligent product.",
+    intro:
+      "We design, develop and maintain custom software, and apply AI on your own data and processes. From a single integration to a complete product: we take you from strategy to production, with enterprise-grade quality standards.",
+    painsTitle: "Do any of these situations sound familiar?",
+    pains: [
+      "Your operation runs on spreadsheets and manual processes that don't scale.",
+      "The software you use doesn't fit how your company actually works.",
+      "You have data everywhere but you're not putting it to work with AI.",
+      "You want to adopt artificial intelligence and don't know where to start.",
+    ],
+    capabilities: [
+      { title: "Custom development", desc: "Web and mobile applications built to fit your operation, with scalable architecture and maintainable code." },
+      { title: "Integrations & APIs", desc: "We connect your systems, ERPs and external services with robust APIs and reliable data flows." },
+      { title: "AI / ML models", desc: "Machine learning and generative AI applied to your data to predict, classify and automate decisions." },
+      { title: "Chatbots & Copilots", desc: "AI assistants integrated into your channels and systems, trained on your company's knowledge." },
+      { title: "Data & Analytics", desc: "Data pipelines, dashboards and advanced analytics that turn scattered information into decisions." },
+      { title: "Process automation", desc: "We automate repetitive tasks with software and AI to free up time and reduce errors." },
+    ],
+    benefitsTitle: "Benefits",
+    benefits: [
+      "Software that adapts to your operation, not the other way around",
+      "AI applied to your data and real use cases",
+      "From idea to production with a single team",
+      "Your own code — documented and maintainable",
+      "Scalability and enterprise standards",
+      "Long-term partnership",
+    ],
+    metaTitle: "Custom Software & Artificial Intelligence · Accedra",
+    metaDescription:
+      "Custom software development and AI integration: applications, APIs, machine learning models, chatbots and process automation.",
+  },
 };

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Montserrat } from "next/font/google";
 import "./globals.css";
 import { LangProvider } from "@/lib/i18n/LangProvider";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,8 +28,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="es" className={`${inter.variable} ${montserrat.variable} scroll-smooth antialiased`}>
+    <html lang="es" className={`${inter.variable} ${montserrat.variable} antialiased`}>
       <body className="min-h-full flex flex-col">
+        <ScrollToTop />
         <LangProvider>{children}</LangProvider>
       </body>
     </html>

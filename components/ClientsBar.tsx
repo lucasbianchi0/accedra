@@ -3,7 +3,7 @@
 // scale ajusta el tamaño visual de logos cuadrados/emblema que, a igual altura,
 // se ven más chicos que un wordmark ancho.
 const clients = [
-  { name: "Andreani Logística",  logo: "/logos/andreani.svg",  scale: 1 },
+  { name: "Andreani Logística",  logo: "/logos/andreani.png",  scale: 1.15 },
   { name: "Finning",             logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/Finning.svg/250px-Finning.svg.png", scale: 1 },
   { name: "CNP Seguros",         logo: "/logos/cnp.png",       scale: 1.35 },
   { name: "Banco Provincia",     logo: "/logos/provincia.svg", scale: 1 },

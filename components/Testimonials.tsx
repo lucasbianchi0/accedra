@@ -28,7 +28,7 @@ export default function Testimonials() {
         }}
       />
       {/* Glows */}
-      <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[760px] h-[520px] rounded-full pointer-events-none blur-3xl"
+      <div className="hidden sm:block absolute -top-32 left-1/2 -translate-x-1/2 w-[760px] h-[520px] rounded-full pointer-events-none blur-3xl"
         style={{ background: `radial-gradient(circle, rgba(${BLUE_RGB},0.13) 0%, transparent 65%)` }} />
       {/* Top hairline */}
       <div className="absolute top-0 inset-x-0 h-px pointer-events-none"

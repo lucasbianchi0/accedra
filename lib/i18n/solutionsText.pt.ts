@@ -157,4 +157,43 @@ export const SOLUTIONS_PT: Record<string, SolutionText> = {
     metaDescription:
       "Cibersegurança de nível corporativo: firewalls de nova geração, Zero Trust, Cisco Umbrella e AMP, proteção de endpoints e e-mail.",
   },
+
+  "software-ai": {
+    name: "Software & AI",
+    eyebrow: "Soluções de TI",
+    title: "Software sob medida e",
+    highlight: "inteligência artificial.",
+    subtitle:
+      "Desenvolvemos o software que sua operação precisa e integramos inteligência artificial aos seus processos — da ideia ao produto em produção, com um parceiro que se envolve.",
+    introTitle: "Do processo manual ao produto inteligente.",
+    intro:
+      "Projetamos, desenvolvemos e mantemos software sob medida, e aplicamos IA sobre seus próprios dados e processos. De uma integração pontual a um produto completo: acompanhamos da estratégia à entrada em produção, com padrões de qualidade enterprise.",
+    painsTitle: "Alguma dessas situações soa familiar?",
+    pains: [
+      "Sua operação depende de planilhas e processos manuais que não escalam.",
+      "O software que você usa não se adapta a como sua empresa realmente trabalha.",
+      "Você tem dados por todos os lados, mas não os aproveita com IA.",
+      "Você quer incorporar inteligência artificial e não sabe por onde começar.",
+    ],
+    capabilities: [
+      { title: "Desenvolvimento sob medida", desc: "Aplicações web e mobile feitas sob medida para sua operação, com arquitetura escalável e código sustentável." },
+      { title: "Integrações & APIs", desc: "Conectamos seus sistemas, ERPs e serviços externos com APIs robustas e fluxos de dados confiáveis." },
+      { title: "Modelos de IA / ML", desc: "Machine learning e IA generativa aplicados aos seus dados para prever, classificar e automatizar decisões." },
+      { title: "Chatbots & Copilotos", desc: "Assistentes com IA integrados aos seus canais e sistemas, treinados com o conhecimento da sua empresa." },
+      { title: "Data & Analytics", desc: "Pipelines de dados, dashboards e análise avançada para transformar informação dispersa em decisões." },
+      { title: "Automação de processos", desc: "Automatizamos tarefas repetitivas com software e IA para liberar tempo e reduzir erros." },
+    ],
+    benefitsTitle: "Benefícios",
+    benefits: [
+      "Software que se adapta à sua operação, não o contrário",
+      "IA aplicada aos seus dados e casos reais",
+      "Da ideia à produção com uma única equipe",
+      "Código próprio, documentado e sustentável",
+      "Escalabilidade e padrões enterprise",
+      "Acompanhamento de longo prazo",
+    ],
+    metaTitle: "Software sob medida & Inteligência Artificial · Accedra",
+    metaDescription:
+      "Desenvolvimento de software sob medida e integração de IA: aplicações, APIs, modelos de machine learning, chatbots e automação de processos.",
+  },
 };

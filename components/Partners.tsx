@@ -4,25 +4,7 @@ import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
-
-const partners = [
-  { name: "Cisco",              logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Cisco_logo_blue_2016.svg/250px-Cisco_logo_blue_2016.svg.png",                                              filter: "brightness(1.1) saturate(1.1)", blurb: "Líder mundial en redes empresariales: switching, routing y conectividad de alta disponibilidad." },
-  { name: "Microsoft",          logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Microsoft_logo_%282012%29.svg/250px-Microsoft_logo_%282012%29.svg.png",                                    filter: "brightness(1.1) saturate(1.1)", blurb: "Nube Azure, identidad y productividad corporativa con gobernanza y seguridad integradas." },
-  { name: "Palo Alto Networks", logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Palo-Alto-Networks-logo.svg?width=240",     filter: "brightness(1.1) saturate(1.1)", blurb: "Firewalls de nueva generación y seguridad Zero Trust para proteger toda la red." },
-  { name: "Nutanix",            logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Nutanix-Logo-Charcoal-Gray-Digital.svg/250px-Nutanix-Logo-Charcoal-Gray-Digital.svg.png", filter: "brightness(0) invert(1)", blurb: "Infraestructura hiperconvergente y nube híbrida que simplifica el datacenter." },
-  { name: "Wacom",              logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Wacom_logo.svg/250px-Wacom_logo.svg.png",                                                 filter: "brightness(0) invert(1)", blurb: "Tabletas de firma y digitalización biométrica para trámites 100% digitales." },
-  { name: "Pure Storage",       logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Pure-storage-vector-logo.svg?width=240",     filter: "brightness(0) invert(1)", blurb: "Almacenamiento all-flash de alto rendimiento con eficiencia y simplicidad de gestión." },
-  { name: "Vicarius",           logo: "https://www.google.com/s2/favicons?domain=vicarius.io&sz=128",                                    filter: "brightness(1.1) saturate(1.1)", blurb: "Gestión y remediación automática de vulnerabilidades en tiempo real." },
-  { name: "Verge.IO",           logo: "https://www.google.com/s2/favicons?domain=verge.io&sz=128",                                       filter: "brightness(1.1) saturate(1.1)", blurb: "Virtualización e infraestructura definida por software en una sola plataforma." },
-  { name: "APC by Schneider",   logo: "https://commons.wikimedia.org/wiki/Special:FilePath/APC%20by%20Schneider%20Electric.png?width=240", filter: "brightness(1.1) saturate(1.1)", blurb: "Energía ininterrumpida (UPS) y protección eléctrica para infraestructura crítica." },
-  { name: "HPE Aruba",          logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Hpe-aruba-networking-logo.svg?width=240",     filter: "brightness(1.1) saturate(1.1)", blurb: "Redes Wi-Fi empresariales y acceso seguro con inteligencia en el borde." },
-  { name: "CommScope",          logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Commscope-logo.png?width=240",                filter: "brightness(0) invert(1)", blurb: "Cableado estructurado e infraestructura de conectividad de misión crítica." },
-  { name: "Dahua",              logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Dahua%20Technology%20logo.svg?width=240",     filter: "brightness(1.1) saturate(1.1)", blurb: "Videovigilancia y soluciones de seguridad electrónica basadas en IA." },
-  { name: "Hikvision",          logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Hikvision%20logo.svg?width=240",             filter: "brightness(1.1) saturate(1.1)", blurb: "Cámaras IP y sistemas de videovigilancia inteligente para todo tipo de entorno." },
-  { name: "TP-Link",            logo: "https://www.google.com/s2/favicons?domain=tp-link.com&sz=128",                                    filter: "brightness(1.1) saturate(1.1)", blurb: "Networking y conectividad Wi-Fi confiable para empresas y sucursales." },
-  { name: "Namirial",           logo: "https://www.google.com/s2/favicons?domain=namirial.com&sz=128",                                   filter: "brightness(1.1) saturate(1.1)", blurb: "Firma electrónica y digitalización de procesos con validez legal." },
-  { name: "Check Point",        logo: "https://commons.wikimedia.org/wiki/Special:FilePath/Check%20Point%20logo%202022.svg?width=240",  filter: "brightness(1.1) saturate(1.1)", blurb: "Ciberseguridad y protección perimetral de red con prevención de amenazas avanzada." },
-];
+import { partners } from "./partnersData";
 
 const canHover = () => window.matchMedia("(hover: hover)").matches;
 
@@ -102,43 +84,61 @@ export default function Partners() {
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true, amount: 0.25 }}
               transition={{ duration: 0.5, delay: (i % 4) * 0.07, ease: [0.22, 1, 0.36, 1] }}
-              className="flip-card relative z-10 h-[132px] md:h-[168px] cursor-default"
+              className="relative z-10 h-full"
             >
-              <div className="flip-inner">
-                {/* Front — logo */}
-                <div
-                  className="flip-face flip-front border border-white/[0.08]"
-                  style={{
-                    backgroundColor: "rgba(255,255,255,0.04)",
-                    backdropFilter: "blur(12px)",
-                    WebkitBackdropFilter: "blur(12px)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
-                  }}
-                >
-                  <div className="h-14 flex items-center justify-center w-full px-5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={partner.logo}
-                      alt={partner.name}
-                      className="max-h-10 max-w-[130px] w-auto h-auto object-contain"
-                      style={{ filter: partner.filter }}
-                    />
+              {/* Desktop: flip card (logo → descripción en hover) */}
+              <div className="hidden md:block flip-card h-[168px] cursor-default">
+                <div className="flip-inner">
+                  <div
+                    className="flip-face flip-front border border-white/[0.08]"
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.04)",
+                      backdropFilter: "blur(12px)",
+                      WebkitBackdropFilter: "blur(12px)",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
+                    }}
+                  >
+                    <div className="h-14 flex items-center justify-center w-full px-5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={partner.logo}
+                        alt={partner.name}
+                        className="max-h-10 max-w-[130px] w-auto h-auto object-contain"
+                        style={{ filter: partner.filter }}
+                      />
+                    </div>
+                  </div>
+                  <div
+                    className="flip-face flip-back flex-col text-center px-5 md:px-6 border border-blue-500/30"
+                    style={{
+                      background: "linear-gradient(160deg, rgba(43,111,212,0.18), rgba(13,26,45,0.92))",
+                      backdropFilter: "blur(12px)",
+                      WebkitBackdropFilter: "blur(12px)",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1), 0 20px 60px rgba(43,111,212,0.2)",
+                    }}
+                  >
+                    <p className="text-sm font-semibold text-white mb-1.5">{partner.name}</p>
+                    <p className="text-[13px] text-gray-300 leading-relaxed">{t.partners.blurbs[i]}</p>
                   </div>
                 </div>
+              </div>
 
-                {/* Back — descripción (solo desktop, en hover) */}
-                <div
-                  className="flip-face flip-back flex-col text-center px-5 md:px-6 border border-blue-500/30"
-                  style={{
-                    background: "linear-gradient(160deg, rgba(43,111,212,0.18), rgba(13,26,45,0.92))",
-                    backdropFilter: "blur(12px)",
-                    WebkitBackdropFilter: "blur(12px)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.1), 0 20px 60px rgba(43,111,212,0.2)",
-                  }}
-                >
-                  <p className="text-sm font-semibold text-white mb-1.5">{partner.name}</p>
-                  <p className="text-[13px] text-gray-300 leading-relaxed">{t.partners.blurbs[i]}</p>
+              {/* Mobile: card estático con logo + descripción SIEMPRE visible */}
+              <div
+                className="md:hidden h-full rounded-2xl border border-white/[0.08] p-4 flex flex-col items-center text-center"
+                style={{ backgroundColor: "rgba(255,255,255,0.04)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)" }}
+              >
+                <div className="h-9 flex items-center justify-center mb-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={partner.logo}
+                    alt={partner.name}
+                    className="max-h-8 max-w-[110px] w-auto h-auto object-contain"
+                    style={{ filter: partner.filter }}
+                  />
                 </div>
+                <p className="text-[13px] font-semibold text-white mb-1">{partner.name}</p>
+                <p className="text-[12px] text-gray-400 leading-relaxed">{t.partners.blurbs[i]}</p>
               </div>
             </motion.div>
           ))}

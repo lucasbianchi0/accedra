@@ -74,11 +74,11 @@ export default function Contact() {
       <div className="absolute inset-0 bg-gradient-to-b from-[#0D1A2D] via-[#0A1526] to-[#07101D]" />
       {/* Soft glows */}
       <div
-        className="absolute top-0 right-0 w-[720px] h-[720px] pointer-events-none"
+        className="hidden sm:block absolute top-0 right-0 w-[720px] h-[720px] pointer-events-none"
         style={{ background: `radial-gradient(circle at top right, rgba(${BLUE_RGB},0.14) 0%, transparent 58%)` }}
       />
       <div
-        className="absolute -bottom-20 -left-20 w-[520px] h-[520px] pointer-events-none animate-float-slow"
+        className="hidden sm:block absolute -bottom-20 -left-20 w-[520px] h-[520px] pointer-events-none animate-float-slow"
         style={{ background: `radial-gradient(circle, rgba(${BLUE_RGB},0.08) 0%, transparent 70%)` }}
       />
 
@@ -233,8 +233,8 @@ export default function Contact() {
                         disabled={loading}
                         className="w-full flex items-center justify-center gap-3 py-4 rounded-xl text-white font-semibold text-[15px] transition-all duration-200 disabled:opacity-60 hover:brightness-110 active:scale-[0.99]"
                         style={{
-                          background: `linear-gradient(135deg, #4f8ef7 0%, ${BLUE} 50%, #1a4fa0 100%)`,
-                          boxShadow: `0 8px 32px rgba(${BLUE_RGB},0.4), inset 0 1px 0 rgba(255,255,255,0.15)`,
+                          background: BLUE,
+                          boxShadow: `0 8px 28px rgba(${BLUE_RGB},0.35)`,
                         }}
                       >
                         {loading

@@ -8,8 +8,12 @@ export default function WhatsAppButton() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 1800);
-    return () => clearTimeout(t);
+    // Aparece recién al scrollear más allá del hero, para no chocar con el
+    // botón de WhatsApp de la portada.
+    const onScroll = () => setVisible(window.scrollY > 560);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   return (
@@ -25,7 +29,7 @@ export default function WhatsAppButton() {
           transition={{ type: "spring", damping: 16, stiffness: 200 }}
           whileHover={{ scale: 1.06 }}
           whileTap={{ scale: 0.94 }}
-          className="fixed bottom-6 right-5 z-50 flex items-center gap-2.5 pl-4 pr-5 py-3 rounded-full text-white font-semibold text-sm select-none"
+          className="hidden md:flex fixed bottom-6 right-5 z-50 items-center gap-2.5 pl-4 pr-5 py-3 rounded-full text-white font-semibold text-sm select-none"
           style={{
             background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
             boxShadow: "0 8px 32px rgba(37,211,102,0.4), 0 2px 10px rgba(0,0,0,0.25)",
