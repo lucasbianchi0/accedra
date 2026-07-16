@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowLeft, ArrowUpRight, Building2 } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
+import Link from "next/link";
 import { HOME_CASES } from "./homeCases";
-import CaseModal from "./CaseModal";
 
 function LinkedInIcon({ className }: { className?: string }) {
   return (
@@ -23,16 +23,19 @@ export default function WhyUs() {
   const t = useT();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const [openCase, setOpenCase] = useState<number | null>(null);
+  const dragged = useRef(false);
   const len = HOME_CASES.length;
 
   const go = useCallback((next: number) => setIndex((next + len) % len), [len]);
 
   useEffect(() => {
-    if (paused || openCase !== null) return;
+    if (paused) return;
     const id = setInterval(() => setIndex((i) => (i + 1) % len), AUTO_MS);
     return () => clearInterval(id);
-  }, [paused, openCase, len]);
+  }, [paused, len]);
+
+  // Sin casos reales: ocultamos toda la sección hasta que haya.
+  if (len === 0) return null;
 
   const c = HOME_CASES[index];
 
@@ -83,12 +86,18 @@ export default function WhyUs() {
               className="relative rounded-3xl overflow-hidden h-[440px] sm:h-[480px] cursor-grab active:cursor-grabbing touch-pan-y"
               style={{ border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 40px 90px rgba(0,0,0,0.45)" }}
               drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.18}
-              onDragStart={() => setPaused(true)}
+              onDragStart={() => { setPaused(true); dragged.current = false; }}
               onDragEnd={(_, info) => {
+                dragged.current = Math.abs(info.offset.x) > 5;
                 if (info.offset.x < -60) go(index + 1);
                 else if (info.offset.x > 60) go(index - 1);
               }}
             >
+              {/* Toda la card es clickeable → detalle del caso (los botones de
+                  flecha/dots quedan por encima con z-10) */}
+              <Link href={`/casos/home/${index}`} aria-label={`Ver caso: ${c.title}`}
+                onClick={(e) => { if (dragged.current) { e.preventDefault(); dragged.current = false; } }}
+                className="absolute inset-0 z-[5]" />
               <AnimatePresence>
                 <motion.div key={index} className="absolute inset-0"
                   initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
@@ -106,11 +115,11 @@ export default function WhyUs() {
                     </span>
                     <h3 className="text-white text-2xl sm:text-[26px] font-bold leading-tight mb-2.5 max-w-lg">{c.title}</h3>
                     <p className="text-gray-300 text-[14px] leading-relaxed max-w-md mb-4">{c.desc}</p>
-                    <button type="button" onClick={() => setOpenCase(index)}
-                      className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-blue-300 hover:text-white transition-colors">
+                    <Link href={`/casos/home/${index}`}
+                      className="group/vc inline-flex items-center gap-1.5 text-[13px] font-semibold text-blue-300 hover:text-white transition-colors">
                       Ver caso completo
-                      <ArrowUpRight size={14} className="transition-transform group-hover:translate-x-0.5" />
-                    </button>
+                      <ArrowUpRight size={14} className="transition-transform group-hover/vc:translate-x-0.5 group-hover/vc:-translate-y-0.5" />
+                    </Link>
                   </div>
                 </motion.div>
               </AnimatePresence>
@@ -152,13 +161,6 @@ export default function WhyUs() {
         </div>
       </div>
 
-      {/* Modal editorial (mismo que en las páginas de solución) */}
-      <CaseModal
-        items={HOME_CASES.map((hc) => ({ image: hc.image, tag: hc.tag, title: hc.title, body: hc.body }))}
-        open={openCase}
-        onClose={() => setOpenCase(null)}
-        onOpenChange={setOpenCase}
-      />
     </section>
   );
 }

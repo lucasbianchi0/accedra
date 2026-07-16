@@ -61,7 +61,7 @@ export default function Partners() {
         {/* Spotlight glass grid */}
         <div
           ref={gridRef}
-          className="relative grid grid-cols-2 lg:grid-cols-4 gap-4"
+          className="relative"
           onMouseMove={handleMouseMove}
           onMouseEnter={() => setActive(true)}
           onMouseLeave={() => setActive(false)}
@@ -77,6 +77,8 @@ export default function Partners() {
             }}
           />
 
+          {/* Grid — en mobile muestra 8 logos (4 filas); el resto se oculta */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {partners.map((partner, i) => (
             <motion.div
               key={i}
@@ -84,7 +86,7 @@ export default function Partners() {
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
               viewport={{ once: true, amount: 0.25 }}
               transition={{ duration: 0.5, delay: (i % 4) * 0.07, ease: [0.22, 1, 0.36, 1] }}
-              className="relative z-10 h-full"
+              className={`relative z-10 h-full ${i >= 8 ? "max-md:hidden" : ""}`}
             >
               {/* Desktop: flip card (logo → descripción en hover) */}
               <div className="hidden md:block flip-card h-[168px] cursor-default">
@@ -123,25 +125,36 @@ export default function Partners() {
                 </div>
               </div>
 
-              {/* Mobile: card estático con logo + descripción SIEMPRE visible */}
+              {/* Mobile: sólo el logo */}
               <div
-                className="md:hidden h-full rounded-2xl border border-white/[0.08] p-4 flex flex-col items-center text-center"
+                className="md:hidden h-[84px] rounded-2xl border border-white/[0.08] px-4 flex items-center justify-center"
                 style={{ backgroundColor: "rgba(255,255,255,0.04)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)" }}
               >
-                <div className="h-9 flex items-center justify-center mb-3">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={partner.logo}
-                    alt={partner.name}
-                    className="max-h-8 max-w-[110px] w-auto h-auto object-contain"
-                    style={{ filter: partner.filter }}
-                  />
-                </div>
-                <p className="text-[13px] font-semibold text-white mb-1">{partner.name}</p>
-                <p className="text-[12px] text-gray-400 leading-relaxed">{t.partners.blurbs[i]}</p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={partner.logo}
+                  alt={partner.name}
+                  className="max-h-8 max-w-[120px] w-auto h-auto object-contain"
+                  style={{ filter: partner.filter }}
+                />
               </div>
             </motion.div>
           ))}
+          </div>
+
+          {/* Mobile: la última fila se disuelve de a poco hacia el mensaje */}
+          <div
+            className="md:hidden relative z-20 -mt-28 pt-28 pb-2 flex items-end justify-center pointer-events-none"
+            style={{ background: "linear-gradient(to bottom, transparent 0%, rgba(7,16,29,0.92) 52%, #07101D 66%)" }}
+          >
+            <div
+              className="pill-premium pointer-events-auto inline-flex items-center gap-2.5 pl-3.5 pr-4 py-2.5 rounded-full border border-blue-500/30"
+              style={{ background: "linear-gradient(135deg, #17335A, #0C1A31)", boxShadow: "0 14px 34px rgba(43,111,212,0.28)" }}
+            >
+              <ShieldCheck size={15} className="text-blue-400 flex-shrink-0 relative z-10" />
+              <span className="relative z-10 text-white text-[13.5px] font-semibold">{t.partners.mobileMore}</span>
+            </div>
+          </div>
         </div>
 
         <motion.div
@@ -149,7 +162,7 @@ export default function Partners() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
-          className="mt-12 flex justify-center"
+          className="mt-12 hidden md:flex justify-center"
         >
           <div
             className="pill-premium inline-flex items-center gap-2.5 pl-3.5 pr-4 py-2 rounded-full border border-blue-500/20"

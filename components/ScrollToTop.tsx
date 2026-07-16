@@ -3,19 +3,35 @@
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
-// Al cambiar de ruta, salta al tope SIN animación, aunque el <html> tenga
-// scroll-behavior: smooth (que se usa para los anchors del menú). Mantiene el
-// modo "auto" durante toda la transición para ganarle al scroll interno de Next.
+// Al cambiar de ruta salta al tope SIN animación. EXCEPCIÓN: si la URL trae un
+// ancla (#contacto, #servicios, …) scrollea a ese elemento en vez del tope —
+// con reintentos por si el layout todavía no tomó su altura final (imágenes/video).
 export default function ScrollToTop() {
   const pathname = usePathname();
 
   useEffect(() => {
+    const hash = window.location.hash;
+
+    if (hash) {
+      const jump = () => {
+        const el = document.querySelector(hash);
+        if (el) el.scrollIntoView({ behavior: "auto", block: "start" });
+      };
+      jump();
+      const raf = requestAnimationFrame(jump);
+      const t1 = setTimeout(jump, 120);
+      const t2 = setTimeout(jump, 400); // tras cargar imágenes/video
+      return () => {
+        cancelAnimationFrame(raf);
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+
     const html = document.documentElement;
     html.style.scrollBehavior = "auto";
     window.scrollTo(0, 0);
-    // Reintento por si el layout todavía no tomó la altura final.
     const raf = requestAnimationFrame(() => window.scrollTo(0, 0));
-    // Recién restauramos el smooth (para los anchors) tras la transición.
     const timer = setTimeout(() => {
       html.style.scrollBehavior = "";
     }, 250);

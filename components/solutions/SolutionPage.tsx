@@ -180,6 +180,36 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
               {data.brands.map((key) => {
                 const b = TECH_LOGOS[key];
                 if (!b) return null;
+                // Isotipos de color (Power BI, Azure, SharePoint, Power Automate):
+                // el logo a color sobre un chip claro + el nombre, para que se
+                // reconozcan (blanquearlos los volvía manchas grises ilegibles).
+                if (b.color) {
+                  return (
+                    <div key={key} className="flex items-center gap-2.5 opacity-85 hover:opacity-100 transition-opacity duration-200">
+                      {b.logo && (
+                        <span className="inline-flex items-center justify-center rounded-lg bg-white p-1.5 shadow-[0_4px_14px_rgba(0,0,0,0.25)]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={b.logo} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
+                        </span>
+                      )}
+                      <span className="text-white text-[15px] sm:text-base font-medium whitespace-nowrap">{b.name}</span>
+                    </div>
+                  );
+                }
+                // Isotipos monocromos con nombre al lado.
+                if (b.showName) {
+                  return (
+                    <div key={key} className="flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity duration-200">
+                      {b.logo && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={b.logo} alt="" aria-hidden="true"
+                          className="h-6 sm:h-7 w-auto max-w-[120px] object-contain"
+                          style={{ filter: "brightness(0) invert(1)" }} />
+                      )}
+                      <span className="text-white text-[15px] sm:text-base font-medium whitespace-nowrap">{b.name}</span>
+                    </div>
+                  );
+                }
                 return (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img key={key} src={b.logo} alt={b.name} title={b.name}
@@ -199,7 +229,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
       <ProcessSection />
 
       {/* ── Casos de éxito (solo páginas de solución) ── */}
-      {!industry && <CasesSection cases={data.cases} />}
+      {!industry && <CasesSection cases={data.cases} slug={slug} />}
 
 
       {/* ── Form de contacto (igual que el home) ── */}

@@ -5,7 +5,11 @@ const wiki = (file: string, width = 220) =>
   `https://commons.wikimedia.org/wiki/Special:FilePath/${file}?width=${width}`;
 const si = (slug: string) => `https://cdn.simpleicons.org/${slug}`;
 
-export type TechLogo = { name: string; logo: string };
+// showName: para isotipos sin texto (ej. iconos de Power BI/Azure/SharePoint/
+// Power Automate) mostramos el nombre al lado, así se reconocen.
+// color: isotipos que solo se reconocen a color (ej. Power BI amarillo, Azure
+// azul). Se muestran a color sobre un chip claro en vez de blanqueados.
+export type TechLogo = { name: string; logo: string; showName?: boolean; color?: boolean };
 
 export const TECH_LOGOS: Record<string, TechLogo> = {
   // Networking
@@ -19,6 +23,12 @@ export const TECH_LOGOS: Record<string, TechLogo> = {
   APC: { name: "APC by Schneider", logo: wiki("APC%20by%20Schneider%20Electric.png") },
   Vertiv: { name: "Vertiv", logo: wiki("Vertiv%20logo.svg") },
   SonicWall: { name: "SonicWall", logo: wiki("SonicWall%20logo.svg") },
+  // Cableado estructurado (líneas de producto → mostramos el nombre)
+  "CommScope NetConnect": { name: "NetConnect", logo: wiki("Commscope-logo.png"), showName: true },
+  "CommScope Systimax": { name: "SYSTIMAX", logo: wiki("Commscope-logo.png"), showName: true },
+  Furukawa: { name: "Furukawa", logo: "", showName: true },
+  Siemon: { name: "Siemon", logo: "", showName: true },
+  "Schneider Electric": { name: "Schneider Electric", logo: wiki("Schneider%20Electric%202007.svg") },
 
   // Firma
   Wacom: { name: "Wacom", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Wacom_logo.svg/250px-Wacom_logo.svg.png" },
@@ -31,11 +41,11 @@ export const TECH_LOGOS: Record<string, TechLogo> = {
 
   // Consultoría Microsoft
   Microsoft: { name: "Microsoft", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Microsoft_logo_%282012%29.svg/250px-Microsoft_logo_%282012%29.svg.png" },
-  "Power BI": { name: "Power BI", logo: wiki("New%20Power%20BI%20Logo.svg", 120) },
-  Azure: { name: "Microsoft Azure", logo: wiki("Microsoft%20azure-icon.svg", 120) },
+  "Power BI": { name: "Power BI", logo: wiki("New%20Power%20BI%20Logo.svg", 120), showName: true, color: true },
+  Azure: { name: "Azure", logo: wiki("Microsoft%20azure-icon.svg", 120), showName: true, color: true },
   "Dynamics 365": { name: "Dynamics 365", logo: wiki("Microsoft%20Dynamics%20365%20Logo%20(2021%E2%80%93present).svg", 200) },
-  SharePoint: { name: "SharePoint", logo: wiki("Microsoft%20Office%20SharePoint%20(2025%E2%80%93present).svg", 120) },
-  "Power Automate": { name: "Power Automate", logo: wiki("Microsoft%20Power%20Automate.svg", 120) },
+  SharePoint: { name: "SharePoint", logo: wiki("Microsoft%20Office%20SharePoint%20(2025%E2%80%93present).svg", 120), showName: true, color: true },
+  "Power Automate": { name: "Power Automate", logo: wiki("Microsoft%20Power%20Automate.svg", 120), showName: true, color: true },
 
   // Software & AI (se muestran en blanco monocromo en la portada)
   OpenAI: { name: "OpenAI", logo: wiki("OpenAI%20Logo.svg", 200) },

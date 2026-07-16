@@ -4,7 +4,7 @@ export const en: Dict = {
   nav: {
     services: "Solutions",
     partners: "Partners",
-    about: "About",
+    about: "Success stories",
     contact: "Contact",
     cta: "Talk to an expert",
     followLinkedin: "Follow us on LinkedIn",
@@ -30,14 +30,15 @@ export const en: Dict = {
   },
 
   services: {
-    eyebrow: "What we do",
-    title: "End-to-end IT solutions",
+    eyebrow: "Our solutions",
+    title: "All your IT, from a single partner",
     subtitle:
-      "From cabling to the cloud, we cover every layer of your infrastructure.",
+      "From the network to the cloud, digital signature, data and AI: we cover every layer so your operations never stop.",
     featuredBadge: "Our edge",
     viewSolution: "View solution",
     ctaText: "Not sure where to start?",
     ctaButton: "Request an assessment",
+    ctaTrust: "Free and no commitment · we reply within 24 h",
     columns: [
       {
         title: "Networking",
@@ -55,7 +56,6 @@ export const en: Dict = {
         title: "Biometric Signature",
         desc: "Electronic, biometric and digital signature with legal validity and full traceability.",
         items: [
-          "Digital Transformation",
           "Digital Factoring Solutions",
           "Biometric Digital Signature",
           "eSignAnyWhere",
@@ -101,6 +101,8 @@ export const en: Dict = {
     subtitle:
       "Certified partners and authorized distributors of the leading brands in the IT market.",
     pill: "Certified partner and authorized distributor of every manufacturer",
+    mobileMore: "+20 certified partners",
+    mobileMoreSub: "There's more. But we'll stop here.",
     // Alineado al orden del array `partners` en Partners.tsx
     blurbs: [
       "World leader in enterprise networking: switching, routing and high-availability connectivity.",

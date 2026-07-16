@@ -4,7 +4,7 @@ export const es = {
   nav: {
     services: "Soluciones",
     partners: "Partners",
-    about: "Nosotros",
+    about: "Casos de éxito",
     contact: "Contacto",
     cta: "Hablar con un experto",
     followLinkedin: "Seguinos en LinkedIn",
@@ -30,14 +30,15 @@ export const es = {
   },
 
   services: {
-    eyebrow: "Lo que hacemos",
-    title: "Soluciones IT end-to-end",
+    eyebrow: "Nuestras soluciones",
+    title: "Todo tu IT, de una sola mano",
     subtitle:
-      "Desde el cableado hasta la nube, cubrimos cada capa de tu infraestructura.",
+      "De la red a la nube, la firma digital, los datos y la IA: resolvemos cada capa para que tu operación no se detenga.",
     featuredBadge: "Diferencial",
     viewSolution: "Ver solución",
     ctaText: "¿No sabés por dónde empezar?",
     ctaButton: "Solicitar un diagnóstico",
+    ctaTrust: "Gratuito y sin compromiso · te respondemos en 24 h",
     columns: [
       {
         title: "Networking",
@@ -55,7 +56,6 @@ export const es = {
         title: "Firma Biométrica",
         desc: "Firma electrónica, biométrica y digital con validez legal y trazabilidad total.",
         items: [
-          "Transformación digital",
           "Factoring digital",
           "Firma biométrica",
           "eSignAnywhere",
@@ -101,6 +101,8 @@ export const es = {
     subtitle:
       "Partners certificados y distribuidores autorizados de las marcas líderes del mercado IT.",
     pill: "Partner certificado y distribuidor autorizado de cada fabricante",
+    mobileMore: "+20 partners certificados",
+    mobileMoreSub: "Hay más. Pero lo dejamos acá.",
     // Alineado al orden del array `partners` en Partners.tsx
     blurbs: [
       "Líder mundial en redes empresariales: switching, routing y conectividad de alta disponibilidad.",

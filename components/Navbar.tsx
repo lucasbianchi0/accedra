@@ -39,7 +39,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [solOpen, setSolOpen] = useState(false); // desktop dropdown
   const [solExpand, setSolExpand] = useState(false); // mobile accordion
-  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const solRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -52,13 +52,15 @@ export default function Navbar() {
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  const openSol = () => {
-    if (closeTimer.current) clearTimeout(closeTimer.current);
-    setSolOpen(true);
-  };
-  const closeSol = () => {
-    closeTimer.current = setTimeout(() => setSolOpen(false), 120);
-  };
+  // Cierra el dropdown al clickear fuera (abre solo con click, no hover).
+  useEffect(() => {
+    if (!solOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (solRef.current && !solRef.current.contains(e.target as Node)) setSolOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [solOpen]);
 
   const solutionPanel = (
     <div
@@ -124,7 +126,7 @@ export default function Navbar() {
           {/* Desktop right */}
           <div className="hidden md:flex items-center gap-10">
             {/* Soluciones dropdown */}
-            <div className="relative" onMouseEnter={openSol} onMouseLeave={closeSol}>
+            <div ref={solRef} className="relative">
               <button
                 onClick={() => setSolOpen((v) => !v)}
                 onKeyDown={(e) => e.key === "Escape" && setSolOpen(false)}
@@ -163,13 +165,6 @@ export default function Navbar() {
               </a>
             ))}
             <div className="w-px h-5 bg-white/15" />
-            <a
-              href="tel:+541153659887"
-              className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
-            >
-              <Phone size={13} />
-              <span>(+54 11) 5365-9887</span>
-            </a>
             <LangSwitcher variant="desktop" />
             <a
               href="/#contacto"

@@ -24,6 +24,7 @@ export type Case = {
   solution: string;
   result: string;
   body?: string[]; // relato editorial (párrafos) para el modal
+  image?: string; // foto propia; si no, se usa una por industria
 };
 
 // Contenido a medida por industria (opcional). Lo que no se define acá cae
@@ -84,20 +85,19 @@ export const SOLUTIONS: Record<string, Solution> = {
       "Dependés de varios proveedores y ninguno se hace responsable de punta a punta.",
     ],
     capabilities: [
-      { icon: Cable, title: "Cableado estructurado", desc: "Integración certificada de voz, datos, video, seguridad y domótica sobre una infraestructura ordenada y lista para escalar." },
-      { icon: Waypoints, title: "Switching & Routing", desc: "Conmutación y ruteo Cisco / Meraki para conectar cada dispositivo con performance y baja latencia." },
-      { icon: Wifi, title: "Wireless corporativo", desc: "Wi-Fi de alta densidad con acceso seguro y cobertura total en toda la organización." },
-      { icon: Phone, title: "Telefonía IP · VoIP", desc: "Telefonía IP integrada que unifica las comunicaciones de tu empresa en una sola plataforma." },
-      { icon: ShieldCheck, title: "Seguridad de red", desc: "Protección perimetral y segmentación contra amenazas y ataques cifrados." },
-      { icon: Server, title: "Contingencia & Entorno", desc: "Redundancia y recuperación ante fallos de hardware o software para máxima continuidad." },
+      { icon: Cable, title: "Cableado estructurado", desc: "Integración certificada de voz, datos, video, seguridad y domótica sobre una infraestructura ordenada y lista para escalar.", photo: photo(2881232) },
+      { icon: Waypoints, title: "Switching & Routing", desc: "Conmutación y ruteo Cisco / Meraki para conectar cada dispositivo con performance y baja latencia.", photo: photo(442151) },
+      { icon: Wifi, title: "Wireless corporativo", desc: "Wi-Fi de alta densidad con acceso seguro y cobertura total en toda la organización.", photo: photo(1148820) },
+      { icon: Phone, title: "Telefonía IP · VoIP", desc: "Telefonía IP integrada que unifica las comunicaciones de tu empresa en una sola plataforma.", photo: photo(8867482) },
+      { icon: ShieldCheck, title: "Seguridad de red", desc: "Protección perimetral y segmentación contra amenazas y ataques cifrados.", photo: photo(2881229) },
+      { icon: Server, title: "Contingencia & Entorno", desc: "Redundancia y recuperación ante fallos de hardware o software para máxima continuidad.", photo: photo(4508751) },
     ],
     cases: [
-      { industry: "Logística", challenge: "Depósitos y sucursales sobre redes dispares, con cortes frecuentes que frenaban la operación.", solution: "Arquitectura unificada con switching Cisco, Wi-Fi gestionado y enlaces redundantes.", result: "Red única monitoreada, caídas reducidas al mínimo y un solo responsable de punta a punta.", body: ["El operador manejaba varios centros de distribución y sucursales conectados con equipos de distintas marcas y sin una arquitectura común. Los cortes eran frecuentes y, cuando algo fallaba, no había un responsable claro: cada proveedor señalaba a otro.", "Rediseñamos la red de punta a punta con switching Cisco, Wi-Fi gestionado de alta densidad y enlaces redundantes con failover automático. Unificamos el monitoreo en una sola consola y definimos un SLA con Accedra como único interlocutor. Hoy la operación funciona sin cortes críticos y cualquier incidente se resuelve desde un solo lugar."] },
-      { industry: "Salud", challenge: "Segmentación deficiente y riesgo sobre sistemas críticos en varias sedes.", solution: "Rediseño de red con segmentación, redundancia y seguridad perimetral.", result: "Operación estable y continuidad asegurada en la infraestructura crítica.", body: ["Una red de centros de salud tenía sus sistemas críticos sobre una red plana, sin segmentación, lo que exponía equipos y datos sensibles ante cualquier incidente en alguna de las sedes.", "Implementamos un rediseño con segmentación por área, redundancia y seguridad perimetral, separando el tráfico crítico del administrativo y sumando recuperación ante fallos. El resultado fue una operación estable, con continuidad asegurada en una infraestructura que no puede detenerse."] },
-      { industry: "Retail", challenge: "Sucursales aisladas, sin una arquitectura común ni visibilidad central.", solution: "Red multi-sede con gestión centralizada y Wi-Fi seguro para clientes.", result: "Todas las sucursales conectadas y monitoreadas desde un solo lugar.", body: ["La cadena crecía sumando sucursales, pero cada una era una isla: sin arquitectura común, sin visibilidad central y con el Wi-Fi de clientes mezclado con la operación.", "Desplegamos una red multi-sede con gestión centralizada, separando la red de clientes de la operativa y estandarizando el equipamiento. Ahora todas las sucursales están conectadas y monitoreadas desde un solo panel, y sumar una nueva es cuestión de días, no de semanas."] },
+      { industry: "Logística", image: "/cases/andreani.jpg", challenge: "El líder logístico del país crecía a gran escala y necesitaba conectividad continua, segura y sin interrupciones en toda su operación nacional.", solution: "Rediseño de red integral con Cisco: wireless gestionado, switching/routing, seguridad y soporte.", result: "Red sin interrupciones para el líder logístico", body: ["Andreani, la compañía líder en logística de la Argentina (75 años de trayectoria, +1.260 vehículos y 10 plantas de operación), atravesaba un crecimiento exponencial: +550 puntos de venta, 122 sucursales, más usuarios móviles y más aplicaciones en la nube. Eso trajo más movilidad, necesidad de robustez y mayor exposición a amenazas — y sus equipos necesitaban conectividad más allá de la red corporativa.", "Como partner de Cisco, rediseñamos la red de punta a punta en cuatro frentes: wireless gestionado (Cisco Wireless LAN Controller + DNA Center), switching y routing (Catalyst 9500/9200/4500/3850/2960 y routers ASR 1000), seguridad (Umbrella, AMP e ISE) y un esquema flexible de licenciamiento y soporte (Cisco ONE, SMARTnet Total Care).", "Hoy Andreani trabaja sin interrupciones ni retrasos, con visibilidad total de la operación y gestión de accesos centralizada en todas sus locaciones. Las caídas de red pasaron de 5 por semana a menos de 1 por mes."] },
+      { industry: "Minería", image: "/cases/finning.jpg", challenge: "Yacimientos y sucursales en zonas remotas de varias provincias, donde la conectividad tradicional no llega.", solution: "Relevamiento, cableado, WiFi indoor/outdoor y conectividad satelital Starlink + SD-WAN, sitio por sitio.", result: "Conectividad crítica para minería, en todo el país", body: ["Finning —dealer oficial de Caterpillar— opera en yacimientos y sucursales distribuidos por todo el país, muchos en zonas remotas y de difícil acceso donde la conectividad tradicional no llega. Necesitaba una red confiable que sostuviera la operación desde las oficinas hasta el playón donde se arman camiones y palas.", "Relevamos técnicamente cada sitio —con mapas de calor y planificación de cobertura— y desplegamos infraestructura de punta a punta: racks modernizados con switches Cisco Catalyst 9200L PoE, UPS y PDUs protegidas, cableado estructurado cat 6 con bocas para impresoras y PCs, y WiFi interior y exterior con Access Points en altura donde hizo falta. Para las minas sin fibra, sumamos conectividad satelital Starlink integrada por SD-WAN (VeloCloud).", "El despliegue se ejecutó a lo largo de varias provincias —Catamarca, San Juan, Santa Cruz y Jujuy, entre otras—, sitio por sitio, y todo certificado según las normas de Seguridad e Higiene de la industria minera. Hoy las operaciones de Finning están conectadas de forma estable hasta en los rincones más aislados: oficinas, bodegas, truck shop y frentes de armado."] },
     ],
     tech: ["Cisco", "Meraki", "Aruba", "Juniper", "Huawei", "Ubiquiti", "Avaya", "APC", "Vertiv", "SonicWall"],
-    brands: ["Cisco", "Meraki", "Aruba", "Juniper", "Huawei", "Ubiquiti", "Avaya", "APC", "Vertiv", "SonicWall"],
+    brands: ["Cisco", "Meraki", "Aruba", "Juniper", "Huawei", "Ubiquiti", "Avaya", "APC", "Vertiv", "SonicWall", "CommScope NetConnect", "CommScope Systimax", "Furukawa", "Siemon", "Schneider Electric"],
     benefitsTitle: "Por qué elegir a Accedra",
     benefits: [
       "Partner certificado de las marcas líderes",
@@ -196,18 +196,14 @@ export const SOLUTIONS: Record<string, Solution> = {
       "Tenés que garantizar identidad y respaldo probatorio y no sabés con qué herramienta.",
     ],
     capabilities: [
-      { icon: PenTool, title: "Firma manuscrita biométrica", desc: "Captura de la firma con datos biométricos sobre tabletas Wacom certificadas, con validez legal según el marco normativo aplicable.", photo: photo(4021256) },
-      { icon: FileSignature, title: "eSignAnywhere", desc: "Plataforma empresarial para leer, editar y firmar documentos desde cualquier dispositivo, en cualquier momento y lugar.", photo: photo(590020) },
-      { icon: Receipt, title: "Factoring digital", desc: "Soluciones de factoring 100% digital, ágiles, auditables y sin fricción.", photo: photo(6693655) },
-      { icon: Smartphone, title: "Firma mobile", desc: "Firma de documentos desde el celular, integrada de forma nativa a tus procesos.", photo: photo(5240544) },
-      { icon: Fingerprint, title: "Multibiometría", desc: "Múltiples factores biométricos para máxima seguridad de identidad y no repudio.", photo: photo(5380664) },
+      { icon: PenTool, title: "Firma manuscrita biométrica", desc: "Captura de la firma con datos biométricos sobre tabletas Wacom certificadas, con validez legal según el marco normativo aplicable.", photo: photo(3760067) },
+      { icon: FileSignature, title: "eSignAnywhere", desc: "Plataforma empresarial para leer, editar y firmar documentos desde cualquier dispositivo, en cualquier momento y lugar.", photo: photo(5077048) },
+      { icon: Receipt, title: "Factoring digital", desc: "Soluciones de factoring 100% digital, ágiles, auditables y sin fricción.", photo: photo(4968391) },
+      { icon: Smartphone, title: "Firma mobile", desc: "Firma de documentos desde el celular, integrada de forma nativa a tus procesos.", photo: photo(3585088) },
+      { icon: Fingerprint, title: "Multibiometría", desc: "Múltiples factores biométricos para máxima seguridad de identidad y no repudio.", photo: photo(8090298) },
       { icon: Blocks, title: "Integración homogénea", desc: "Se integra a tus sistemas, canales y flujos existentes de forma transparente.", photo: photo(546819) },
     ],
-    cases: [
-      { industry: "Banca", challenge: "Onboarding presencial con papeleo que generaba fricción y demoras en el alta de clientes.", solution: "Firma digital biométrica integrada al proceso de apertura, con identidad verificada.", result: "Aperturas 100% digitales, con respaldo probatorio y sin traslado de papel.", body: ["El alta de clientes seguía dependiendo de firmas presenciales y papeleo, lo que generaba fricción, demoras y abandono durante el onboarding.", "Integramos firma digital biométrica directamente al proceso de apertura, con verificación de identidad y respaldo probatorio de cada operación. Los clientes pueden abrir su cuenta de forma 100% digital, sin traslado de papel, y el banco conserva la validez jurídica de punta a punta."] },
-      { industry: "Seguros", challenge: "Emisión de pólizas y siniestros dependiente de trámites presenciales.", solution: "eSignAnywhere integrado a los procesos de suscripción y siniestros.", result: "Firma a distancia, menos tiempos de contratación y trazabilidad completa.", body: ["La emisión de pólizas y la gestión de siniestros dependían de trámites presenciales y expedientes en papel, alargando los tiempos de contratación.", "Incorporamos eSignAnywhere a los procesos de suscripción y siniestros, permitiendo firmar a distancia desde cualquier dispositivo. Se redujeron los tiempos, se eliminó el papel y quedó una trazabilidad completa de cada firma."] },
-      { industry: "Salud", challenge: "Consentimientos y protocolos en papel, difíciles de auditar y resguardar.", solution: "Firma digital de consentimientos con identidad y trazabilidad.", result: "Archivo sin papel, con trazabilidad total y cumplimiento probatorio.", body: ["Los consentimientos y protocolos se manejaban en papel, lo que dificultaba auditar, resguardar y encontrar la documentación cuando se la necesitaba.", "Digitalizamos la firma de consentimientos con identidad verificada y trazabilidad de cada documento. El archivo pasó a ser 100% digital, con cumplimiento probatorio y acceso inmediato a cada expediente."] },
-    ],
+    cases: [],
     tech: ["Wacom", "Namirial", "eSignAnywhere", "Gemalto", "Criptografía RSA", "SHA-256", "ISO"],
     brands: ["Wacom", "Namirial", "Thales"],
     benefitsTitle: "Beneficios",
@@ -309,12 +305,12 @@ export const SOLUTIONS: Record<string, Solution> = {
       "Los reportes llegan tarde, armados a mano y sin una única fuente de verdad.",
     ],
     capabilities: [
-      { icon: BarChart3, title: "Power BI", desc: "Dashboards ejecutivos y análisis ad hoc: conexión a múltiples orígenes, informes en web y móvil, y una perspectiva de 360°." },
-      { icon: Users, title: "Microsoft 365 & Teams", desc: "Colaboración y productividad unificada para todos tus equipos." },
-      { icon: Database, title: "Dynamics 365 & SharePoint", desc: "CRM/ERP y gestión documental integrados a tu operación." },
-      { icon: Cloud, title: "Azure Cloud", desc: "Migración e infraestructura en la nube de Microsoft, con gobernanza y seguridad." },
-      { icon: Workflow, title: "Power Automate", desc: "Automatización de flujos de trabajo repetitivos para ganar tiempo." },
-      { icon: BadgeCheck, title: "Licenciamiento & CSP", desc: "Gestión y optimización de licencias como Cloud Solution Provider." },
+      { icon: BarChart3, title: "Power BI", desc: "Dashboards ejecutivos y análisis ad hoc: conexión a múltiples orígenes, informes en web y móvil, y una perspectiva de 360°.", photo: photo(265087) },
+      { icon: Users, title: "Microsoft 365 & Teams", desc: "Colaboración y productividad unificada para todos tus equipos.", photo: photo(3182812) },
+      { icon: Database, title: "Dynamics 365 & SharePoint", desc: "CRM/ERP y gestión documental integrados a tu operación.", photo: photo(3183197) },
+      { icon: Cloud, title: "Azure Cloud", desc: "Migración e infraestructura en la nube de Microsoft, con gobernanza y seguridad.", photo: photo(325229) },
+      { icon: Workflow, title: "Power Automate", desc: "Automatización de flujos de trabajo repetitivos para ganar tiempo.", photo: photo(3184292) },
+      { icon: BadgeCheck, title: "Licenciamiento & CSP", desc: "Gestión y optimización de licencias como Cloud Solution Provider.", photo: photo(3184465) },
     ],
     cases: [
       { industry: "Retail", challenge: "Reportes de venta y stock armados a mano, sin una única fuente de verdad entre sucursales.", solution: "Tableros Power BI conectados a todos los orígenes de datos del negocio.", result: "Decisiones en tiempo real, con ventas, stock y márgenes consolidados.", body: ["Los reportes de venta y stock se armaban a mano en planillas, cada sucursal con su propio criterio, sin una única fuente de verdad para decidir.", "Conectamos Power BI a todos los orígenes de datos del negocio y construimos tableros ejecutivos. Hoy la dirección ve ventas, stock y márgenes consolidados en tiempo real, y las decisiones dejaron de depender de la intuición."] },
@@ -421,12 +417,12 @@ export const SOLUTIONS: Record<string, Solution> = {
       "Clientes o auditorías te exigen requisitos de seguridad que hoy no podés cumplir.",
     ],
     capabilities: [
-      { icon: Flame, title: "Firewalls de nueva generación", desc: "Previenen filtraciones, dan visibilidad total y automatizan operaciones de seguridad." },
-      { icon: Bug, title: "Protección contra malware", desc: "Prevención, supervisión de comportamiento malicioso y eliminación rápida con Cisco AMP." },
-      { icon: CloudCog, title: "Seguridad en la nube", desc: "Acceso seguro, protección de Office 365 y control de aplicaciones SaaS con Cisco Umbrella." },
-      { icon: Laptop, title: "Seguridad de endpoints", desc: "Detención de malware conocido y desconocido, más investigación de incidentes." },
-      { icon: MailCheck, title: "Protección de email", desc: "Bloqueo de phishing, ransomware y spam en toda la organización." },
-      { icon: Lock, title: "VPN & acceso remoto", desc: "Conectividad segura y protección continua de terminales, dentro y fuera de la red." },
+      { icon: Flame, title: "Firewalls de nueva generación", desc: "Previenen filtraciones, dan visibilidad total y automatizan operaciones de seguridad.", photo: photo(5380642) },
+      { icon: Bug, title: "Protección contra malware", desc: "Prevención, supervisión de comportamiento malicioso y eliminación rápida con Cisco AMP.", photo: photo(5380601) },
+      { icon: CloudCog, title: "Seguridad en la nube", desc: "Acceso seguro, protección de Office 365 y control de aplicaciones SaaS con Cisco Umbrella.", photo: photo(5380792) },
+      { icon: Laptop, title: "Seguridad de endpoints", desc: "Detención de malware conocido y desconocido, más investigación de incidentes.", photo: photo(5473298) },
+      { icon: MailCheck, title: "Protección de email", desc: "Bloqueo de phishing, ransomware y spam en toda la organización.", photo: photo(5926382) },
+      { icon: Lock, title: "VPN & acceso remoto", desc: "Conectividad segura y protección continua de terminales, dentro y fuera de la red.", photo: photo(5474292) },
     ],
     cases: [
       { industry: "Banca", challenge: "Superficie de ataque creciente y exigencias de auditoría difíciles de cumplir.", solution: "Arquitectura Zero Trust con firewalls NGFW y protección de endpoints.", result: "Visibilidad total del tráfico y cumplimiento de los requisitos de auditoría.", body: ["La superficie de ataque crecía con el trabajo remoto y las nuevas aplicaciones, mientras las auditorías exigían controles cada vez más estrictos que eran difíciles de sostener.", "Implementamos una arquitectura Zero Trust con firewalls de nueva generación y protección de endpoints, más visibilidad total del tráfico. El banco logró aprobar sus auditorías y responder ante incidentes con evidencia y control."] },
@@ -533,12 +529,12 @@ export const SOLUTIONS: Record<string, Solution> = {
       "Querés incorporar inteligencia artificial y no sabés por dónde empezar.",
     ],
     capabilities: [
-      { icon: Code2, title: "Desarrollo a medida", desc: "Aplicaciones web y móviles hechas a la medida de tu operación, con arquitectura escalable y código mantenible." },
-      { icon: Workflow, title: "Integraciones & APIs", desc: "Conectamos tus sistemas, ERPs y servicios externos con APIs robustas y flujos de datos confiables." },
-      { icon: BrainCircuit, title: "Modelos de IA / ML", desc: "Machine learning e IA generativa aplicados a tus datos para predecir, clasificar y automatizar decisiones." },
-      { icon: Bot, title: "Chatbots & Copilotos", desc: "Asistentes con IA integrados a tus canales y sistemas, entrenados con el conocimiento de tu empresa." },
-      { icon: Database, title: "Data & Analytics", desc: "Pipelines de datos, tableros y analítica avanzada para convertir información dispersa en decisiones." },
-      { icon: Cpu, title: "Automatización de procesos", desc: "Automatizamos tareas repetitivas con software e IA para liberar tiempo y reducir errores." },
+      { icon: Code2, title: "Desarrollo a medida", desc: "Aplicaciones web y móviles hechas a la medida de tu operación, con arquitectura escalable y código mantenible.", photo: photo(1181263) },
+      { icon: Workflow, title: "Integraciones & APIs", desc: "Conectamos tus sistemas, ERPs y servicios externos con APIs robustas y flujos de datos confiables.", photo: photo(8386440) },
+      { icon: BrainCircuit, title: "Modelos de IA / ML", desc: "Machine learning e IA generativa aplicados a tus datos para predecir, clasificar y automatizar decisiones.", photo: photo(3861969) },
+      { icon: Bot, title: "Chatbots & Copilotos", desc: "Asistentes con IA integrados a tus canales y sistemas, entrenados con el conocimiento de tu empresa.", photo: photo(15406294) },
+      { icon: Database, title: "Data & Analytics", desc: "Pipelines de datos, tableros y analítica avanzada para convertir información dispersa en decisiones.", photo: photo(590020) },
+      { icon: Cpu, title: "Automatización de procesos", desc: "Automatizamos tareas repetitivas con software e IA para liberar tiempo y reducir errores.", photo: photo(8438918) },
     ],
     cases: [
       { industry: "Fintech", challenge: "Onboarding y scoring de clientes 100% manuales que no escalaban con el crecimiento.", solution: "Plataforma a medida con un modelo de scoring por IA integrado al flujo de alta.", result: "Onboarding más rápido y decisiones de crédito consistentes y auditables.", body: ["El área de originación dependía de planillas y revisiones manuales para dar de alta y evaluar clientes. A medida que crecía el volumen, el proceso se volvía lento, inconsistente y difícil de auditar.", "Construimos una plataforma a medida que integra un modelo de scoring por IA directamente en el flujo de alta. Hoy el onboarding es más rápido, las decisiones de crédito son consistentes y cada evaluación queda registrada y auditable."] },

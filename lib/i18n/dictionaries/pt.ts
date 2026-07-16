@@ -4,7 +4,7 @@ export const pt: Dict = {
   nav: {
     services: "Soluções",
     partners: "Partners",
-    about: "Sobre nós",
+    about: "Casos de sucesso",
     contact: "Contato",
     cta: "Fale com um especialista",
     followLinkedin: "Siga-nos no LinkedIn",
@@ -30,14 +30,15 @@ export const pt: Dict = {
   },
 
   services: {
-    eyebrow: "O que fazemos",
-    title: "Soluções de TI end-to-end",
+    eyebrow: "Nossas soluções",
+    title: "Toda a sua TI, em um só lugar",
     subtitle:
-      "Do cabeamento à nuvem, cobrimos cada camada da sua infraestrutura.",
+      "Da rede à nuvem, assinatura digital, dados e IA: cobrimos cada camada para que sua operação não pare.",
     featuredBadge: "Diferencial",
     viewSolution: "Ver solução",
     ctaText: "Não sabe por onde começar?",
     ctaButton: "Solicitar um diagnóstico",
+    ctaTrust: "Gratuito e sem compromisso · respondemos em 24 h",
     columns: [
       {
         title: "Networking",
@@ -55,7 +56,6 @@ export const pt: Dict = {
         title: "Assinatura Biométrica",
         desc: "Assinatura eletrônica, biométrica e digital com validade legal e rastreabilidade total.",
         items: [
-          "Transformação Digital",
           "Soluções de Factoring Digital",
           "Assinatura Digital Biométrica",
           "eSignAnyWhere",
@@ -101,6 +101,8 @@ export const pt: Dict = {
     subtitle:
       "Partners certificados e distribuidores autorizados das marcas líderes do mercado de TI.",
     pill: "Partner certificado e distribuidor autorizado de cada fabricante",
+    mobileMore: "+20 parceiros certificados",
+    mobileMoreSub: "Tem mais. Mas paramos por aqui.",
     // Alineado al orden del array `partners` en Partners.tsx
     blurbs: [
       "Líder mundial em redes corporativas: switching, routing e conectividade de alta disponibilidade.",

@@ -1,8 +1,3 @@
-// ⚠️ EJEMPLOS — reemplazar por casos reales (anónimos o autorizados) con
-// métricas verificables antes de publicar. Fotos de Pexels (swappeables).
-const px = (id: number) =>
-  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=1200`;
-
 export type HomeCase = {
   image: string;
   tag: string; // industria
@@ -11,45 +6,28 @@ export type HomeCase = {
   body: string[]; // relato editorial para el modal
 };
 
+// Solo casos reales. Si el array queda vacío, la sección se oculta.
 export const HOME_CASES: HomeCase[] = [
   {
-    image: px(4481259),
+    image: "/cases/andreani.jpg",
     tag: "Logística",
-    title: "Red unificada en múltiples sedes, sin cortes críticos",
-    desc: "Conectividad y ciberseguridad de misión crítica, con monitoreo continuo y un único responsable.",
+    title: "Red sin interrupciones para el líder logístico",
+    desc: "Rediseño de red integral con Cisco: conectividad, seguridad y soporte para su operación nacional.",
     body: [
-      "Un operador logístico con varios centros de distribución y sucursales sufría cortes frecuentes: equipos de distintas marcas, sin una arquitectura común. Cada incidente frenaba entregas y ningún proveedor se hacía responsable.",
-      "Rediseñamos la red de punta a punta —switching, Wi-Fi gestionado y enlaces redundantes con failover— y unificamos el monitoreo en una sola consola, con Accedra como único interlocutor. La operación pasó a funcionar sin cortes críticos y los incidentes se resuelven desde un solo lugar.",
+      "Andreani, la compañía líder en logística de la Argentina (75 años de trayectoria, +1.260 vehículos y 10 plantas de operación), atravesaba un crecimiento exponencial: +550 puntos de venta, 122 sucursales, más usuarios móviles y más aplicaciones en la nube. Eso trajo más movilidad, necesidad de robustez y mayor exposición a amenazas — y sus equipos necesitaban conectividad más allá de la red corporativa.",
+      "Como partner de Cisco, rediseñamos la red de punta a punta: wireless gestionado, switching y routing de alta disponibilidad, seguridad integrada y un esquema flexible de licenciamiento y soporte — con monitoreo centralizado y gestión de accesos en todas sus locaciones.",
+      "Hoy Andreani trabaja sin interrupciones ni retrasos, con visibilidad total de la operación y gestión de accesos centralizada en todas sus locaciones. Las caídas de red pasaron de 5 por semana a menos de 1 por mes.",
     ],
   },
   {
-    image: px(259200),
-    tag: "Banca",
-    title: "Onboarding 100% digital con firma biométrica",
-    desc: "Aperturas de cuenta sin papel, con identidad verificada y respaldo probatorio.",
+    image: "/cases/finning.jpg",
+    tag: "Minería",
+    title: "Conectividad crítica para minería, en todo el país",
+    desc: "Redes, WiFi y conectividad satelital para operaciones mineras remotas, desplegadas en varias provincias.",
     body: [
-      "El alta de clientes dependía de trámites presenciales y papeleo, lo que generaba fricción, demoras y abandono durante el onboarding.",
-      "Integramos firma digital biométrica al proceso de apertura, con verificación de identidad y respaldo probatorio. Hoy los clientes abren su cuenta de forma 100% digital, sin traslado de papel, conservando la validez jurídica de punta a punta.",
-    ],
-  },
-  {
-    image: px(3760067),
-    tag: "Seguros",
-    title: "Analítica de cartera unificada, en tiempo real",
-    desc: "De datos dispersos a decisiones, con Power BI y gobernanza sobre toda la información.",
-    body: [
-      "Los datos de cartera estaban dispersos entre sistemas y los reportes llegaban tarde para decidir, sin una única fuente de verdad.",
-      "Implementamos Power BI con gobernanza sobre todos los orígenes de datos del negocio. La dirección pasó a ver cartera, siniestralidad y rentabilidad en tiempo real, y las decisiones dejaron de depender de la intuición.",
-    ],
-  },
-  {
-    image: px(3735709),
-    tag: "Salud",
-    title: "Continuidad asegurada con arquitectura Zero Trust",
-    desc: "Datos sensibles protegidos y operación estable ante amenazas, en infraestructura crítica.",
-    body: [
-      "Una red de centros de salud tenía sus sistemas críticos sobre una red plana, sin segmentación, exponiendo equipos y datos sensibles ante cualquier incidente en alguna de las sedes.",
-      "Aplicamos segmentación por área, redundancia y una arquitectura Zero Trust con seguridad perimetral y de endpoints. El resultado fue una operación estable y protegida, con continuidad asegurada en una infraestructura que no puede detenerse.",
+      "Finning —dealer oficial de Caterpillar— opera en yacimientos y sucursales distribuidos por todo el país, muchos en zonas remotas y de difícil acceso donde la conectividad tradicional no llega. Necesitaba una red confiable que sostuviera la operación desde las oficinas hasta el playón donde se arman camiones y palas.",
+      "Relevamos técnicamente cada sitio —con mapas de calor y planificación de cobertura— y desplegamos infraestructura de punta a punta: racks modernizados, energía protegida, cableado estructurado y WiFi interior y exterior donde hizo falta. Para los yacimientos sin fibra, sumamos conectividad satelital integrada a la red.",
+      "El despliegue se ejecutó a lo largo de varias provincias —Catamarca, San Juan, Santa Cruz y Jujuy, entre otras—, sitio por sitio, y todo certificado según las normas de Seguridad e Higiene de la industria minera. Hoy las operaciones de Finning están conectadas de forma estable hasta en los rincones más aislados: oficinas, bodegas, truck shop y frentes de armado.",
     ],
   },
 ];
