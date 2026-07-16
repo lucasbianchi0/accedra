@@ -229,7 +229,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
       <ProcessSection />
 
       {/* ── Casos de éxito (solo páginas de solución) ── */}
-      {!industry && <CasesSection cases={data.cases} slug={slug} />}
+      {!industry && data.cases.length > 0 && <CasesSection cases={data.cases} slug={slug} />}
 
 
       {/* ── Form de contacto (igual que el home) ── */}
