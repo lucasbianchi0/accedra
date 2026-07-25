@@ -30,7 +30,7 @@ export default function PresenceSection() {
         style={{ background: "radial-gradient(circle, rgba(43,111,212,0.14) 0%, transparent 62%)" }}
       />
 
-      <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-12 relative z-10">
+      <div className="max-w-[1320px] mx-auto px-5 sm:px-8 lg:px-12 relative z-10">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
           {/* ── Left: copy + stats ── */}

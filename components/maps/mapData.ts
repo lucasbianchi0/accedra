@@ -33,7 +33,7 @@ export type Point = {
 };
 
 const px = (id: number) =>
-  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=900`;
+  `/images/${id}.jpg`;
 
 // ⚠️ CONTENIDO DE EJEMPLO — reemplazar por proyectos/clientes/fotos reales.
 // "Varios puntos por provincia": múltiples ubicaciones repartidas por el país.

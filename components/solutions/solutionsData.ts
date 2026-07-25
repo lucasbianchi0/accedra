@@ -9,10 +9,13 @@ import {
 } from "lucide-react";
 
 const photo = (id: number) =>
-  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=1920`;
+  `/images/${id}.jpg`;
 
-const video = (id: number) =>
-  `https://videos.pexels.com/video-files/${id}/${id}-hd_1920_1080_25fps.mp4`;
+// Videos servidos LOCAL desde /public/videos (descargados y optimizados con
+// faststart). Antes se hotlinkeaban desde el CDN de Pexels, lo que hacía que
+// tardaran en cargar y que el poster (otra imagen) se viera un instante antes.
+// El poster de cada video es su PRIMER FRAME: /videos/{id}.jpg (mismo id).
+const video = (id: number) => `/videos/${id}.mp4`;
 
 export type Capability = { icon: LucideIcon; title: string; desc: string; photo?: string };
 
@@ -25,6 +28,7 @@ export type Case = {
   result: string;
   body?: string[]; // relato editorial (párrafos) para el modal
   image?: string; // foto propia; si no, se usa una por industria
+  metrics?: { value: string; label: string }[]; // números destacados del caso
 };
 
 // Contenido a medida por industria (opcional). Lo que no se define acá cae
@@ -39,6 +43,11 @@ export type Solution = {
   slug: string;
   name: string;
   icon: LucideIcon;
+  // Color de identidad de la solución. `accent` = hex (fondos sólidos: CTA);
+  // `accentRgb` = "r,g,b" para rgba() y para setear la CSS var --accent-rgb que
+  // recorre toda la página (hero, capacidades, proceso, casos, rings).
+  accent: string;
+  accentRgb: string;
   eyebrow: string;
   title: string;
   highlight: string; // gradient-highlighted tail of the title
@@ -67,6 +76,7 @@ export const SOLUTIONS: Record<string, Solution> = {
     slug: "networking",
     name: "Networking",
     icon: Network,
+    accent: "#3B82F6", accentRgb: "59,130,246", // azul (ancla)
     eyebrow: "Soluciones IT",
     title: "Networking de",
     highlight: "alta disponibilidad.",
@@ -93,8 +103,8 @@ export const SOLUTIONS: Record<string, Solution> = {
       { icon: Server, title: "Contingencia & Entorno", desc: "Redundancia y recuperación ante fallos de hardware o software para máxima continuidad.", photo: photo(4508751) },
     ],
     cases: [
-      { industry: "Logística", image: "/cases/andreani.jpg", challenge: "El líder logístico del país crecía a gran escala y necesitaba conectividad continua, segura y sin interrupciones en toda su operación nacional.", solution: "Rediseño de red integral con Cisco: wireless gestionado, switching/routing, seguridad y soporte.", result: "Red sin interrupciones para el líder logístico", body: ["Andreani, la compañía líder en logística de la Argentina (75 años de trayectoria, +1.260 vehículos y 10 plantas de operación), atravesaba un crecimiento exponencial: +550 puntos de venta, 122 sucursales, más usuarios móviles y más aplicaciones en la nube. Eso trajo más movilidad, necesidad de robustez y mayor exposición a amenazas — y sus equipos necesitaban conectividad más allá de la red corporativa.", "Como partner de Cisco, rediseñamos la red de punta a punta en cuatro frentes: wireless gestionado (Cisco Wireless LAN Controller + DNA Center), switching y routing (Catalyst 9500/9200/4500/3850/2960 y routers ASR 1000), seguridad (Umbrella, AMP e ISE) y un esquema flexible de licenciamiento y soporte (Cisco ONE, SMARTnet Total Care).", "Hoy Andreani trabaja sin interrupciones ni retrasos, con visibilidad total de la operación y gestión de accesos centralizada en todas sus locaciones. Las caídas de red pasaron de 5 por semana a menos de 1 por mes."] },
-      { industry: "Minería", image: "/cases/finning.jpg", challenge: "Yacimientos y sucursales en zonas remotas de varias provincias, donde la conectividad tradicional no llega.", solution: "Relevamiento, cableado, WiFi indoor/outdoor y conectividad satelital Starlink + SD-WAN, sitio por sitio.", result: "Conectividad crítica para minería, en todo el país", body: ["Finning —dealer oficial de Caterpillar— opera en yacimientos y sucursales distribuidos por todo el país, muchos en zonas remotas y de difícil acceso donde la conectividad tradicional no llega. Necesitaba una red confiable que sostuviera la operación desde las oficinas hasta el playón donde se arman camiones y palas.", "Relevamos técnicamente cada sitio —con mapas de calor y planificación de cobertura— y desplegamos infraestructura de punta a punta: racks modernizados con switches Cisco Catalyst 9200L PoE, UPS y PDUs protegidas, cableado estructurado cat 6 con bocas para impresoras y PCs, y WiFi interior y exterior con Access Points en altura donde hizo falta. Para las minas sin fibra, sumamos conectividad satelital Starlink integrada por SD-WAN (VeloCloud).", "El despliegue se ejecutó a lo largo de varias provincias —Catamarca, San Juan, Santa Cruz y Jujuy, entre otras—, sitio por sitio, y todo certificado según las normas de Seguridad e Higiene de la industria minera. Hoy las operaciones de Finning están conectadas de forma estable hasta en los rincones más aislados: oficinas, bodegas, truck shop y frentes de armado."] },
+      { industry: "Logística", image: "/cases/andreani.jpg", challenge: "El líder logístico del país crecía a gran escala y necesitaba conectividad continua, segura y sin interrupciones en toda su operación nacional.", solution: "Rediseño de red integral con Cisco: wireless gestionado, switching/routing, seguridad y soporte.", result: "Red sin interrupciones para el líder logístico", metrics: [{ value: "5→<1", label: "caídas de red por mes" }, { value: "+1.260", label: "vehículos conectados" }, { value: "10", label: "plantas de operación" }], body: ["Andreani, la compañía líder en logística de la Argentina (75 años de trayectoria, +1.260 vehículos y 10 plantas de operación), atravesaba un crecimiento exponencial: +550 puntos de venta, 122 sucursales, más usuarios móviles y más aplicaciones en la nube. Eso trajo más movilidad, necesidad de robustez y mayor exposición a amenazas — y sus equipos necesitaban conectividad más allá de la red corporativa.", "Como partner de Cisco, rediseñamos la red de punta a punta en cuatro frentes: wireless gestionado (Cisco Wireless LAN Controller + DNA Center), switching y routing (Catalyst 9500/9200/4500/3850/2960 y routers ASR 1000), seguridad (Umbrella, AMP e ISE) y un esquema flexible de licenciamiento y soporte (Cisco ONE, SMARTnet Total Care).", "Hoy Andreani trabaja sin interrupciones ni retrasos, con visibilidad total de la operación y gestión de accesos centralizada en todas sus locaciones. Las caídas de red pasaron de 5 por semana a menos de 1 por mes."] },
+      { industry: "Minería", image: "/cases/finning.jpg", challenge: "Yacimientos y sucursales en zonas remotas de varias provincias, donde la conectividad tradicional no llega.", solution: "Relevamiento, cableado, WiFi indoor/outdoor y conectividad satelital Starlink + SD-WAN, sitio por sitio.", result: "Conectividad crítica para minería, en todo el país", metrics: [{ value: "+4", label: "provincias desplegadas" }, { value: "100%", label: "sitios conectados" }, { value: "24/7", label: "operación en mina" }], body: ["Finning —dealer oficial de Caterpillar— opera en yacimientos y sucursales distribuidos por todo el país, muchos en zonas remotas y de difícil acceso donde la conectividad tradicional no llega. Necesitaba una red confiable que sostuviera la operación desde las oficinas hasta el playón donde se arman camiones y palas.", "Relevamos técnicamente cada sitio —con mapas de calor y planificación de cobertura— y desplegamos infraestructura de punta a punta: racks modernizados con switches Cisco Catalyst 9200L PoE, UPS y PDUs protegidas, cableado estructurado cat 6 con bocas para impresoras y PCs, y WiFi interior y exterior con Access Points en altura donde hizo falta. Para las minas sin fibra, sumamos conectividad satelital Starlink integrada por SD-WAN (VeloCloud).", "El despliegue se ejecutó a lo largo de varias provincias —Catamarca, San Juan, Santa Cruz y Jujuy, entre otras—, sitio por sitio, y todo certificado según las normas de Seguridad e Higiene de la industria minera. Hoy las operaciones de Finning están conectadas de forma estable hasta en los rincones más aislados: oficinas, bodegas, truck shop y frentes de armado."] },
     ],
     tech: ["Cisco", "Meraki", "Aruba", "Juniper", "Huawei", "Ubiquiti", "Avaya", "APC", "Vertiv", "SonicWall"],
     brands: ["Cisco", "Meraki", "Aruba", "Juniper", "Huawei", "Ubiquiti", "Avaya", "APC", "Vertiv", "SonicWall", "CommScope NetConnect", "CommScope Systimax", "Furukawa", "Siemon", "Schneider Electric"],
@@ -178,6 +188,7 @@ export const SOLUTIONS: Record<string, Solution> = {
     slug: "firma-biometrica",
     name: "Firma Biométrica",
     icon: SquarePen,
+    accent: "#7C6CF6", accentRgb: "124,108,246", // índigo/violeta (el diferencial)
     eyebrow: "Nuestro diferencial",
     title: "Firma electrónica, biométrica y",
     highlight: "digital.",
@@ -203,7 +214,9 @@ export const SOLUTIONS: Record<string, Solution> = {
       { icon: Fingerprint, title: "Multibiometría", desc: "Múltiples factores biométricos para máxima seguridad de identidad y no repudio.", photo: photo(8090298) },
       { icon: Blocks, title: "Integración homogénea", desc: "Se integra a tus sistemas, canales y flujos existentes de forma transparente.", photo: photo(546819) },
     ],
-    cases: [],
+    cases: [
+      { industry: "Banca", image: photo(5904065), challenge: "Trámites de sucursal sobre papel —impresión de formularios, firma manuscrita, escaneo y archivo físico— con demoras, costos crecientes y riesgo operativo.", solution: "Firma biométrica digital llave en mano: +4.400 dispositivos Wacom en 400 sucursales, integrada 100% por Accedra.", result: "Banco Provincia digitaliza la firma en toda su red de sucursales", metrics: [{ value: "400", label: "sucursales" }, { value: "+4.400", label: "dispositivos de firma" }, { value: "+620", label: "formularios 100% digitales" }], body: ["El Banco de la Provincia de Buenos Aires —una de las entidades financieras más grandes de la Argentina— operaba sus trámites de sucursal sobre un circuito de papel: impresión de formularios, firma manuscrita, escaneo y archivo físico. Eso generaba demoras en la atención, costos crecientes de impresión y logística documental, y riesgos operativos en el manejo del papel. El objetivo: digitalizar de punta a punta la firma en toda la red, sin fricción para el cliente ni el personal, y con plena validez de la firma capturada.", "Accedra implementó una solución integral de firma biométrica digital llave en mano, desplegada en las 400 sucursales del banco con más de 4.400 pantallas de firma Wacom, diseñadas para la captura de firma manuscrita en entornos bancarios de alta demanda. La integramos de forma nativa con los sistemas core del banco, digitalizando más de 620 formularios operativos. Cada firma se registra con sus parámetros biométricos (presión, velocidad, trazo y tiempos), vinculada de forma segura e inalterable al documento. Fue un modelo llave en mano de punta a punta: relevamiento, hardware, integración de software, despliegue, capacitación y soporte, con integración 100% realizada por Accedra.", "El circuito de firma pasó a ser 100% digital: se eliminaron por completo las impresiones y los escaneos. Los trámites son más rápidos, con menos pasos manuales y menor tiempo de espera; hay un ahorro significativo en papel, impresión, traslado y archivo; y una trazabilidad de punta a punta, con el documento firmado disponible al instante. La firma biométrica queda ligada al documento con garantías de integridad y valor probatorio, reforzando el cumplimiento normativo — en cada una de las 400 sucursales."] },
+    ],
     tech: ["Wacom", "Namirial", "eSignAnywhere", "Gemalto", "Criptografía RSA", "SHA-256", "ISO"],
     brands: ["Wacom", "Namirial", "Thales"],
     benefitsTitle: "Beneficios",
@@ -287,6 +300,7 @@ export const SOLUTIONS: Record<string, Solution> = {
     slug: "consultoria",
     name: "Consultoría Microsoft",
     icon: LayoutDashboard,
+    accent: "#06B6D4", accentRgb: "6,182,212", // cian/teal
     eyebrow: "Soluciones IT",
     title: "Tus datos, convertidos en",
     highlight: "decisiones.",
@@ -395,6 +409,7 @@ export const SOLUTIONS: Record<string, Solution> = {
     slug: "seguridad",
     name: "Seguridad IT",
     icon: ShieldCheck,
+    accent: "#10B981", accentRgb: "16,185,129", // esmeralda
     eyebrow: "Soluciones IT",
     title: "Ciberseguridad de",
     highlight: "nivel corporativo.",
@@ -503,6 +518,7 @@ export const SOLUTIONS: Record<string, Solution> = {
     slug: "software-ai",
     name: "Software & AI",
     icon: Sparkles,
+    accent: "#B45CF2", accentRgb: "180,92,242", // púrpura/fucsia
     eyebrow: "Soluciones IT",
     title: "Software a medida e",
     highlight: "inteligencia artificial.",

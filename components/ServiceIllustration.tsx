@@ -144,12 +144,12 @@ function Firma() {
 function Consultoria() {
   return (
     <div className="relative w-[244px] h-[212px]">
-      <div className="absolute bottom-0 inset-x-0 rounded-xl bg-white overflow-hidden"
-        style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 18px 34px rgba(0,0,0,0.35)" }}>
+      <div className="absolute bottom-0 inset-x-0 rounded-xl bg-[#0E1B30] overflow-hidden"
+        style={{ border: "1px solid rgba(255,255,255,0.10)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 18px 34px rgba(0,0,0,0.4)" }}>
         {/* Header */}
-        <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-gray-100">
-          <span className="text-[11px] font-semibold text-gray-700">Panel de ventas</span>
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600">
+        <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-white/10">
+          <span className="text-[11px] font-semibold text-gray-200">Panel de ventas</span>
+          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-300">
             <TrendingUp size={12} /> +24%
           </span>
         </div>
@@ -158,9 +158,9 @@ function Consultoria() {
           {/* KPIs */}
           <div className="grid grid-cols-2 gap-2">
             {[["Ingresos", "$ 1.24M"], ["Clientes", "3.480"]].map(([a, b]) => (
-              <div key={a} className="rounded-lg bg-blue-50/70 px-2.5 py-1.5">
+              <div key={a} className="rounded-lg px-2.5 py-1.5" style={{ background: "rgba(43,111,212,0.14)", border: "1px solid rgba(43,111,212,0.22)" }}>
                 <div className="text-[8px] text-gray-400">{a}</div>
-                <div className="text-[12px] font-bold text-gray-800">{b}</div>
+                <div className="text-[12px] font-bold text-white">{b}</div>
               </div>
             ))}
           </div>
@@ -168,7 +168,7 @@ function Consultoria() {
           {/* Área + barras */}
           <div className="flex gap-2">
             {/* área */}
-            <div className="flex-1 rounded-lg border border-gray-100 p-2">
+            <div className="flex-1 rounded-lg border border-white/10 p-2">
               <svg viewBox="0 0 110 46" className="w-full h-[44px]">
                 <defs>
                   <linearGradient id="ar" x1="0" y1="0" x2="0" y2="1">
@@ -181,10 +181,10 @@ function Consultoria() {
               </svg>
             </div>
             {/* barras */}
-            <div className="w-[64px] rounded-lg border border-gray-100 p-2 flex items-end gap-1.5 h-[60px]">
+            <div className="w-[64px] rounded-lg border border-white/10 p-2 flex items-end gap-1.5 h-[60px]">
               {[45, 70, 55, 90].map((h, k) => (
                 <div key={k} className={`flex-1 rounded-t-[3px] ${k === 3 ? "svc-accent" : ""}`}
-                  style={{ height: `${h}%`, background: k === 3 ? GRAD : "rgba(43,111,212,0.2)" }} />
+                  style={{ height: `${h}%`, background: k === 3 ? GRAD : "rgba(43,111,212,0.35)" }} />
               ))}
             </div>
           </div>
@@ -202,19 +202,19 @@ function Seguridad() {
   ];
   return (
     <div className="relative w-[244px] h-[214px]">
-      <div className="absolute bottom-0 inset-x-0 rounded-xl bg-white overflow-hidden"
-        style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 18px 34px rgba(0,0,0,0.35)" }}>
+      <div className="absolute bottom-0 inset-x-0 rounded-xl bg-[#0E1B30] overflow-hidden"
+        style={{ border: "1px solid rgba(255,255,255,0.10)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 18px 34px rgba(0,0,0,0.4)" }}>
         {/* Header con escudo */}
-        <div className="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-gray-100">
+        <div className="flex items-center gap-2.5 px-3.5 py-2.5 border-b border-white/10">
           <div className="svc-accent w-8 h-8 rounded-xl flex items-center justify-center text-white flex-shrink-0"
             style={{ background: GRAD, boxShadow: "0 6px 16px rgba(43,111,212,0.4)" }}>
             <ShieldCheck size={16} />
           </div>
           <div className="leading-tight">
-            <div className="text-[11px] font-semibold text-gray-800">Firewall · Zero Trust</div>
+            <div className="text-[11px] font-semibold text-gray-100">Firewall · Zero Trust</div>
             <div className="text-[9px] text-gray-400">Monitoreo en tiempo real</div>
           </div>
-          <span className="ml-auto text-[9px] font-bold text-red-500 flex items-center gap-1">
+          <span className="ml-auto text-[9px] font-bold text-red-400 flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 svc-accent" /> LIVE
           </span>
         </div>
@@ -222,16 +222,16 @@ function Seguridad() {
         {/* Feed de ataques bloqueados */}
         <div className="p-2.5 space-y-1.5">
           {rows.map((r) => (
-            <div key={r.ip} className="flex items-center gap-2 rounded-lg bg-red-50 px-2.5 py-1.5">
-              <AlertTriangle size={12} className="text-red-500 flex-shrink-0" />
-              <span className="text-[10px] font-medium text-gray-700">{r.ip}</span>
+            <div key={r.ip} className="flex items-center gap-2 rounded-lg px-2.5 py-1.5" style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.2)" }}>
+              <AlertTriangle size={12} className="text-red-400 flex-shrink-0" />
+              <span className="text-[10px] font-medium text-gray-200">{r.ip}</span>
               <span className="text-[8px] text-gray-400">{r.tag}</span>
-              <span className="ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded bg-red-100 text-red-600">Bloqueado</span>
+              <span className="ml-auto text-[8px] font-bold px-1.5 py-0.5 rounded text-red-300" style={{ background: "rgba(239,68,68,0.18)" }}>Bloqueado</span>
             </div>
           ))}
-          <div className="flex items-center gap-2 rounded-lg bg-emerald-50 px-2.5 py-1.5">
-            <Check size={12} className="text-emerald-600 flex-shrink-0" />
-            <span className="text-[10px] font-semibold text-emerald-700">12 amenazas neutralizadas hoy</span>
+          <div className="flex items-center gap-2 rounded-lg px-2.5 py-1.5" style={{ background: "rgba(16,185,129,0.12)", border: "1px solid rgba(16,185,129,0.2)" }}>
+            <Check size={12} className="text-emerald-400 flex-shrink-0" />
+            <span className="text-[10px] font-semibold text-emerald-300">12 amenazas neutralizadas hoy</span>
           </div>
         </div>
       </div>
@@ -243,13 +243,13 @@ function Seguridad() {
 function SoftwareAI() {
   return (
     <div className="relative w-[244px] h-[214px]">
-      <div className="absolute bottom-0 inset-x-0 rounded-xl bg-white overflow-hidden"
-        style={{ border: "1px solid rgba(0,0,0,0.06)", boxShadow: "0 18px 34px rgba(0,0,0,0.35)" }}>
+      <div className="absolute bottom-0 inset-x-0 rounded-xl bg-[#0E1B30] overflow-hidden"
+        style={{ border: "1px solid rgba(255,255,255,0.10)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06), 0 18px 34px rgba(0,0,0,0.4)" }}>
         {/* Barra del editor */}
-        <div className="flex items-center gap-1.5 px-3.5 py-2 bg-gray-50 border-b border-gray-100">
-          <span className="w-2 h-2 rounded-full bg-red-300" />
-          <span className="w-2 h-2 rounded-full bg-amber-300" />
-          <span className="w-2 h-2 rounded-full bg-emerald-300" />
+        <div className="flex items-center gap-1.5 px-3.5 py-2 border-b border-white/10" style={{ background: "#0A1626" }}>
+          <span className="w-2 h-2 rounded-full bg-red-400" />
+          <span className="w-2 h-2 rounded-full bg-amber-400" />
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />
           <span className="ml-1.5 text-[10px] font-medium text-gray-400">app.tsx</span>
           <span className="svc-accent ml-auto inline-flex items-center gap-1 text-[9px] font-bold text-white px-1.5 py-0.5 rounded-md" style={{ background: GRAD }}>
             <Sparkles size={9} /> AI
@@ -258,34 +258,34 @@ function SoftwareAI() {
 
         {/* Código con números de línea */}
         <div className="flex text-[10px] font-mono">
-          <div className="py-2.5 px-2 text-right text-gray-300 select-none space-y-2">
+          <div className="py-2.5 px-2 text-right text-gray-500 select-none space-y-2">
             {[1, 2, 3, 4, 5].map((n) => <div key={n}>{n}</div>)}
           </div>
           <div className="flex-1 py-2.5 pr-3 space-y-2">
             {/* líneas de "código" */}
             <div className="flex gap-1.5 items-center">
-              <span className="h-1.5 w-8 rounded-full bg-purple-300" />
-              <span className="h-1.5 w-14 rounded-full bg-blue-300" />
+              <span className="h-1.5 w-8 rounded-full bg-purple-400" />
+              <span className="h-1.5 w-14 rounded-full bg-blue-400" />
             </div>
             <div className="flex gap-1.5 items-center pl-3">
-              <span className="h-1.5 w-10 rounded-full bg-emerald-300" />
-              <span className="h-1.5 w-10 rounded-full bg-gray-200" />
+              <span className="h-1.5 w-10 rounded-full bg-emerald-400" />
+              <span className="h-1.5 w-10 rounded-full bg-white/15" />
             </div>
             {/* línea sugerida por IA */}
-            <div className="relative flex gap-1.5 items-center pl-3 -mr-1 px-1 py-1 rounded-md" style={{ background: "rgba(43,111,212,0.10)" }}>
-              <span className="h-1.5 w-12 rounded-full" style={{ background: BLUE }} />
-              <span className="h-1.5 w-8 rounded-full bg-blue-200" />
-              <span className="ml-auto inline-flex items-center gap-0.5 text-[8px] font-semibold text-blue-600">
+            <div className="relative flex gap-1.5 items-center pl-3 -mr-1 px-1 py-1 rounded-md" style={{ background: "rgba(43,111,212,0.18)" }}>
+              <span className="h-1.5 w-12 rounded-full" style={{ background: "#5AA2F5" }} />
+              <span className="h-1.5 w-8 rounded-full bg-blue-300" />
+              <span className="ml-auto inline-flex items-center gap-0.5 text-[8px] font-semibold text-blue-300">
                 <Sparkles size={8} /> Copilot
               </span>
             </div>
             <div className="flex gap-1.5 items-center pl-3">
-              <span className="h-1.5 w-8 rounded-full bg-gray-200" />
-              <span className="h-1.5 w-12 rounded-full bg-gray-100" />
+              <span className="h-1.5 w-8 rounded-full bg-white/15" />
+              <span className="h-1.5 w-12 rounded-full bg-white/10" />
             </div>
             <div className="flex gap-1.5 items-center">
-              <span className="h-1.5 w-6 rounded-full bg-purple-300" />
-              <span className="h-1.5 w-10 rounded-full bg-gray-200" />
+              <span className="h-1.5 w-6 rounded-full bg-purple-400" />
+              <span className="h-1.5 w-10 rounded-full bg-white/15" />
             </div>
           </div>
         </div>

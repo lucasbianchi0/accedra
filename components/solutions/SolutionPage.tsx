@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -12,15 +12,17 @@ import Contact from "@/components/Contact";
 import MobileCTA from "@/components/MobileCTA";
 import CountUp from "@/components/CountUp";
 import CapabilitiesBento from "./CapabilitiesBento";
-import ProcessSection from "./ProcessSection";
+import ProcessCardsRow from "./ProcessCardsRow";
 import CasesSection from "./CasesSection";
 import { useLang } from "@/lib/i18n/LangProvider";
 import { useT } from "@/lib/i18n/useT";
 import { es } from "@/lib/i18n/dictionaries/es";
 import { getLocalizedSolution } from "@/lib/i18n/solutions";
+import AmbientLight from "@/components/AmbientLight";
+import JsonLd from "@/components/seo/JsonLd";
+import { serviceLd, breadcrumbLd } from "@/lib/seo/jsonLd";
+import { EASE } from "@/components/Reveal";
 
-const BLUE = "#2B6FD4";
-const BLUE_RGB = "43,111,212";
 
 // Stats de credibilidad (a nivel empresa, iguales en todas las soluciones).
 const STATS = [
@@ -34,7 +36,6 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
   const { lang } = useLang();
   const t = useT();
   const raw = SOLUTIONS[slug];
-  const Icon = raw.icon;
 
   // Contenido efectivo: si hay industria con override, lo usa; si no, cae al base.
   // Las páginas de industria NO se traducen: quedan siempre en español.
@@ -47,16 +48,6 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoPlaying, setVideoPlaying] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // En mobile no cargamos el video (ahorra datos y mejora LCP): solo el poster.
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 767px)");
-    const update = () => setIsMobile(mq.matches);
-    update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
-  }, []);
 
   useEffect(() => {
     const v = videoRef.current;
@@ -66,10 +57,40 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
     // silently and the static poster stays visible (no black frame, no play button).
     const p = v.play();
     if (p !== undefined) p.catch(() => {});
-  }, [slug, isMobile]);
+  }, [slug]);
+
+  // El video se muestra en la página base (también en mobile: ahora es local y
+  // liviano). Las páginas de industria siguen con poster. Donde hay video, el
+  // poster y la imagen de respaldo son el PRIMER FRAME del propio video
+  // (/videos/{id}.jpg) para que no haya salto de contenido al arrancar.
+  const showVideo = !industry;
+  const heroVideoPoster = data.heroVideo.replace(/\.mp4$/, ".jpg");
+  const staticHeroSrc = showVideo ? heroVideoPoster : heroImage;
+
+  // Highlight del título en el color de la solución (reemplaza .gradient-text,
+  // que es azul global). Blanco → acento para que el degradado se lea premium.
+  const accentHighlight: CSSProperties = {
+    background: `linear-gradient(100deg, #fff 8%, ${data.accent} 118%)`,
+    WebkitBackgroundClip: "text",
+    backgroundClip: "text",
+    color: "transparent",
+  };
 
   return (
-    <main className="bg-[#07101D] min-h-screen">
+    <main className="relative bg-navy-800 min-h-screen" style={{ "--accent-rgb": data.accentRgb } as CSSProperties}>
+      {/* Structured data: sólo en la página base de la solución (las de industria
+          son noindex → no aportan al índice y ensuciarían el grafo). */}
+      {!industry && (() => {
+        const svc = serviceLd(slug);
+        const crumbs = breadcrumbLd([
+          { name: "Inicio", path: "/" },
+          { name: data.name, path: `/soluciones/${slug}` },
+        ]);
+        return <JsonLd data={svc ? [svc, crumbs] : [crumbs]} />;
+      })()}
+      {/* Misma capa de luz que el home: sin ella el canvas queda plano.
+          Va antes del Navbar para quedar por debajo de todo el contenido. */}
+      <AmbientLight variant="solution" />
       {/* Navbar principal (igual que el home) */}
       <Navbar />
 
@@ -80,21 +101,21 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
           {/* Static fallback — always visible; covers Low Power Mode / blocked autoplay */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={heroImage}
+            src={staticHeroSrc}
             alt=""
             aria-hidden="true"
             className="hero-zoom absolute inset-0 w-full h-full object-cover"
           />
           {/* Video solo en la página base y en desktop; industria/mobile usan poster */}
-          {!industry && !isMobile && (
+          {showVideo && (
             <video
               ref={videoRef}
               autoPlay
               muted
               loop
               playsInline
-              preload="metadata"
-              poster={data.heroImage}
+              preload="auto"
+              poster={heroVideoPoster}
               onPlaying={() => setVideoPlaying(true)}
               className={`hero-zoom absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
                 videoPlaying ? "opacity-100" : "opacity-0"
@@ -103,48 +124,44 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
               <source src={data.heroVideo} type="video/mp4" />
             </video>
           )}
-          {/* Gradient overlays for legibility */}
+          {/* Gradient overlays for legibility.
+              El borde INFERIOR del hero se funde con el canvas (navy-800 #0a1424),
+              no con navy-900: así el hero melta en el fondo de la página en vez de
+              cerrar un tono más oscuro y dibujar una costura contra Capacidades. */}
           <div className="absolute inset-0 bg-gradient-to-r from-[#07101D]/95 via-[#07101D]/80 to-[#07101D]/55" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#07101D] via-transparent to-[#07101D]/40" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a1424] via-transparent to-[#07101D]/40" />
         </div>
 
-        {/* Blue glow orbs */}
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl z-1 pointer-events-none animate-float" />
-        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-blue-500/8 rounded-full blur-3xl z-1 pointer-events-none animate-float-slow" />
+        {/* Glow orbs — color de identidad de la solución */}
+        <div className="absolute top-1/3 right-1/4 w-96 h-96 rounded-full blur-3xl z-1 pointer-events-none animate-float"
+          style={{ background: "rgba(var(--accent-rgb,43,111,212),0.12)" }} />
+        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 rounded-full blur-3xl z-1 pointer-events-none animate-float-slow"
+          style={{ background: "rgba(var(--accent-rgb,43,111,212),0.09)" }} />
 
-        <div className="relative z-10 max-w-[1280px] w-full mx-auto px-5 sm:px-8 lg:px-12">
-          <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}
+        <div className="relative z-10 max-w-[1320px] w-full mx-auto px-5 sm:px-8 lg:px-12">
+          <motion.div initial={{ opacity: 0, y: 34, filter: "blur(12px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ duration: 1.2, ease: EASE }}
             className="max-w-2xl">
             {industry && (
-              <div className="inline-flex items-center gap-2 mb-5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] text-blue-100"
-                style={{ background: `rgba(${BLUE_RGB},0.18)`, border: `1px solid rgba(${BLUE_RGB},0.4)` }}>
+              <div className="inline-flex items-center gap-2 mb-5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] text-white/90"
+                style={{ background: `rgba(var(--accent-rgb,43,111,212),0.18)`, border: `1px solid rgba(var(--accent-rgb,43,111,212),0.4)` }}>
                 Solución {industry.forLabel}
-              </div>
-            )}
-            {!industry && (
-              <div className="inline-flex items-center gap-2.5 mb-6">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center"
-                  style={{ background: `rgba(${BLUE_RGB},0.14)`, border: `1px solid rgba(${BLUE_RGB},0.3)` }}>
-                  <Icon size={20} style={{ color: "#3B8EF0" }} />
-                </div>
-                <span className="text-xs font-semibold tracking-[0.22em] uppercase text-blue-400">{data.eyebrow}</span>
               </div>
             )}
             <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-white leading-[1.05] mb-6">
               {data.title}{" "}
-              <span className="gradient-text">{data.highlight}</span>
+              <span style={accentHighlight}>{data.highlight}</span>
             </h1>
             {industry && (
               <p className="text-2xl md:text-3xl lg:text-[34px] font-bold leading-tight -mt-2 mb-7">
                 <span className="text-white/55">para </span>
-                <span className="gradient-text">{industry.name}</span>
+                <span style={accentHighlight}>{industry.name}</span>
               </p>
             )}
             <p className="text-gray-300 text-lg leading-relaxed max-w-xl mb-9">{subtitle}</p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="#contacto"
-                className="relative overflow-hidden shine inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white transition-all duration-200 hover:gap-3 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-blue-500/30"
-                style={{ background: BLUE, boxShadow: `0 8px 28px rgba(${BLUE_RGB},0.35)` }}>
+                className="relative overflow-hidden shine inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white transition-all duration-200 hover:gap-3 hover:-translate-y-0.5"
+                style={{ background: data.accent, boxShadow: `0 8px 28px rgba(var(--accent-rgb,43,111,212),0.4)` }}>
                 {st.ctaPrimary} <ArrowRight size={17} />
               </Link>
               <a href="#capacidades"
@@ -154,26 +171,39 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
             </div>
           </motion.div>
 
-          {/* Stats — barra centrada dentro de la portada */}
+          {/* Stats — panel de vidrio (glassmorphism) dentro de la portada.
+              SIN backdrop-filter a propósito: el blur real es incompatible con un
+              fade-in (haría saltar el color). El look vidriado se logra con capa
+              translúcida + sheen + brillo interior, y así TODA la barra aparece junta
+              (fade + slide) con los números contando, sin ningún cambio de color. */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.4 }}
-            className="mt-14 lg:mt-16 mx-auto max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-px rounded-2xl overflow-hidden border border-white/10"
-            style={{ background: "rgba(255,255,255,0.1)" }}>
+            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.1, delay: 0.55, ease: EASE }}
+            className="relative mt-14 lg:mt-16 mx-auto max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-px rounded-[20px] overflow-hidden border"
+            style={{
+              borderColor: "rgba(255,255,255,0.18)",
+              background: "rgba(255,255,255,0.14)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), 0 24px 60px rgba(0,0,0,0.42)",
+            }}>
+            {/* sheen superior */}
+            <div className="absolute inset-x-0 top-0 h-px z-10 pointer-events-none"
+              style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)" }} />
             {STATS.map((s, i) => (
               <div key={i}
-                className="px-4 py-5 flex flex-col items-center text-center"
-                style={{ background: "rgba(13,26,45,0.55)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}>
-                <CountUp value={s.value} className="text-2xl md:text-[28px] font-bold text-white leading-none" />
-                <span className="text-[11px] text-gray-400 font-medium mt-1.5 leading-tight">{s.label}</span>
+                className="group/stat px-4 py-6 flex flex-col items-center text-center transition-colors duration-300 hover:bg-white/[0.04]"
+                style={{
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%), rgba(14,26,46,0.42)",
+                }}>
+                <CountUp value={s.value} className="font-display text-2xl md:text-[30px] font-bold text-white leading-none tracking-tight" />
+                <span className="text-[11px] text-gray-400 font-medium mt-2 leading-tight">{s.label}</span>
               </div>
             ))}
           </motion.div>
 
           {/* Marcas con las que trabajamos — debajo de las stats */}
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.55 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.0, delay: 0.8, ease: EASE }}
             className="mt-10 lg:mt-12 max-w-3xl mx-auto">
-            <p className="text-center text-[10px] font-semibold uppercase tracking-[0.22em] text-gray-500 mb-5">
+            <p className="text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400 mb-5">
               {data.brandsLabel ?? "Partner certificado de"}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-x-9 sm:gap-x-12 gap-y-5">
@@ -222,11 +252,11 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
         </div>
       </section>
 
-      {/* ── Capabilities (bento con ilustraciones) ── */}
-      <CapabilitiesBento slug={slug} eyebrow={st.capsEyebrow} title={st.capsTitle} items={data.capabilities} />
+      {/* ── Capabilities ── */}
+      <CapabilitiesBento slug={slug} eyebrow={st.capsEyebrow} title={st.capsTitle} items={data.capabilities} consultable={!industry} />
 
-      {/* ── Cómo trabajamos (bento) ── */}
-      <ProcessSection />
+      {/* ── Cómo trabajamos (pasos por solución) ── */}
+      <ProcessCardsRow slug={slug} />
 
       {/* ── Casos de éxito (solo páginas de solución) ── */}
       {!industry && data.cases.length > 0 && <CasesSection cases={data.cases} slug={slug} />}

@@ -1,10 +1,44 @@
 @import "tailwindcss";
 
+/* ── Design tokens ────────────────────────────────────────────
+   Fuente única de verdad. Se consumen como utilidades de Tailwind
+   (bg-navy-800, text-accent, font-sans, rounded-card…) y como var()
+   en CSS. Antes las vars de :root estaban muertas y todo era hex
+   hardcodeado → deriva de radios/azules/sombras. */
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* Display corporativa/tech para títulos (Space Grotesk). Fuerte y geométrica;
+     el cuerpo sigue en --font-sans (Inter) para legibilidad. */
+  --font-display: var(--font-space-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  /* Escala navy (oscuro → claro) */
+  --color-navy-900: #07101d;
+  --color-navy-800: #0a1424;
+  --color-navy-700: #0d1a2d;
+  --color-navy-600: #112240;
+
+  /* Acento azul (base + variante accesible para texto sobre blanco/CTA) */
+  --color-accent: #2b6fd4;
+  --color-accent-600: #2560bc;
+  --color-accent-300: #7fb3f8;
+
+  /* Escala de radios (una sola geometría en todo el sitio) */
+  --radius-control: 0.75rem; /* 12px — inputs, chips */
+  --radius-card: 1.5rem;     /* 24px — cards */
+  --radius-panel: 1.75rem;   /* 28px — paneles grandes */
+
+  /* Elevación */
+  --shadow-card: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
 :root {
-  --blue-primary: #2B6FD4;
+  --blue-primary: #2b6fd4;
   --blue-dark: #1a4fa0;
-  --navy: #0D1A2D;
+  --navy: #0d1a2d;
   --navy-light: #112240;
+  /* Hairlines de vidrio (2 pesos, no 6 valores sueltos) */
+  --hairline: rgba(255, 255, 255, 0.09);
+  --hairline-strong: rgba(255, 255, 255, 0.14);
 }
 
 * {
@@ -12,16 +46,153 @@
 }
 
 /* Scroll suave para los anclajes internos (#capacidades, #contacto, etc.).
-   Se desactiva solo para quien tenga "Reducir movimiento" (ver más abajo). */
+   Es el FALLBACK: cuando Lenis está activo toma el control (ver `.lenis` abajo);
+   sin Lenis (o con "Reducir movimiento") queda este smooth nativo. */
 html {
   scroll-behavior: smooth;
+  background: #0a1424; /* canvas único (navy-800) */
 }
 
+/* ── Lenis (scroll suave premium) ──────────────────────────────
+   Estilos requeridos por Lenis. Cuando está activo desactiva el smooth nativo
+   (lo maneja él con inercia) y evita conflictos con iframes/áreas scrollables. */
+html.lenis,
+html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
+.lenis.lenis-smooth iframe { pointer-events: none; }
 
 body {
-  background: #ffffff;
-  color: #0D1A2D;
+  /* Fondo oscuro coherente con el tema: evita el flash blanco al cargar
+     y el overscroll blanco en iOS/trackpad. */
+  background: #0a1424; /* canvas único (navy-800) */
+  color: #e5eaf2;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* ── Foco visible por teclado (accesibilidad, WCAG 2.4.7) ─────
+   Un solo token de foco para todo lo interactivo. Antes no había
+   ninguno y varios elementos hacían outline-none. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-accent-300);
+  outline-offset: 2px;
+  border-radius: inherit;
+}
+
+/* ── Ritmo de secciones (un único sistema de espaciado) ───────
+   Antes cada sección tenía su propio padding (py-14 / py-20 / py-28 /
+   min-h-screen…) y cada header su propio margen. Estas utilidades
+   fijan los mismos valores en todo el sitio. */
+/* El espacio ENTRE dos secciones es el doble de este valor (pb de una + pt de la
+   siguiente). Con 7rem en desktop daban 224px de vacío, que con los fondos ya
+   encadenados se leía como un agujero: no hay corte de color que justifique la
+   pausa. 5rem deja 160px, suficiente para separar sin desconectar. */
+.section {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+@media (min-width: 1024px) {
+  .section {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+}
+
+/* Contenedor horizontal común */
+.container-x {
+  width: 100%;
+  max-width: 1320px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+@media (min-width: 640px) {
+  .container-x { padding-left: 2rem; padding-right: 2rem; }
+}
+@media (min-width: 1024px) {
+  .container-x { padding-left: 3rem; padding-right: 3rem; }
+}
+
+/* Bloque de encabezado de sección (eyebrow + título + subtítulo) */
+.section-head {
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  margin-bottom: 3.5rem;
+}
+@media (min-width: 1024px) {
+  .section-head { margin-bottom: 4rem; }
+}
+.eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #7fb3f8;
+}
+.section-title {
+  margin-top: 0.85rem;
+  font-size: 2.25rem;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  text-wrap: balance;
+}
+@media (min-width: 768px) {
+  .section-title { font-size: 3rem; }
+}
+
+/* ── Títulos en la display corporativa/tech (Space Grotesk) ───────
+   Todos los encabezados de la página toman la fuente fuerte; el cuerpo,
+   botones y UI siguen en Inter (heredan del body). El tracking negativo
+   apenas cierra las letras en tamaños grandes para un aire más sólido. */
+h1, h2, h3, h4, .section-title, .gradient-text {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+/* Utilidad para llevar cifras/labels puntuales a la display (p. ej. las stats
+   de la portada), sin depender de que sean un encabezado. */
+.font-display { font-family: var(--font-display); }
+.section-sub {
+  margin-top: 1rem;
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  color: #9fb0c7;
+}
+
+/* Halo sutil detrás de los títulos de sección principales: da profundidad y hace
+   que el título "flote". Estático y muy tenue (un detalle, no una mancha). Se
+   aplica SELECTIVAMENTE (no a todos los headers). `isolation` mantiene el ::before
+   detrás del texto pero por encima del fondo de la sección. */
+.title-halo {
+  position: relative;
+  isolation: isolate;
+}
+.title-halo::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  width: min(640px, 92%);
+  height: 260px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse at center,
+    rgba(96, 165, 250, 0.16) 0%,
+    rgba(96, 165, 250, 0.05) 42%,
+    transparent 72%
+  );
+  filter: blur(16px);
+  pointer-events: none;
+  z-index: -1;
 }
 
 ::-webkit-scrollbar {
@@ -78,6 +249,106 @@ body {
   to { background-position: 220% center; }
 }
 
+/* Color de acento por página de solución. Lee la CSS var --accent-rgb que
+   SolutionPage setea desde los datos; sin var, cae al azul de marca. */
+.text-accent { color: rgb(var(--accent-rgb, 43,111,212)); }
+
+/* ── CTA "border beam": una luz recorre el borde del botón e invita a clickear.
+   Estilo NUEVO (distinto a shine / pulse / shimmer ya usados en el sitio). ── */
+@property --beam-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes beam-rotate {
+  to { --beam-angle: 360deg; }
+}
+.border-beam::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px; /* grosor del borde luminoso */
+  background: conic-gradient(
+    from var(--beam-angle),
+    transparent 0deg,
+    transparent 250deg,
+    rgba(127, 179, 248, 0.55) 300deg,
+    #ffffff 330deg,
+    rgba(127, 179, 248, 0.55) 350deg,
+    transparent 360deg
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  animation: beam-rotate 3.2s linear infinite;
+  pointer-events: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .border-beam::before { animation: none; }
+}
+
+/* Banda CTA "océano": base navy profunda con una vena de azul que barre en loop.
+   Más oscuro = corporativo; el salto entre el navy (#08152A) y el azul medio
+   (#1E4C97) da suficiente contraste para que el movimiento SE VEA (antes eran
+   todos azules parecidos y se perdía). */
+@keyframes cta-ocean {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.cta-ocean {
+  background: linear-gradient(110deg, #08152A 0%, #0E2547 26%, #1E4C97 50%, #0E2547 74%, #08152A 100%);
+  background-size: 260% 260%;
+  animation: cta-ocean 13s ease-in-out infinite;
+  will-change: background-position;
+}
+/* Luces que derivan sobre la superficie (más rango que animate-float, que sólo
+   sube/baja 18px). Dos ritmos distintos → la superficie "ondula". */
+@keyframes cta-drift-a { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(46px, 22px); } }
+@keyframes cta-drift-b { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-42px, -26px); } }
+.cta-drift-a { animation: cta-drift-a 15s ease-in-out infinite; }
+.cta-drift-b { animation: cta-drift-b 11s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .cta-ocean { animation: none; background-position: 50% 50%; }
+  .cta-drift-a, .cta-drift-b { animation: none; }
+}
+
+/* ── Botón flotante de WhatsApp — vida premium ──────────────────
+   Tres capas sutiles: halo que respira + anillo "ping" cada tanto
+   (señal de disponible) + barrido de luz que cruza el botón. */
+@keyframes wa-halo {
+  0%, 100% { opacity: 0.28; transform: scale(1); }
+  50%      { opacity: 0.55; transform: scale(1.16); }
+}
+.wa-halo { animation: wa-halo 3.6s ease-in-out infinite; will-change: transform, opacity; }
+
+@keyframes wa-ping {
+  0%        { transform: scale(1);    opacity: 0.5; }
+  32%       { transform: scale(1.85); opacity: 0; }
+  100%      { transform: scale(1.85); opacity: 0; }
+}
+.wa-ping   { animation: wa-ping 4s cubic-bezier(0.4, 0, 0.2, 1) infinite; will-change: transform, opacity; }
+.wa-ping-2 { animation-delay: 0.55s; }
+
+@keyframes wa-sheen {
+  /* El brillo mide 25% del botón (w-1/4) y arranca en left:-25%. `translateX` va
+     en % del ancho PROPIO, así que el borde izquierdo cae en -25% + 0.25·T del
+     botón: con 260% terminaba al 40% (frenaba a la mitad). 520% lo saca por el
+     borde derecho (-25 + 130 = 105%), así cruza entero y desaparece. */
+  0%   { transform: translateX(-200%) skewX(-18deg); }
+  16%  { transform: translateX(520%)  skewX(-18deg); }
+  100% { transform: translateX(520%)  skewX(-18deg); }
+}
+.wa-sheen { animation: wa-sheen 5.5s ease-in-out infinite; will-change: transform; }
+
+@media (prefers-reduced-motion: reduce) {
+  .wa-halo, .wa-ping, .wa-sheen { animation: none; }
+  .wa-ping { opacity: 0; }
+}
+
+
 /* ── Premium motion utilities ─────────────────────────────── */
 
 /* Gentle ambient float for decorative glow orbs */
@@ -115,6 +386,39 @@ body {
   100% { transform: translateY(120%); opacity: 0; }
 }
 .beam { animation: beam-fall 6s ease-in-out infinite; }
+
+/* ── Acentos premium del fondo global (AmbientLight) ──────────────
+   Momentos "que rompen" el clima continuo: grilla en perspectiva tipo piso
+   tecnológico, núcleo de mesh eléctrico que respira, y beams azules cayendo.
+   Todos viven en la capa global con bordes enmascarados: acentúan sin cortar. */
+
+/* Piso en perspectiva: las líneas corren hacia el espectador (sensación de
+   avanzar por una malla tech). El paso coincide con el backgroundSize (48px). */
+@keyframes grid-flow {
+  from { background-position: 0 0; }
+  to   { background-position: 0 48px; }
+}
+.tech-grid-plane { animation: grid-flow 3.4s linear infinite; }
+
+/* Horizonte encendido: un latido suave de la línea de fuga. */
+@keyframes horizon-glow {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 0.9; }
+}
+.tech-horizon { animation: horizon-glow 4.5s ease-in-out infinite; }
+
+/* Núcleo de mesh eléctrico: respira más marcado que las lámparas suaves para
+   leerse como un foco de energía, no como un wash de ambiente. */
+@keyframes core-breathe {
+  0%, 100% { opacity: 0.5;  transform: translate(-50%, -50%) scale(1); }
+  50%      { opacity: 0.95; transform: translate(-50%, -50%) scale(1.09); }
+}
+.mesh-core { animation: core-breathe 7.5s ease-in-out infinite; will-change: transform, opacity; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tech-grid-plane, .tech-horizon { animation: none; }
+  .mesh-core { animation: none; opacity: 0.8; }
+}
 
 /* Glow azul que recorre las ilustraciones en secuencia (la parte azul "brilla") */
 @keyframes accent-glow {
@@ -338,4 +642,58 @@ a, button {
 }
 @media (prefers-reduced-motion: reduce) {
   .hero-zoom { animation: none; }
+}
+
+/* Partners: la card que gira depende de hover REAL (ver .flip-card más abajo,
+   limitado a `hover: hover` + `pointer: fine`). Elegirla por ancho de pantalla
+   dejaba una zona muerta: en un iPad de 768–1023px la card se renderizaba pero
+   no había ninguna forma de girarla, ni flip ni alternativa.
+   Ahora la variante se elige por capacidad del dispositivo. */
+@media (hover: none), (pointer: coarse) {
+  .partner-flip { display: none !important; }
+}
+/* La estática se retira sólo cuando el flip realmente puede funcionar: hover
+   real Y ancho suficiente. Si falta cualquiera de las dos, se muestra ella. */
+@media (hover: hover) and (pointer: fine) and (min-width: 768px) {
+  .partner-static { display: none !important; }
+}
+
+/* Zoom de foto al hacer hover sobre una card.
+   Tres detalles que hacen la diferencia entre un zoom premium y uno barato:
+
+   1. La curva. `ease-out` mete casi todo el recorrido en los primeros 250 ms y
+      después se arrastra: se percibe como un salto. Esta es una ease-in-out
+      suave, así el movimiento arranca y termina calmo.
+   2. `translateZ(0)` + `backface-visibility` promueven la imagen a su propia capa
+      de composición. Sin eso el navegador re-rasteriza el bitmap en cada frame y
+      las fotos con muchas líneas finas (techos, estructuras, rejas) tiemblan.
+   3. El estado de reposo ya está apenas escalado: evita la costura de subpíxel
+      contra el borde redondeado al volver, y le da margen al escalado. */
+.photo-zoom {
+  transform: scale(1.015) translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+  transition: transform 900ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.group:hover .photo-zoom {
+  transform: scale(1.055) translateZ(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .photo-zoom,
+  .group:hover .photo-zoom {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* Duotono azul de marca para las fotos de capacidades. En hover revela el color
+   original (transición manejada por transition-[filter] en el <img>). */
+.duotone {
+  filter: sepia(1) hue-rotate(188deg) saturate(2.6) brightness(0.92) contrast(1.08);
+}
+/* Revelar color solo en desktop (hover real); en mobile no pasa nada. */
+@media (min-width: 1024px) {
+  .group:hover .duotone {
+    filter: saturate(1.05) brightness(1);
+  }
 }

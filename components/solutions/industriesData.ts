@@ -2,7 +2,7 @@
 // /soluciones/[slug]/[industria]  (ej. /soluciones/firma-biometrica/juridicos)
 
 const photo = (id: number) =>
-  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=1920`;
+  `/images/${id}.jpg`;
 
 export type Industry = {
   slug: string;

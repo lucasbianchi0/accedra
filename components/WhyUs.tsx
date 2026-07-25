@@ -1,166 +1,134 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, ArrowLeft, ArrowUpRight, Building2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, ArrowUpRight, Package, Mountain, Landmark, Building2, type LucideIcon } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import Link from "next/link";
 import { HOME_CASES } from "./homeCases";
+import { Reveal, RevealGroup, revealItem } from "@/components/Reveal";
+import Testimonials from "@/components/Testimonials";
 
-function LinkedInIcon({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" width={16} height={16} fill="currentColor" className={className} aria-hidden="true">
-      <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.22.79 24 1.77 24h20.45c.98 0 1.78-.78 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z" />
-    </svg>
-  );
-}
-
-const BLUE = "#2B6FD4";
 const BLUE_RGB = "43,111,212";
-const AUTO_MS = 5500;
+const LINKEDIN = "https://www.linkedin.com/company/accedra-s.a.";
 
+const INDUSTRY_ICONS: Record<string, LucideIcon> = {
+  "Logística": Package, "Minería": Mountain, "Banca": Landmark,
+};
+
+// Casos de éxito: header centrado + cards con chip de industria, descripción y
+// 3 métricas duras + banner de cierre. Debajo, testimonios.
 export default function WhyUs() {
   const t = useT();
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const dragged = useRef(false);
-  const len = HOME_CASES.length;
-
-  const go = useCallback((next: number) => setIndex((next + len) % len), [len]);
-
-  useEffect(() => {
-    if (paused) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % len), AUTO_MS);
-    return () => clearInterval(id);
-  }, [paused, len]);
-
-  // Sin casos reales: ocultamos toda la sección hasta que haya.
-  if (len === 0) return null;
-
-  const c = HOME_CASES[index];
+  const cases = HOME_CASES;
 
   return (
-    <section id="nosotros" className="py-20 lg:py-28 bg-[#0D1A2D] relative overflow-hidden">
-      {/* ── Fondo premium: grilla técnica + auroras que flotan + hairline ── */}
-      <div className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `linear-gradient(rgba(${BLUE_RGB},0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(${BLUE_RGB},0.05) 1px, transparent 1px)`,
-          backgroundSize: "56px 56px",
-          maskImage: "radial-gradient(ellipse 85% 70% at 40% 42%, #000 5%, transparent 82%)",
-          WebkitMaskImage: "radial-gradient(ellipse 85% 70% at 40% 42%, #000 5%, transparent 82%)",
-        }} />
-      <div className="hidden sm:block absolute -top-40 -left-24 w-[560px] h-[560px] rounded-full pointer-events-none blur-3xl animate-float"
-        style={{ background: `radial-gradient(circle, rgba(${BLUE_RGB},0.14) 0%, transparent 65%)` }} />
-      <div className="hidden sm:block absolute bottom-[-140px] right-[-60px] w-[560px] h-[560px] rounded-full pointer-events-none blur-3xl animate-float-slow"
-        style={{ background: `radial-gradient(circle, rgba(96,110,220,0.12) 0%, transparent 68%)` }} />
-      <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-        style={{ background: `linear-gradient(90deg, transparent, rgba(${BLUE_RGB},0.3), transparent)` }} />
+    <section id="nosotros" className="section relative">
+        <div className="container-x relative z-10">
 
-      <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-12 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-
-          {/* ── Left: authority text ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ duration: 0.5 }}
-          >
-            <p className="text-sm font-semibold tracking-[0.22em] uppercase mb-5 text-blue-400">{t.whyUs.eyebrow}</p>
-            <h2 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-white leading-[1.06] mb-6">
+          {/* ── Header centrado ── */}
+          <Reveal className="title-halo text-center max-w-3xl mx-auto mb-12">
+            <h2 className="section-title mt-3">
               {t.whyUs.titlePre}{" "}
               <span className="gradient-text">{t.whyUs.titleHighlight}</span>
             </h2>
-            <p className="text-gray-300 text-lg leading-relaxed max-w-lg mb-9">{t.whyUs.body}</p>
-            <a href="#contacto"
-              className="relative overflow-hidden shine inline-flex items-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white transition-all duration-200 hover:gap-3 hover:-translate-y-0.5"
-              style={{ background: BLUE, boxShadow: `0 8px 28px rgba(${BLUE_RGB},0.35)` }}>
-              {t.whyUs.cta}
-              <ArrowRight size={17} />
-            </a>
-          </motion.div>
+            <div className="mx-auto mt-6 h-px w-28"
+              style={{ background: `linear-gradient(90deg, transparent, rgba(${BLUE_RGB},0.7), transparent)` }} />
+          </Reveal>
 
-          {/* ── Right: cases slider ── */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: 0.55 }}
-            onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)}
-          >
-            <motion.div
-              className="relative rounded-3xl overflow-hidden h-[440px] sm:h-[480px] cursor-grab active:cursor-grabbing touch-pan-y"
-              style={{ border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 40px 90px rgba(0,0,0,0.45)" }}
-              drag="x" dragConstraints={{ left: 0, right: 0 }} dragElastic={0.18}
-              onDragStart={() => { setPaused(true); dragged.current = false; }}
-              onDragEnd={(_, info) => {
-                dragged.current = Math.abs(info.offset.x) > 5;
-                if (info.offset.x < -60) go(index + 1);
-                else if (info.offset.x > 60) go(index - 1);
-              }}
-            >
-              {/* Toda la card es clickeable → detalle del caso (los botones de
-                  flecha/dots quedan por encima con z-10) */}
-              <Link href={`/casos/home/${index}`} aria-label={`Ver caso: ${c.title}`}
-                onClick={(e) => { if (dragged.current) { e.preventDefault(); dragged.current = false; } }}
-                className="absolute inset-0 z-[5]" />
-              <AnimatePresence>
-                <motion.div key={index} className="absolute inset-0"
-                  initial={{ opacity: 0, scale: 1.05 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-                  transition={{ duration: 0.7, ease: "easeInOut" }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={c.image} alt={c.title} className="absolute inset-0 w-full h-full object-cover" draggable={false} />
-                  <div className="absolute inset-0"
-                    style={{ background: "linear-gradient(to top, rgba(7,14,26,0.97) 6%, rgba(7,14,26,0.55) 48%, rgba(7,14,26,0.12) 100%)" }} />
+          {/* ── Cards de casos ── */}
+          {cases.length > 0 && (
+            <RevealGroup className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6" stagger={0.1} amount={0.12}>
+              {cases.map((c, i) => {
+                const TagIcon = INDUSTRY_ICONS[c.tag] ?? Building2;
+                return (
+                  <motion.div key={c.title} variants={revealItem} className="group h-full">
+                    <Link href={`/casos/home/${i}`} aria-label={`Ver caso: ${c.title}`}
+                      className="relative flex h-full flex-col rounded-panel overflow-hidden border border-white/[0.12] focus-visible:outline-none transition-all duration-500 hover:-translate-y-2"
+                      style={{
+                        // Superficie navy definida (no casi-transparente) → la card se
+                        // separa del fondo y flota. Top más claro = profundidad.
+                        background: "linear-gradient(180deg, #1B2D49 0%, #13223A 50%, #0C1826 100%)",
+                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14), 0 26px 66px rgba(0,0,0,0.55)",
+                      }}>
+                      {/* Ring azul en hover/foco */}
+                      <div className="absolute inset-0 z-[4] rounded-[inherit] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 pointer-events-none"
+                        style={{ boxShadow: `inset 0 0 0 1px rgba(${BLUE_RGB},0.55), 0 0 40px rgba(${BLUE_RGB},0.2)` }} />
 
-                  {/* Content */}
-                  <div className="absolute inset-x-0 bottom-0 p-7 sm:p-8">
-                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full mb-3"
-                      style={{ background: `rgba(${BLUE_RGB},0.25)`, color: "#CFE2FF", border: `1px solid rgba(${BLUE_RGB},0.5)`, backdropFilter: "blur(4px)" }}>
-                      <Building2 size={12} /> {c.tag}
-                    </span>
-                    <h3 className="text-white text-2xl sm:text-[26px] font-bold leading-tight mb-2.5 max-w-lg">{c.title}</h3>
-                    <p className="text-gray-300 text-[14px] leading-relaxed max-w-md mb-4">{c.desc}</p>
-                    <Link href={`/casos/home/${index}`}
-                      className="group/vc inline-flex items-center gap-1.5 text-[13px] font-semibold text-blue-300 hover:text-white transition-colors">
-                      Ver caso completo
-                      <ArrowUpRight size={14} className="transition-transform group-hover/vc:translate-x-0.5 group-hover/vc:-translate-y-0.5" />
+                      {/* Imagen + chip de industria */}
+                      <div className="relative h-48 overflow-hidden">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={c.image} alt={c.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" draggable={false} />
+                        <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"
+                          style={{ background: "rgba(10,18,32,0.72)", color: "#DCE9FB", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(6px)" }}>
+                          <TagIcon size={12} className="text-blue-300" />
+                          {c.tag}
+                        </span>
+                      </div>
+
+                      {/* Cuerpo */}
+                      <div className="relative z-[2] flex flex-1 flex-col p-6">
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <h3 className="text-white text-[17px] font-bold leading-snug group-hover:text-blue-100 transition-colors">{c.title}</h3>
+                          <ArrowUpRight size={18} className="flex-shrink-0 mt-1 text-gray-500 transition-all duration-300 group-hover:text-blue-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                        </div>
+
+                        {/* Descripción: una línea de contexto del caso */}
+                        <p className="text-gray-400 text-[13.5px] leading-relaxed mb-6 line-clamp-3">{c.desc}</p>
+
+                        {/* Divisor con acento azul */}
+                        <div className="mt-auto h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(43,111,212,0.4) 18%, rgba(255,255,255,0.10) 50%, rgba(43,111,212,0.4) 82%, transparent)" }} />
+
+                        {/* Métricas */}
+                        <div className="grid grid-cols-3 gap-3 pt-5">
+                          {c.stats.map((s) => (
+                            <div key={s.label}>
+                              <div className="font-bold text-[16px] leading-none whitespace-nowrap" style={{ color: "#5AA2F5", textShadow: "0 0 18px rgba(90,162,245,0.45)" }}>{s.value}</div>
+                              <div className="text-gray-400 text-[11px] mt-1.5 leading-tight">{s.label}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </Link>
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+                  </motion.div>
+                );
+              })}
+            </RevealGroup>
+          )}
 
-              {/* Arrows */}
-              <button aria-label="Anterior" onClick={() => go(index - 1)}
-                className="absolute top-5 right-16 z-10 w-9 h-9 rounded-full flex items-center justify-center text-white/85 hover:text-white transition-colors"
-                style={{ background: "rgba(10,18,33,0.6)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(6px)" }}>
-                <ArrowLeft size={15} />
-              </button>
-              <button aria-label="Siguiente" onClick={() => go(index + 1)}
-                className="absolute top-5 right-5 z-10 w-9 h-9 rounded-full flex items-center justify-center text-white/85 hover:text-white transition-colors"
-                style={{ background: "rgba(10,18,33,0.6)", border: "1px solid rgba(255,255,255,0.15)", backdropFilter: "blur(6px)" }}>
-                <ArrowRight size={15} />
-              </button>
+          {/* ── Banner de cierre — banda de marca con gradiente animado (cta-ocean),
+              reflejos que derivan y botón blanco invertido, igual que el CTA de
+              soluciones para que la página cierre coherente. ── */}
+          <Reveal delay={0.1} className="mt-8">
+            <div className="cta-ocean relative overflow-hidden rounded-panel px-8 sm:px-10 py-8 flex flex-col sm:flex-row items-center justify-between gap-6"
+              style={{ border: `1px solid rgba(${BLUE_RGB},0.35)`, boxShadow: "0 24px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -50px 80px rgba(0,0,0,0.4)" }}>
+              {/* Reflejos que derivan sobre la superficie a distinto ritmo */}
+              <div className="absolute -top-24 -right-10 w-80 h-80 rounded-full blur-3xl pointer-events-none cta-drift-a"
+                style={{ background: "radial-gradient(circle, rgba(90,162,245,0.28), transparent 70%)" }} />
+              <div className="absolute -bottom-28 left-1/4 w-72 h-72 rounded-full blur-3xl pointer-events-none cta-drift-b"
+                style={{ background: "radial-gradient(circle, rgba(43,111,212,0.32), transparent 70%)" }} />
+              {/* Trama de puntos que se desvanece */}
+              <div className="absolute inset-0 opacity-[0.14] pointer-events-none"
+                style={{ backgroundImage: "radial-gradient(rgba(255,255,255,0.7) 1px, transparent 1px)", backgroundSize: "22px 22px", maskImage: "linear-gradient(90deg, transparent, #000 60%)", WebkitMaskImage: "linear-gradient(90deg, transparent, #000 60%)" }} />
 
-              {/* Dots */}
-              <div className="absolute top-7 left-7 z-10 flex gap-2">
-                {HOME_CASES.map((_, i) => (
-                  <button key={i} aria-label={`Caso ${i + 1}`} onClick={() => go(i)}
-                    className="h-1.5 rounded-full transition-all duration-300"
-                    style={{ width: i === index ? 26 : 8, background: i === index ? "#EAF2FE" : "rgba(255,255,255,0.35)" }} />
-                ))}
+              <div className="relative text-center sm:text-left">
+                <p className="text-white text-[19px] sm:text-[21px] font-bold mb-1.5 leading-snug">Más de 400 empresas confían en Accedra IT Solutions</p>
+                <p className="text-white/80 text-[14px]">Somos el partner tecnológico para proyectos que mueven al país.</p>
               </div>
-            </motion.div>
-
-            {/* Follow on LinkedIn */}
-            <div className="flex justify-between items-center mt-5 gap-4">
-              <p className="text-gray-500 text-[13px] hidden sm:block">{t.whyUs.followText}</p>
-              <a href="https://www.linkedin.com/company/accedra-s.a." target="_blank" rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full text-sm font-semibold text-white transition-all duration-200 hover:bg-white/[0.08] hover:border-blue-500/40 group"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)" }}>
-                <LinkedInIcon className="text-blue-400" />
-                {t.whyUs.followButton}
-                <ArrowUpRight size={14} className="text-gray-400 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              <a href={LINKEDIN} target="_blank" rel="noopener noreferrer"
+                className="relative flex-shrink-0 inline-flex items-center gap-2 pl-6 pr-2 py-2.5 rounded-full text-[15px] font-semibold transition-all hover:gap-3"
+                style={{ background: "#ffffff", color: "#1E4C97", boxShadow: "0 10px 30px rgba(0,0,0,0.28)" }}>
+                Ver todos los casos de éxito
+                <span className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "rgba(30,76,151,0.12)" }}>
+                  <ArrowRight size={15} />
+                </span>
               </a>
             </div>
-          </motion.div>
-        </div>
-      </div>
+          </Reveal>
 
-    </section>
+          {/* Testimonios: cierran el bloque de confianza, pegados a los casos */}
+          <Testimonials />
+
+        </div>
+      </section>
   );
 }

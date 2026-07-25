@@ -36,6 +36,8 @@ export const es = {
       "De la red a la nube, la firma digital, los datos y la IA: resolvemos cada capa para que tu operación no se detenga.",
     featuredBadge: "Diferencial",
     viewSolution: "Ver solución",
+    tabBento: "Opción 1 · Bento",
+    tabCards: "Opción 2 · Cards",
     ctaText: "¿No sabés por dónde empezar?",
     ctaButton: "Solicitar un diagnóstico",
     ctaTrust: "Gratuito y sin compromiso · te respondemos en 24 h",
@@ -96,13 +98,15 @@ export const es = {
   },
 
   partners: {
-    eyebrow: "Ecosistema tecnológico",
-    title: "Integramos las mejores tecnologías",
+    eyebrow: "Con qué lo hacemos",
+    title: "Cada solución, sobre tecnología líder",
     subtitle:
-      "Partners certificados y distribuidores autorizados de las marcas líderes del mercado IT.",
+      "Todo lo que ves arriba se apoya en el ecosistema de los fabricantes líderes del mercado.",
     pill: "Partner certificado y distribuidor autorizado de cada fabricante",
     mobileMore: "+20 partners certificados",
     mobileMoreSub: "Hay más. Pero lo dejamos acá.",
+    mobileShowAll: "Ver todos los partners",
+    mobileShowLess: "Ver menos",
     // Alineado al orden del array `partners` en Partners.tsx
     blurbs: [
       "Líder mundial en redes empresariales: switching, routing y conectividad de alta disponibilidad.",
@@ -112,7 +116,6 @@ export const es = {
       "Tabletas de firma y digitalización biométrica para trámites 100% digitales.",
       "Almacenamiento all-flash de alto rendimiento con eficiencia y simplicidad de gestión.",
       "Gestión y remediación automática de vulnerabilidades en tiempo real.",
-      "Virtualización e infraestructura definida por software en una sola plataforma.",
       "Energía ininterrumpida (UPS) y protección eléctrica para infraestructura crítica.",
       "Redes Wi-Fi empresariales y acceso seguro con inteligencia en el borde.",
       "Cableado estructurado e infraestructura de conectividad de misión crítica.",
@@ -170,8 +173,8 @@ export const es = {
 
   testimonials: {
     eyebrow: "Testimonios",
-    titlePre: "La voz de",
-    titleHighlight: "nuestros clientes",
+    titlePre: "Lo que dicen",
+    titleHighlight: "de nosotros",
     subtitle:
       "Empresas líderes que confían su infraestructura crítica a nuestro equipo.",
     // Alineado al orden del array `testimonials` en Testimonials.tsx (el nombre queda igual)
@@ -231,6 +234,10 @@ export const es = {
     successTitle: "¡Mensaje enviado!",
     successBody:
       "Gracias por contactarnos. Un especialista de Accedra te escribirá en menos de 24 horas hábiles.",
+    errorGeneric:
+      "No pudimos enviar tu consulta. Probá de nuevo o escribinos a info@accedra.com.ar.",
+    errorRate:
+      "Recibimos varias consultas desde tu conexión. Esperá unos minutos o escribinos a info@accedra.com.ar.",
   },
 
   footer: {

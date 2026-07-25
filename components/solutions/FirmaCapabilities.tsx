@@ -140,10 +140,10 @@ export default function FirmaCapabilities({
   items: Capability[];
 }) {
   return (
-    <section className="py-14 lg:py-20 relative overflow-hidden bg-gradient-to-b from-[#07101D] to-[#0A1424]">
+    <section id="capacidades" className="section scroll-mt-24 relative overflow-hidden bg-gradient-to-b from-[#07101D] to-[#0A1424]">
       <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[700px] h-[380px] rounded-full pointer-events-none blur-3xl"
         style={{ background: "radial-gradient(circle, rgba(43,111,212,0.1) 0%, transparent 65%)" }} />
-      <div className="relative z-10 max-w-[1120px] mx-auto px-5 sm:px-8 lg:px-12">
+      <div className="relative z-10 max-w-[1320px] mx-auto px-5 sm:px-8 lg:px-12">
         <div className="text-center mb-10">
           <p className="text-xs font-semibold tracking-[0.22em] uppercase mb-3 text-blue-400">{eyebrow}</p>
           <h2 className="text-3xl md:text-4xl font-bold text-white">{title}</h2>
@@ -152,9 +152,9 @@ export default function FirmaCapabilities({
           {items.map((c, i) => (
             <motion.div key={c.title}
               initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }}
-              transition={{ duration: 0.45, delay: (i % 3) * 0.08 }}
-              className="rounded-2xl overflow-hidden flex flex-col border transition-all duration-300 hover:-translate-y-1.5"
-              style={{ background: "#0A0F19", borderColor: "rgba(255,255,255,0.08)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}
+              transition={{ duration: 0.45, delay: i * 0.06 }}
+              className="rounded-card overflow-hidden flex flex-col border border-white/10 bg-navy-700 transition-all duration-300 hover:-translate-y-1.5"
+              style={{ boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)" }}
             >
               <div className="relative h-40 flex items-center justify-center overflow-hidden"
                 style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.03), transparent 92%)" }}>
@@ -164,7 +164,7 @@ export default function FirmaCapabilities({
                   <Illustration i={i} />
                 </div>
               </div>
-              <div className="p-5 border-t border-white/[0.06]">
+              <div className="p-5 border-t border-white/10">
                 <h3 className="text-white font-bold text-[16px] mb-1.5">{c.title}</h3>
                 <p className="text-gray-400 text-[13.5px] leading-relaxed">{c.desc}</p>
               </div>

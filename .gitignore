@@ -32,6 +32,11 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# La plantilla no tiene secretos y documenta qué variables hay que definir.
+!.env.example
+
+# claude code — settings.json (proyecto) se commitea; los locales no
+.claude/settings.local.json
 
 # vercel
 .vercel

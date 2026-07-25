@@ -4,78 +4,97 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Capability } from "./solutionsData";
+import { Reveal, RevealGroup, revealItem } from "@/components/Reveal";
 
-const BLUE = "#2B6FD4";
-const BLUE_RGB = "43,111,212";
 
 // Fade de la foto hacia el fondo de la card (sin borde/línea dura).
+// Empieza al 62%: arrancando al 42% el difuminado se comía media foto y las
+// imágenes perdían definición. El oscurecido extra que necesita el texto al
+// subir en hover NO se resuelve acá —`mask-image` no se puede transicionar de
+// forma confiable— sino con la capa de opacidad de abajo.
 const PHOTO_MASK = "linear-gradient(to bottom, #000 62%, transparent 100%)";
 
 export default function CapabilitiesBento({
-  slug, eyebrow, title, items,
+  slug, title, items, consultable = false,
 }: {
   slug: string;
   eyebrow: string;
   title: string;
   items: Capability[];
+  consultable?: boolean; // muestra el botón "Consultar" en hover (solo páginas base, no industria)
 }) {
   return (
-    <section id="capacidades" data-solution={slug} className="scroll-mt-24 py-14 lg:py-20 relative overflow-hidden bg-gradient-to-b from-[#07101D] to-[#0A1424]">
-      <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[700px] h-[380px] rounded-full pointer-events-none blur-3xl"
-        style={{ background: `radial-gradient(circle, rgba(${BLUE_RGB},0.1) 0%, transparent 65%)` }} />
-      <div className="relative z-10 max-w-[1120px] mx-auto px-5 sm:px-8 lg:px-12">
-        <div className="text-center mb-10">
-          <p className="text-xs font-semibold tracking-[0.22em] uppercase mb-3 text-blue-400">{eyebrow}</p>
-          <h2 className="text-3xl md:text-4xl font-bold text-white">{title}</h2>
+    <section id="capacidades" data-solution={slug} className="section scroll-mt-24 relative">
+      {/* Sin fondo ni spotlight propios: el clima (luz + grano) lo pone
+          AmbientLight a nivel de página. El spotlight central que había acá
+          convertía la sección en un bloque más iluminado que sus vecinas y marcaba
+          las costuras arriba y abajo. */}
+      <div className="relative z-10 w-full max-w-[1320px] mx-auto px-5 sm:px-8 lg:px-12">
+        <div className="section-head">
+          <Reveal as="h2" delay={0.08} className="section-title mt-0">{title}</Reveal>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {items.map((c, i) => {
-            const Icon = c.icon;
+        <RevealGroup className="grid md:grid-cols-2 lg:grid-cols-3 gap-5" stagger={0.15} amount={0.12}>
+          {items.map((c) => {
             return (
               <motion.div key={c.title}
-                initial={{ opacity: 0, y: 22 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }}
-                transition={{ duration: 0.45, delay: (i % 3) * 0.08 }}
-                className="group relative rounded-2xl overflow-hidden flex flex-col border transition-all duration-300 hover:-translate-y-1.5"
-                style={{ background: "#0D1A2D", borderColor: "rgba(255,255,255,0.09)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07), 0 8px 30px rgba(0,0,0,0.3)" }}
+                variants={revealItem}
+                className="group relative rounded-card overflow-hidden flex flex-col border border-white/10 transition-colors duration-300"
+                style={{
+                  // Vidrio premium (mismo material que Testimonials/bento/proceso):
+                  // fill translúcido + blur + brillo interior, no un navy sólido.
+                  background: "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.025) 60%, rgba(255,255,255,0.015) 100%)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), 0 8px 30px rgba(0,0,0,0.3)",
+                }}
               >
-                {/* Glow azul en hover */}
-                <div className="absolute inset-0 z-20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                  style={{ boxShadow: `inset 0 0 0 1px rgba(${BLUE_RGB},0.4), 0 24px 60px rgba(${BLUE_RGB},0.18)` }} />
-
+                {/* Glow azul + borde que se enciende en hover (solo desktop) */}
+                <div className="absolute inset-0 z-30 rounded-card opacity-0 lg:group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  style={{ boxShadow: `inset 0 0 0 1px rgba(var(--accent-rgb,43,111,212),0.55), 0 34px 80px rgba(var(--accent-rgb,43,111,212),0.28)` }} />
                 {/* Foto */}
                 <div className="relative h-44">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={c.photo} alt="" aria-hidden="true"
-                    className="absolute inset-0 w-full h-full object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.07]"
+                    className="absolute inset-0 w-full h-full object-cover"
                     style={{ maskImage: PHOTO_MASK, WebkitMaskImage: PHOTO_MASK }} />
-                  {/* Tinte azul + oscurecido inferior para legibilidad */}
-                  <div className="absolute inset-0 pointer-events-none"
-                    style={{ background: `linear-gradient(155deg, rgba(${BLUE_RGB},0.30) 0%, rgba(13,26,45,0) 52%), linear-gradient(to bottom, transparent 42%, rgba(13,26,45,0.85) 100%)` }} />
-                  {/* Chip de ícono */}
-                  <div className="absolute bottom-3 left-4 z-10 w-11 h-11 rounded-xl flex items-center justify-center text-white"
-                    style={{ background: `linear-gradient(135deg, #5AA2F5, ${BLUE})`, boxShadow: `0 10px 24px rgba(${BLUE_RGB},0.5)`, border: "1px solid rgba(255,255,255,0.18)" }}>
-                    <Icon size={20} />
-                  </div>
+                  {/* Tinte de marca: se atenúa en hover para que la foto se encienda. */}
+                  <div className="absolute inset-0 pointer-events-none transition-opacity duration-500 lg:group-hover:opacity-60"
+                    style={{ background: `linear-gradient(155deg, rgba(var(--accent-rgb,43,111,212),0.22) 0%, rgba(13,26,45,0) 52%)` }} />
+                  {/* Oscurecido inferior, en capa aparte del tinte porque va en la
+                      dirección CONTRARIA: sube en hover. En reposo apenas apoya la
+                      base de la foto; al pasar el mouse el texto sube 52px sobre la
+                      imagen y necesita ese respaldo para seguir siendo legible. */}
+                  <div className="absolute inset-0 pointer-events-none opacity-60 transition-opacity duration-500 lg:group-hover:opacity-100"
+                    style={{ background: `linear-gradient(to bottom, transparent 30%, rgba(13,26,45,0.55) 68%, rgba(13,26,45,0.78) 100%)` }} />
                 </div>
 
-                {/* Texto */}
-                <div className="relative z-10 px-5 pb-5 pt-3 flex-1">
-                  <h3 className="text-white font-bold text-[16px] mb-1.5">{c.title}</h3>
-                  <p className="text-gray-400 text-[13.5px] leading-relaxed">{c.desc}</p>
+                {/* Texto (tamaño original). En hover TODO (texto + botón) sube con el mismo
+                    transform, y el botón va pegado a 12px del texto → misma distancia en toda card. */}
+                {/* `z-40` y no `z-10`: el glow del borde vive en z-30, así que el
+                    texto quedaba por debajo. En hover el bloque sube 52px y se apoya
+                    sobre la foto, donde tiene que leerse por encima de TODA capa. */}
+                <div className="relative z-40 px-5 pb-5 pt-4 lg:pt-3 lg:pb-4 flex-1">
+                  <div className="relative transition-transform duration-[600ms] ease-out lg:group-hover:-translate-y-[52px]">
+                    <h3 className="text-white font-bold text-[21px] lg:text-[19px] leading-snug mb-2 lg:mb-1.5">{c.title}</h3>
+                    {/* En reposo gris (jerarquía); en hover blanco, porque pasa a
+                        leerse contra la foto y no contra el fondo plano de la card. */}
+                    <p className="text-gray-400 lg:group-hover:text-white transition-colors duration-300 text-[13.5px] leading-relaxed">{c.desc}</p>
+                    {/* Botón Consultar → form local: siempre 12px debajo del texto (mismo bloque) */}
+                    {consultable && (
+                      <Link href="#contacto" aria-label={`Consultar sobre ${c.title}`}
+                        className="hidden lg:inline-flex items-center gap-1.5 absolute left-0 top-full mt-3 text-[13px] font-semibold text-white px-4 py-2 rounded-full opacity-0 transition-opacity duration-[600ms] ease-out group-hover:opacity-100 hover:gap-2.5"
+                        style={{ background: "rgb(var(--accent-rgb,43,111,212))", boxShadow: `0 10px 26px rgba(var(--accent-rgb,43,111,212),0.5)` }}>
+                        Consultar <ArrowRight size={14} />
+                      </Link>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             );
           })}
-        </div>
+        </RevealGroup>
 
-        <div className="mt-12 flex justify-center">
-          <Link href="#contacto"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-full text-[15px] font-semibold text-white transition-all hover:gap-3"
-            style={{ background: BLUE, boxShadow: `0 10px 30px rgba(${BLUE_RGB},0.4)` }}>
-            Solicitar un diagnóstico <ArrowRight size={17} />
-          </Link>
-        </div>
       </div>
     </section>
   );

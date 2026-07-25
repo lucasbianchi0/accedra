@@ -2,6 +2,8 @@ import PresenceSection from "@/components/maps/PresenceSection";
 
 export const metadata = {
   title: "Preview · Globo 3D de presencia — Accedra",
+  // Página interna de preview: fuera del índice.
+  robots: { index: false, follow: false },
 };
 
 export default function PreviewMapaPage() {

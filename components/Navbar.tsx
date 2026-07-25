@@ -67,7 +67,7 @@ export default function Navbar() {
       className="relative rounded-2xl p-1.5 overflow-hidden"
       style={{
         background: "linear-gradient(160deg, #16233a 0%, #0b1523 100%)",
-        border: "1px solid rgba(255,255,255,0.12)",
+        border: "1px solid rgba(255,255,255,0.1)",
         boxShadow: "0 24px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)",
       }}
     >
@@ -110,16 +110,21 @@ export default function Navbar() {
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? "glass shadow-lg shadow-black/20" : "bg-transparent"
+        className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,border-color,box-shadow] duration-300 ${
+          scrolled ? "glass shadow-lg shadow-black/20" : "bg-gradient-to-b from-black/40 to-transparent"
         }`}
+        // El borde se controla acá con un color EXPLÍCITO (transparente ↔ azul).
+        // Antes lo ponía `.glass` y, al no existir borde en el estado inicial, su
+        // color base era `currentColor` (texto casi blanco): `transition-all`
+        // animaba el borde de blanco → azul = el flash blanco al scrollear.
+        style={{ borderBottom: `1px solid ${scrolled ? "rgba(43,111,212,0.2)" : "transparent"}` }}
       >
-        <div className="w-full px-6 lg:px-16 xl:px-24 flex items-center justify-between h-18 py-4">
+        <div className="container-x flex items-center justify-between h-18 py-4">
           {/* Logo */}
           <a href="/" onClick={() => setOpen(false)} className="flex-shrink-0">
-            <div className="flex flex-col leading-none">
-              <span className="logo-word text-2xl text-white tracking-widest">ACCEDRA</span>
-              <span className="logo-sub text-[10px] tracking-[0.25em] text-blue-400 uppercase">IT Solutions</span>
+            <div className="flex items-center leading-none">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logos/accedra-outlined.svg" alt="Accedra" className="h-[26px] w-auto" />
             </div>
           </a>
 
@@ -132,12 +137,13 @@ export default function Navbar() {
                 onKeyDown={(e) => e.key === "Escape" && setSolOpen(false)}
                 aria-haspopup="menu"
                 aria-expanded={solOpen}
-                className={`flex items-center gap-1 text-sm font-medium transition-colors duration-200 ${
-                  activeSlug || solOpen ? "text-white" : "text-gray-300 hover:text-white"
+                className={`group relative flex items-center gap-1 text-sm font-medium transition-colors duration-200 ${
+                  activeSlug || solOpen ? "text-white" : "text-gray-200 hover:text-white"
                 }`}
               >
                 {t.nav.services}
                 <ChevronDown size={14} className={`transition-transform duration-200 ${solOpen ? "rotate-180" : ""}`} />
+                <span className={`absolute -bottom-1 left-0 h-0.5 bg-blue-400 transition-all duration-300 ${solOpen ? "w-full" : "w-0 group-hover:w-full"}`} />
               </button>
               <AnimatePresence>
                 {solOpen && (
@@ -158,7 +164,7 @@ export default function Navbar() {
               <a
                 key={l.href}
                 href={l.href}
-                className="text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 relative group"
+                className="text-sm font-medium text-gray-200 hover:text-white transition-colors duration-200 relative group"
               >
                 {l.label}
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-400 group-hover:w-full transition-all duration-300" />
@@ -169,7 +175,7 @@ export default function Navbar() {
             <a
               href="/#contacto"
               className="relative overflow-hidden shine text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all duration-200 hover:-translate-y-0.5"
-              style={{ background: "#2B6FD4", boxShadow: "0 8px 28px rgba(43,111,212,0.35)" }}
+              style={{ background: "#2560BC", boxShadow: "0 8px 28px rgba(43,111,212,0.35)" }}
             >
               {t.nav.cta}
             </a>
@@ -303,8 +309,8 @@ export default function Navbar() {
               <a
                 href="/#contacto"
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-center gap-2.5 w-full py-4 rounded-2xl text-white font-semibold text-[15px] transition-opacity hover:opacity-90 active:scale-[0.99]"
-                style={{ background: `#2B6FD4`, boxShadow: `0 8px 28px rgba(${BLUE_RGB},0.35)` }}
+                className="flex items-center justify-center gap-2.5 w-full py-4 rounded-full text-white font-semibold text-[15px] transition-opacity hover:opacity-90 active:scale-[0.99]"
+                style={{ background: `#2560BC`, boxShadow: `0 8px 28px rgba(${BLUE_RGB},0.35)` }}
               >
                 {t.nav.cta}
                 <ArrowRight size={15} />

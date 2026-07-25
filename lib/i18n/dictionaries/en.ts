@@ -36,6 +36,8 @@ export const en: Dict = {
       "From the network to the cloud, digital signature, data and AI: we cover every layer so your operations never stop.",
     featuredBadge: "Our edge",
     viewSolution: "View solution",
+    tabBento: "Option 1 · Bento",
+    tabCards: "Option 2 · Cards",
     ctaText: "Not sure where to start?",
     ctaButton: "Request an assessment",
     ctaTrust: "Free and no commitment · we reply within 24 h",
@@ -96,13 +98,15 @@ export const en: Dict = {
   },
 
   partners: {
-    eyebrow: "Technology ecosystem",
-    title: "We integrate the best technologies",
+    eyebrow: "What we build on",
+    title: "Every solution, built on leading technology",
     subtitle:
-      "Certified partners and authorized distributors of the leading brands in the IT market.",
+      "Everything above runs on the ecosystem of the market's leading manufacturers.",
     pill: "Certified partner and authorized distributor of every manufacturer",
     mobileMore: "+20 certified partners",
     mobileMoreSub: "There's more. But we'll stop here.",
+    mobileShowAll: "See all partners",
+    mobileShowLess: "See less",
     // Alineado al orden del array `partners` en Partners.tsx
     blurbs: [
       "World leader in enterprise networking: switching, routing and high-availability connectivity.",
@@ -112,7 +116,6 @@ export const en: Dict = {
       "Signature tablets and biometric digitization for 100% paperless processes.",
       "High-performance all-flash storage with efficiency and management simplicity.",
       "Automated vulnerability management and remediation in real time.",
-      "Virtualization and software-defined infrastructure on a single platform.",
       "Uninterruptible power (UPS) and electrical protection for critical infrastructure.",
       "Enterprise Wi-Fi networks and secure access with intelligence at the edge.",
       "Structured cabling and mission-critical connectivity infrastructure.",
@@ -170,8 +173,8 @@ export const en: Dict = {
 
   testimonials: {
     eyebrow: "Testimonials",
-    titlePre: "The voice of",
-    titleHighlight: "our clients",
+    titlePre: "What they say",
+    titleHighlight: "about us",
     subtitle:
       "Leading companies that trust their critical infrastructure to our team.",
     // Alineado al orden del array `testimonials` en Testimonials.tsx (el nombre queda igual)
@@ -231,6 +234,10 @@ export const en: Dict = {
     successTitle: "Message sent!",
     successBody:
       "Thanks for reaching out. An Accedra specialist will write to you in less than 24 business hours.",
+    errorGeneric:
+      "We couldn't send your message. Please try again or email us at info@accedra.com.ar.",
+    errorRate:
+      "We've received several messages from your connection. Please wait a few minutes or email us at info@accedra.com.ar.",
   },
 
   footer: {

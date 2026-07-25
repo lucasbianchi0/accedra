@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
 import { useLang } from "@/lib/i18n/LangProvider";
 import { LANGS, LANG_LABELS, LANG_NAMES } from "@/lib/i18n/config";
 
@@ -70,12 +71,12 @@ export default function LangSwitcher({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label="Idioma / Language"
-        className="flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-semibold text-gray-300 hover:text-white transition-colors"
+        className="flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-semibold text-gray-200 hover:text-white transition-colors"
         style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}
       >
         <GlobeIcon />
         {LANG_LABELS[lang]}
-        <span className={`text-[10px] transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
+        <ChevronDown size={14} className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
 
       {open && (
@@ -83,13 +84,9 @@ export default function LangSwitcher({
           role="listbox"
           className="absolute right-0 mt-2.5 w-44 p-1.5 rounded-2xl overflow-hidden z-50 origin-top-right animate-lang-pop"
           style={{
-            background:
-              "linear-gradient(160deg, rgba(28,42,66,0.55) 0%, rgba(10,18,33,0.62) 100%)",
-            border: "1px solid rgba(255,255,255,0.14)",
-            backdropFilter: "blur(26px) saturate(160%)",
-            WebkitBackdropFilter: "blur(26px) saturate(160%)",
-            boxShadow:
-              "0 24px 60px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.14), inset 0 0 0 1px rgba(255,255,255,0.02)",
+            background: "linear-gradient(160deg, #16233a 0%, #0b1523 100%)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            boxShadow: "0 24px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1)",
           }}
         >
           {/* brillo superior azul */}

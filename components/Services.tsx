@@ -1,161 +1,178 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { useRef } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import ServiceIllustration from "@/components/ServiceIllustration";
+import { Reveal, EASE } from "@/components/Reveal";
 
 const BLUE_RGB = "43,111,212";
 
 // Metadatos no traducibles (slug, destacado). Título, propuesta de valor e items
 // salen del diccionario por índice (t.services.columns[i]).
+// `accent` = color de identidad de cada solución (RGB). Por ahora sólo tiñe el
+// aura/blur de fondo que aparece al hacer hover. La idea es luego llevar el mismo
+// color a cada página. Familia fría-joya, pareja en el círculo cromático.
 const columns = [
-  { slug: "networking" },
-  { slug: "firma-biometrica", featured: true },
-  { slug: "consultoria" },
-  { slug: "seguridad" },
-  { slug: "software-ai" },
+  { slug: "networking", accent: "59,130,246" },      // azul (ancla)
+  { slug: "firma-biometrica", featured: true, accent: "124,108,246" }, // índigo/violeta
+  { slug: "consultoria", accent: "6,182,212" },      // cian/teal
+  { slug: "seguridad", accent: "16,185,129" },       // esmeralda
+  { slug: "software-ai", accent: "180,92,242" },     // púrpura/fucsia
 ];
 
 export default function Services() {
   const t = useT();
 
+  // Parallax ligado al scroll: header y grilla derivan a distinto ritmo mientras
+  // la sección cruza el viewport → profundidad, "sección viva". Sutil (rangos
+  // chicos) para que sea refinado, no estridente. `transform` no reflowea el
+  // layout, así que es barato y no mueve nada de su lugar real.
+  const sectionRef = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
+  const headerY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [34, -30]);
+  const gridY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [14, -18]);
+
   return (
-    <section id="servicios" className="py-20 lg:py-28 relative overflow-hidden bg-gradient-to-b from-[#0A1424] to-[#07101D]">
-      {/* Aurora background */}
-      <div className="absolute inset-x-0 top-0 h-[520px] pointer-events-none"
-        style={{ background: `radial-gradient(ellipse 60% 100% at 50% 0%, rgba(${BLUE_RGB},0.15) 0%, transparent 70%)` }} />
-      <div className="hidden sm:block absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full pointer-events-none blur-2xl animate-float"
-        style={{ background: `radial-gradient(circle, rgba(80,140,240,0.10) 0%, transparent 70%)` }} />
-      <div className="hidden sm:block absolute -bottom-32 -left-32 w-[500px] h-[500px] rounded-full pointer-events-none blur-2xl animate-float-slow"
-        style={{ background: `radial-gradient(circle, rgba(${BLUE_RGB},0.09) 0%, transparent 70%)` }} />
+    <section id="servicios" ref={sectionRef} className="section relative">
+      {/* Sin fondo propio: el clima visual lo pone AmbientLight a nivel de página.
+          Cualquier glow local acá quedaría recortado por la sección y dibujaría
+          una costura contra la vecina. */}
+      <div className="container-x relative z-10">
 
-      <div className="relative z-10 max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-12">
-
-        {/* Header */}
-        <div className="text-center mb-14">
-          <motion.p initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }}
-            className="text-xs font-semibold tracking-[0.22em] uppercase mb-3 text-blue-400">{t.services.eyebrow}</motion.p>
-          <motion.h2 initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ delay: 0.06 }}
-            className="text-4xl md:text-5xl font-bold text-white mb-4">{t.services.title}</motion.h2>
-          <motion.p initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.3 }} transition={{ delay: 0.11 }}
-            className="text-gray-400 text-[15px] max-w-xl mx-auto">{t.services.subtitle}</motion.p>
-        </div>
-
-        {/* Bento — 3 arriba + 2 anchas abajo */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-5">
-          {columns.map((col, i) => {
-            const cd = t.services.columns[i];
-            const featured = !!col.featured;
-            const wide = i >= 3;
-            return (
-              <motion.div key={col.slug}
-                initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.12 }}
-                transition={{ duration: 0.5, delay: (i % 3) * 0.08, ease: [0.22, 1, 0.36, 1] }}
-                className={`group relative ${wide ? "lg:col-span-3" : "lg:col-span-2"}`}
-              >
-                {/* Glow externo en hover */}
-                <div className="absolute -inset-1.5 rounded-[28px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none blur-2xl"
-                  style={{ background: `radial-gradient(circle at 50% 0%, rgba(${BLUE_RGB},0.26), transparent 70%)` }} />
-
-                <Link href={`/soluciones/${col.slug}`} aria-label={`${t.services.viewSolution}: ${cd.title}`}
-                  className="relative block h-full transition-transform duration-300 group-hover:-translate-y-1.5 transform-gpu">
-                  <div
-                    className="relative h-full rounded-[24px] overflow-hidden border flex flex-col transition-colors duration-300 group-hover:border-blue-500/40"
-                    style={{
-                      background: featured
-                        ? "linear-gradient(180deg, #14294B 0%, #0C1A31 50%, #0A1322 100%)"
-                        : "linear-gradient(180deg, #0F1F39 0%, #0C1826 54%, #0A1220 100%)",
-                      borderColor: featured ? `rgba(${BLUE_RGB},0.45)` : "rgba(255,255,255,0.10)",
-                      boxShadow: featured
-                        ? `inset 0 1px 0 rgba(255,255,255,0.11), 0 24px 60px rgba(0,0,0,0.42), 0 0 0 1px rgba(${BLUE_RGB},0.18)`
-                        : "inset 0 1px 0 rgba(255,255,255,0.07), 0 16px 44px rgba(0,0,0,0.34)",
-                    }}
-                  >
-                    {/* Fondo premium: textura + spotlight + hairline */}
-                    <div className="absolute inset-0 pointer-events-none z-[1]">
-                      <div className="absolute inset-0"
-                        style={{
-                          backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)",
-                          backgroundSize: "15px 15px",
-                          maskImage: "radial-gradient(ellipse 82% 58% at 50% 0%, #000 18%, transparent 74%)",
-                          WebkitMaskImage: "radial-gradient(ellipse 82% 58% at 50% 0%, #000 18%, transparent 74%)",
-                        }} />
-                      <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[380px] h-[230px] rounded-full blur-3xl"
-                        style={{ background: `radial-gradient(circle, rgba(${BLUE_RGB},${featured ? 0.24 : 0.15}) 0%, transparent 70%)` }} />
-                      <div className="absolute inset-x-5 top-0 h-px"
-                        style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.20), transparent)" }} />
-                    </div>
-
-                    {/* Ilustración anclada, base bajo el borde */}
-                    <div className="relative z-[2] h-40 overflow-hidden">
-                      <div className="absolute inset-0"
-                        style={{ background: `radial-gradient(ellipse 60% 85% at 50% 88%, rgba(${BLUE_RGB},0.32) 0%, transparent 66%)` }} />
-                      {/* Aura azul detrás en hover (2 capas) */}
-                      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[260px] rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                        style={{ background: `radial-gradient(circle, rgba(${BLUE_RGB},0.85) 0%, transparent 66%)` }} />
-                      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[210px] h-[160px] rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                        style={{ background: "radial-gradient(circle, rgba(90,162,245,0.7) 0%, transparent 70%)" }} />
-                      <div className="absolute left-1/2 -translate-x-1/2 origin-bottom transition-transform duration-500 scale-[0.88] group-hover:-translate-y-4 group-hover:scale-[0.92]"
-                        style={{ bottom: "-44px", filter: "drop-shadow(0 18px 30px rgba(0,0,0,0.32))", "--seq-delay": `${i}s` } as CSSProperties}>
-                        <ServiceIllustration slug={col.slug} />
-                      </div>
-                    </div>
-
-                    {/* Divisor sutil */}
-                    <div className="relative z-[2] h-px mx-6"
-                      style={{ background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.10) 20%, rgba(${BLUE_RGB},0.18) 50%, rgba(255,255,255,0.10) 80%, transparent)` }} />
-
-                    {/* Badge Diferencial */}
-                    {featured && (
-                      <span className="absolute top-4 right-4 z-10 text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                        style={{ background: `rgba(${BLUE_RGB},0.32)`, color: "#EAF2FE", border: `1px solid rgba(${BLUE_RGB},0.55)`, backdropFilter: "blur(6px)" }}>
-                        {t.services.featuredBadge}
-                      </span>
-                    )}
-
-                    {/* Contenido — categoría + propuesta de valor + tags */}
-                    <div className="relative z-[2] px-6 pt-5 pb-6 flex-1 flex flex-col">
-                      <h3 className="text-white text-lg font-bold tracking-tight uppercase mb-2.5 group-hover:text-blue-100 transition-colors">{cd.title}</h3>
-                      <p className="text-gray-400 text-[13.5px] leading-relaxed mb-6">{cd.desc}</p>
-                      <div className="flex flex-wrap gap-2 mb-5">
-                        {cd.items.map((p) => (
-                          <span key={p} className="text-[12px] font-medium px-2.5 py-1 rounded-full"
-                            style={{ background: `rgba(${BLUE_RGB},0.10)`, border: `1px solid rgba(${BLUE_RGB},0.28)`, color: "#CFE2FF" }}>
-                            {p}
-                          </span>
-                        ))}
-                      </div>
-                      <span className="mt-auto inline-flex items-center gap-1.5 text-[13px] font-semibold text-blue-300 group-hover:text-white transition-colors">
-                        {t.services.viewSolution}
-                        <ArrowRight size={13} className="transition-transform group-hover:translate-x-0.5" />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Bottom CTA */}
-        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
-          className="mt-16 flex flex-col items-center gap-3 text-center">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <p className="text-gray-500 text-[15px]">{t.services.ctaText}</p>
-            <a href="#contacto"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-white group px-6 py-3 rounded-full transition-all duration-200 hover:gap-3"
-              style={{ background: "#2B6FD4", boxShadow: `0 8px 28px rgba(${BLUE_RGB},0.35)` }}>
-              {t.services.ctaButton}
-              <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
-            </a>
-          </div>
-          {t.services.ctaTrust && <p className="text-gray-500 text-[12.5px]">{t.services.ctaTrust}</p>}
+        {/* Header (sin eyebrow) — capa de parallax propia (deriva más que la grilla) */}
+        <motion.div className="section-head title-halo" style={{ y: headerY }}>
+          <Reveal as="h2" className="section-title">{t.services.title}</Reveal>
+          <Reveal as="p" delay={0.1} className="section-sub">{t.services.subtitle}</Reveal>
         </motion.div>
+
+        {/* Grilla — segunda capa de parallax (deriva menos) */}
+        <motion.div style={{ y: gridY }}>
+          <CardsGrid t={t} />
+        </motion.div>
+
+        {/* El CTA de diagnóstico vive al final de Partners: cierra el bloque
+            soluciones + tecnologías una sola vez, no dos. */}
 
       </div>
     </section>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// OPCIÓN 2 — 5 cards iguales, corporativas premium
+// Todas las cards del MISMO tamaño, en una sola fila que entra en la view (5 col
+// en lg). Se conservan las ilustraciones, su hover y su fondo; cambia la caja de
+// la card y la manera de mostrar los tags de cada solución (chips en columna,
+// número de tags acotado para que respiren en el ancho angosto).
+// ─────────────────────────────────────────────────────────────────────────────
+function CardsGrid({ t }: { t: ReturnType<typeof useT> }) {
+  return (
+    <motion.div
+      initial="hidden" whileInView="show"
+      viewport={{ once: true, amount: 0.15, margin: "0px 0px -10% 0px" }}
+      variants={{ show: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } } }}
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-5 items-stretch"
+    >
+      {columns.map((col, i) => {
+        const cd = t.services.columns[i];
+        const featured = !!col.featured;
+        const accent = col.accent ?? BLUE_RGB; // color de identidad para el hover
+        // Bento: 3 arriba (col-span-2 = 1/3 cada una) + 2 abajo ANCHAS
+        // (col-span-3 = 1/2 cada una) → la fila de abajo llena todo el ancho.
+        // En tablet (sm, 2 col) la 5ª card quedaba sola media fila → la hacemos
+        // full-width ahí para evitar el hueco (2 + 2 + 1full).
+        const rowSpan =
+          (i === 4 ? "sm:col-span-2 " : "") + (i >= 3 ? "lg:col-span-3" : "lg:col-span-2");
+        return (
+          <motion.div key={col.slug}
+            variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } } }}
+            className={`h-full ${rowSpan}`}>
+            <Link href={`/soluciones/${col.slug}`}
+              aria-label={`${t.services.viewSolution}: ${cd.title}`}
+              className="group relative flex h-full flex-col rounded-[1.5rem] overflow-hidden border focus-visible:outline-none transition-transform duration-500 hover:-translate-y-1.5"
+              style={{
+                // Vidrio translúcido + blur del fondo, igual que Testimonios/WhyUs.
+                // La destacada lleva un tinte azul; las demás vidrio neutro.
+                background: featured
+                  ? `linear-gradient(180deg, rgba(${BLUE_RGB},0.16) 0%, rgba(255,255,255,0.03) 100%)`
+                  : "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.025) 100%)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                borderColor: featured ? `rgba(${BLUE_RGB},0.4)` : "rgba(255,255,255,0.1)",
+                boxShadow: featured
+                  ? `inset 0 1px 0 rgba(255,255,255,0.14), 0 18px 48px rgba(0,0,0,0.4)`
+                  : "inset 0 1px 0 rgba(255,255,255,0.12), 0 18px 48px rgba(0,0,0,0.36)",
+              }}
+            >
+              {/* Glow de fondo en hover — tiñe TODA la card con el color de identidad
+                  de la solución. z-[1]: sobre el fill base, debajo del contenido. */}
+              <div className="absolute inset-0 z-[1] rounded-[inherit] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                style={{ background: `radial-gradient(ellipse 100% 76% at 50% 30%, rgba(${accent},0.30) 0%, rgba(${accent},0.11) 42%, transparent 72%)` }} />
+              {/* Ring en hover/foco — mismo acento */}
+              <div className="absolute inset-0 z-[4] rounded-[inherit] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 pointer-events-none"
+                style={{ boxShadow: `inset 0 0 0 1px rgba(${accent},0.6), inset 0 26px 60px rgba(${accent},0.16), 0 0 40px rgba(${accent},0.25)` }} />
+
+              {/* Fondo premium: textura + spotlight (conservado de la opción 1) */}
+              <div className="absolute inset-0 pointer-events-none z-[1]">
+                <div className="absolute inset-0"
+                  style={{
+                    backgroundImage: "radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)",
+                    backgroundSize: "15px 15px",
+                    maskImage: "radial-gradient(ellipse 82% 58% at 50% 0%, #000 18%, transparent 74%)",
+                    WebkitMaskImage: "radial-gradient(ellipse 82% 58% at 50% 0%, #000 18%, transparent 74%)",
+                  }} />
+                <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-[300px] h-[210px] rounded-full blur-3xl"
+                  style={{ background: `radial-gradient(circle, rgba(${BLUE_RGB},${featured ? 0.24 : 0.15}) 0%, transparent 70%)` }} />
+              </div>
+
+              {/* Badge Diferencial */}
+              {featured && (
+                <span className="absolute top-3.5 right-3.5 z-10 text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"
+                  style={{ background: `rgba(${BLUE_RGB},0.32)`, color: "#EAF2FE", border: `1px solid rgba(${BLUE_RGB},0.55)`, backdropFilter: "blur(6px)" }}>
+                  {t.services.featuredBadge}
+                </span>
+              )}
+
+              {/* Ilustración — mismo tratamiento (fondo + hover) que la opción 1.
+                  Sin chips hay aire de sobra, así que le damos altura y presencia. */}
+              <div className="relative z-[2] h-48 overflow-hidden">
+                <div className="absolute inset-0"
+                  style={{ background: `radial-gradient(ellipse 60% 85% at 50% 88%, rgba(${BLUE_RGB},0.32) 0%, transparent 66%)` }} />
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[280px] rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                  style={{ background: `radial-gradient(circle, rgba(${accent},0.85) 0%, transparent 66%)` }} />
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[170px] rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                  style={{ background: `radial-gradient(circle, rgba(${accent},0.6) 0%, transparent 70%)` }} />
+                <div className="absolute left-1/2 -translate-x-1/2 origin-bottom transition-transform duration-500 scale-[0.92] group-hover:-translate-y-4 group-hover:scale-[0.97]"
+                  style={{ bottom: "-40px", filter: "drop-shadow(0 18px 30px rgba(0,0,0,0.32))", "--seq-delay": `${i}s` } as CSSProperties}>
+                  <ServiceIllustration slug={col.slug} />
+                </div>
+              </div>
+
+              {/* Divisor sutil */}
+              <div className="relative z-[2] h-px mx-6"
+                style={{ background: `linear-gradient(90deg, transparent, rgba(255,255,255,0.10) 20%, rgba(${BLUE_RGB},0.18) 50%, rgba(255,255,255,0.10) 80%, transparent)` }} />
+
+              {/* Contenido limpio — título + propuesta de valor + CTA. Los chips
+                  de tecnologías viven en la página de detalle: en el overview lo
+                  que engancha es el beneficio, no la lista de herramientas. */}
+              <div className="relative z-[2] px-6 pt-6 pb-6 flex-1 flex flex-col">
+                <h3 className="text-white text-xl font-bold tracking-tight uppercase mb-3 group-hover:text-blue-100 transition-colors">{cd.title}</h3>
+                <p className="text-gray-300 text-[15px] leading-relaxed mb-6">{cd.desc}</p>
+
+                <span className="mt-auto inline-flex items-center gap-1.5 text-sm font-semibold text-blue-300 group-hover:text-white transition-colors">
+                  {t.services.viewSolution}
+                  <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+                </span>
+              </div>
+            </Link>
+          </motion.div>
+        );
+      })}
+    </motion.div>
   );
 }

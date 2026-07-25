@@ -6,6 +6,8 @@ import { SOLUTIONS, SOLUTION_SLUGS } from "@/components/solutions/solutionsData"
 import { HOME_CASES } from "@/components/homeCases";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import JsonLd from "@/components/seo/JsonLd";
+import { breadcrumbLd } from "@/lib/seo/jsonLd";
 
 type Params = { solucion: string; n: string };
 
@@ -30,7 +32,14 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { solucion, n } = await params;
   const c = metaFor(solucion, Number(n));
   if (!c) return {};
-  return { title: `${c.title} · Caso de éxito · Accedra`, description: c.desc };
+  const url = `/casos/${solucion}/${n}`;
+  const title = `${c.title} · Caso de éxito · Accedra`;
+  return {
+    title: { absolute: title },
+    description: c.desc,
+    alternates: { canonical: url },
+    openGraph: { type: "article", url, title, description: c.desc },
+  };
 }
 
 export default async function Page({ params }: { params: Promise<Params> }) {
@@ -38,8 +47,18 @@ export default async function Page({ params }: { params: Promise<Params> }) {
   const idx = Number(n);
   const exists = solucion === "home" ? !!HOME_CASES[idx] : !!SOLUTIONS[solucion]?.cases[idx];
   if (!Number.isInteger(idx) || !exists) notFound();
+  const meta = metaFor(solucion, idx);
+  const crumbs =
+    solucion === "home"
+      ? [{ name: "Inicio", path: "/" }, { name: meta!.title, path: `/casos/${solucion}/${n}` }]
+      : [
+          { name: "Inicio", path: "/" },
+          { name: SOLUTIONS[solucion].name, path: `/soluciones/${solucion}` },
+          { name: meta!.title, path: `/casos/${solucion}/${n}` },
+        ];
   return (
     <>
+      <JsonLd data={breadcrumbLd(crumbs)} />
       <ScrollProgress />
       <CaseDetail solucion={solucion} index={idx} />
       <Footer />

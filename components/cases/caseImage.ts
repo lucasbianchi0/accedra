@@ -1,6 +1,6 @@
 // Imagen por industria para los casos de éxito (portada de card y de detalle).
 const casePhoto = (id: number) =>
-  `https://images.pexels.com/photos/${id}/pexels-photo-${id}.jpeg?auto=compress&cs=tinysrgb&w=1400`;
+  `/images/${id}.jpg`;
 
 const CASE_IMG: Record<string, string> = {
   "Logística": casePhoto(4481259),

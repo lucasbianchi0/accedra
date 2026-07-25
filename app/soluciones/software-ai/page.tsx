@@ -7,8 +7,17 @@ import ScrollProgress from "@/components/ScrollProgress";
 const data = SOLUTIONS["software-ai"];
 
 export const metadata = {
-  title: data.metaTitle,
+  // `absolute` evita que el template `| Accedra` del layout duplique la marca
+  // (metaTitle ya la incluye como "· Accedra").
+  title: { absolute: data.metaTitle },
   description: data.metaDescription,
+  alternates: { canonical: "/soluciones/software-ai" },
+  openGraph: {
+    type: "website",
+    url: "/soluciones/software-ai",
+    title: data.metaTitle,
+    description: data.metaDescription,
+  },
 };
 
 export default function Page() {

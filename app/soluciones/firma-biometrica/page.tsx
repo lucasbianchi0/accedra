@@ -7,8 +7,17 @@ import ScrollProgress from "@/components/ScrollProgress";
 const data = SOLUTIONS["firma-biometrica"];
 
 export const metadata = {
-  title: data.metaTitle,
+  // `absolute` evita que el template `| Accedra` del layout duplique la marca
+  // (metaTitle ya la incluye como "· Accedra").
+  title: { absolute: data.metaTitle },
   description: data.metaDescription,
+  alternates: { canonical: "/soluciones/firma-biometrica" },
+  openGraph: {
+    type: "website",
+    url: "/soluciones/firma-biometrica",
+    title: data.metaTitle,
+    description: data.metaDescription,
+  },
 };
 
 export default function Page() {

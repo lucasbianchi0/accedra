@@ -36,6 +36,8 @@ export const pt: Dict = {
       "Da rede à nuvem, assinatura digital, dados e IA: cobrimos cada camada para que sua operação não pare.",
     featuredBadge: "Diferencial",
     viewSolution: "Ver solução",
+    tabBento: "Opção 1 · Bento",
+    tabCards: "Opção 2 · Cards",
     ctaText: "Não sabe por onde começar?",
     ctaButton: "Solicitar um diagnóstico",
     ctaTrust: "Gratuito e sem compromisso · respondemos em 24 h",
@@ -96,13 +98,15 @@ export const pt: Dict = {
   },
 
   partners: {
-    eyebrow: "Ecossistema tecnológico",
-    title: "Integramos as melhores tecnologias",
+    eyebrow: "Com o que fazemos",
+    title: "Cada solução, sobre tecnologia líder",
     subtitle:
-      "Partners certificados e distribuidores autorizados das marcas líderes do mercado de TI.",
+      "Tudo o que você vê acima se apoia no ecossistema dos fabricantes líderes do mercado.",
     pill: "Partner certificado e distribuidor autorizado de cada fabricante",
     mobileMore: "+20 parceiros certificados",
     mobileMoreSub: "Tem mais. Mas paramos por aqui.",
+    mobileShowAll: "Ver todos os parceiros",
+    mobileShowLess: "Ver menos",
     // Alineado al orden del array `partners` en Partners.tsx
     blurbs: [
       "Líder mundial em redes corporativas: switching, routing e conectividade de alta disponibilidade.",
@@ -112,7 +116,6 @@ export const pt: Dict = {
       "Tablets de assinatura e digitalização biométrica para processos 100% digitais.",
       "Armazenamento all-flash de alto desempenho com eficiência e simplicidade de gestão.",
       "Gestão e remediação automática de vulnerabilidades em tempo real.",
-      "Virtualização e infraestrutura definida por software em uma única plataforma.",
       "Energia ininterrupta (UPS) e proteção elétrica para infraestrutura crítica.",
       "Redes Wi-Fi corporativas e acesso seguro com inteligência na borda.",
       "Cabeamento estruturado e infraestrutura de conectividade de missão crítica.",
@@ -170,8 +173,8 @@ export const pt: Dict = {
 
   testimonials: {
     eyebrow: "Depoimentos",
-    titlePre: "A voz dos",
-    titleHighlight: "nossos clientes",
+    titlePre: "O que dizem",
+    titleHighlight: "sobre nós",
     subtitle:
       "Empresas líderes que confiam sua infraestrutura crítica à nossa equipe.",
     // Alineado al orden del array `testimonials` en Testimonials.tsx (el nombre queda igual)
@@ -231,6 +234,10 @@ export const pt: Dict = {
     successTitle: "Mensagem enviada!",
     successBody:
       "Obrigado por entrar em contato. Um especialista da Accedra escreverá para você em menos de 24 horas úteis.",
+    errorGeneric:
+      "Não conseguimos enviar sua mensagem. Tente novamente ou escreva para info@accedra.com.ar.",
+    errorRate:
+      "Recebemos várias mensagens da sua conexão. Aguarde alguns minutos ou escreva para info@accedra.com.ar.",
   },
 
   footer: {

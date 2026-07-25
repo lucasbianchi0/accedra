@@ -1,24 +1,47 @@
 "use client";
 
+import Link from "next/link";
+import { motion } from "framer-motion";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
+import { Reveal, RevealGroup, revealItem } from "@/components/Reveal";
+
+// Destinos no traducibles, alineados POR ÍNDICE con footer.servicesItems y
+// footer.companyItems del diccionario (mismo patrón que services.columns).
+// Si se agrega o reordena un item en el diccionario, hay que tocar estos arrays.
+const SERVICE_HREFS = [
+  "/soluciones/networking",
+  "/soluciones/seguridad",
+  "/soluciones/firma-biometrica",
+  "/soluciones/consultoria",
+  "/soluciones/software-ai",
+];
+const COMPANY_HREFS = ["/#nosotros", "/#partners", "/#clientes", "/#contacto"];
 
 export default function Footer() {
   const t = useT();
   const sections = [
-    { title: t.footer.servicesTitle, items: t.footer.servicesItems },
-    { title: t.footer.companyTitle, items: t.footer.companyItems },
+    { title: t.footer.servicesTitle, items: t.footer.servicesItems, hrefs: SERVICE_HREFS },
+    { title: t.footer.companyTitle, items: t.footer.companyItems, hrefs: COMPANY_HREFS },
   ];
 
+  // Transparente y sin `border-t`: era el último bloque con fondo propio (navy-900
+  // sobre un canvas navy-800) MÁS una línea de 1px a todo el ancho — o sea, un
+  // escalón de color y una costura dibujada, las dos cosas que estamos sacando.
+  // Apoya sobre el canvas de su página: navy-800 en el home, navy-900 en las
+  // páginas de solución, seamless en ambos casos.
   return (
-    <footer className="bg-[#07101D] border-t border-white/5">
-      <div className="max-w-[1280px] mx-auto px-5 sm:px-8 lg:px-12 py-12 lg:py-16">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-14">
-          {/* Brand */}
-          <div className="lg:col-span-2">
+    <footer className="bg-transparent">
+      <div className="container-x py-12 lg:py-16">
+        <RevealGroup className="grid sm:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr] gap-10 lg:gap-16 mb-14" stagger={0.1}>
+          {/* Brand — a `1.5fr` la marca queda ancha pero sin la columna hueca que
+              dejaba el `col-span-2` sobre 4 columnas iguales. En tablet ocupa la
+              fila completa y los dos bloques de links se reparten debajo. */}
+          <motion.div variants={revealItem} className="sm:col-span-2 lg:col-span-1">
             <div className="mb-5">
-              <span className="logo-word text-2xl text-white tracking-widest">ACCEDRA</span>
-              <span className="logo-sub block text-[10px] tracking-[0.25em] text-blue-400 uppercase mt-0.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/logos/accedra-outlined.svg" alt="Accedra" className="h-7 w-auto" />
+              <span className="logo-sub block text-[11px] tracking-[0.25em] text-blue-400 uppercase mt-2">
                 IT Solutions
               </span>
             </div>
@@ -38,7 +61,7 @@ export default function Footer() {
                 </svg>
               </a>
               <a
-                href="https://www.instagram.com/accedra"
+                href="https://www.instagram.com/accedra_sa/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Accedra en Instagram"
@@ -49,30 +72,32 @@ export default function Footer() {
                 </svg>
               </a>
             </div>
-          </div>
+          </motion.div>
 
           {/* Links */}
           {sections.map((section) => (
-            <div key={section.title}>
+            <motion.div key={section.title} variants={revealItem}>
               <h4 className="text-white font-semibold text-sm mb-5 tracking-wide">{section.title}</h4>
-              <ul className="space-y-3">
-                {section.items.map((item) => (
+              <ul className="space-y-1">
+                {section.items.map((item, i) => (
                   <li key={item}>
-                    <a
-                      href="#"
-                      className="text-gray-500 hover:text-gray-300 text-sm transition-colors"
+                    {/* `py-2` sube el target táctil de ~20px a 36px; el `space-y`
+                        del <ul> baja a 1 para que el alto visual no cambie. */}
+                    <Link
+                      href={section.hrefs[i] ?? "/"}
+                      className="block py-2 text-gray-500 hover:text-gray-300 text-sm transition-colors"
                     >
                       {item}
-                    </a>
+                    </Link>
                   </li>
                 ))}
               </ul>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </RevealGroup>
 
         {/* Contact info bar */}
-        <div className="border-t border-white/5 pt-8 grid sm:grid-cols-3 gap-6 mb-8">
+        <Reveal as="div" y={16} blur={false} className="border-t border-white/10 pt-8 grid sm:grid-cols-3 gap-6 mb-8">
           <div className="flex items-center gap-3">
             <MapPin size={14} className="text-blue-400 flex-shrink-0" />
             <span className="text-gray-500 text-xs">Irala 1950, 2° piso · CABA, Argentina</span>
@@ -85,14 +110,14 @@ export default function Footer() {
             <Mail size={14} className="text-blue-400 flex-shrink-0" />
             <span className="text-gray-500 text-xs">info@accedra.com.ar</span>
           </div>
-        </div>
+        </Reveal>
 
         {/* Bottom */}
-        <div className="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="text-gray-600 text-xs">
+        <div className="border-t border-white/10 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="text-gray-500 text-xs">
             © {new Date().getFullYear()} Accedra S.A. {t.footer.rights}
           </p>
-          <p className="text-gray-700 text-xs">
+          <p className="text-gray-500 text-xs">
             {t.footer.madeIn}
           </p>
         </div>

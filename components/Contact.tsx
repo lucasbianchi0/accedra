@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Send, MapPin, Phone, Mail, CheckCircle, ArrowUpRight } from "lucide-react";
+import { Send, MapPin, Phone, Mail, CheckCircle, ArrowUpRight, ChevronDown } from "lucide-react";
 import { whatsappLink } from "@/lib/whatsapp";
 import { useT } from "@/lib/i18n/useT";
+import { LIMITS } from "@/lib/contact/schema";
 
 const BLUE = "#2B6FD4";
 const BLUE_RGB = "43,111,212";
@@ -39,22 +40,39 @@ function Field({
   );
 }
 
+// Inputs de vidrio: fill translúcido + borde NÍTIDO (lo que los delinea) + sombra
+// interna sutil. En un panel glass, el borde define el campo, no el contraste de fill.
 const fieldClass =
-  "w-full rounded-xl px-4 py-3.5 text-sm text-white outline-none bg-white/[0.04] border border-white/10 transition-all duration-200 placeholder:text-gray-600 focus:border-blue-500/70 focus:bg-white/[0.06] focus:ring-4 focus:ring-blue-500/10";
+  "w-full rounded-control px-4 py-3.5 text-sm text-white outline-none border transition-all duration-200 " +
+  "bg-white/[0.06] border-white/[0.15] placeholder:text-gray-400 " +
+  "shadow-[inset_0_1px_1px_rgba(0,0,0,0.15)] " +
+  "hover:bg-white/[0.09] hover:border-white/25 " +
+  "focus:border-blue-400 focus:bg-white/[0.10] focus:ring-4 focus:ring-blue-500/20";
 
 export default function Contact() {
   const t = useT();
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<"rate" | "generic" | null>(null);
   const [form, setForm] = useState({
     name: "", company: "", email: "", service: "", message: "",
   });
+  // Honeypot: lo llenan los bots que completan todo input del DOM, no las personas.
+  const [website, setWebsite] = useState("");
+  // Se mide el tiempo transcurrido (no un timestamp absoluto) para que un reloj
+  // desfasado en la máquina del visitante no invalide envíos legítimos.
+  // El sello se toma en un efecto y no en el render: Date.now() es impura y el
+  // compilador de React de Next 16 rechaza llamarla durante el renderizado.
+  const mountedAt = useRef(0);
+  useEffect(() => {
+    mountedAt.current = Date.now();
+  }, []);
 
   const contactInfo = [
     { icon: WhatsAppIcon, label: t.contact.whatsappLabel, value: t.contact.whatsappValue, href: whatsappLink(), rgb: "37,211,102", iconColor: "#ffffff", solid: true },
     { icon: Phone, label: "(+54 11) 5365-9887", value: t.contact.phoneValue, href: "tel:+541153659887", rgb: BLUE_RGB, iconColor: "#7FB3F8", solid: false },
     { icon: Mail, label: "info@accedra.com.ar", value: t.contact.emailValue, href: "mailto:info@accedra.com.ar", rgb: BLUE_RGB, iconColor: "#7FB3F8", solid: false },
-    { icon: MapPin, label: "Irala 1950, 2° piso · CABA", value: t.contact.addressValue, href: "#", rgb: BLUE_RGB, iconColor: "#7FB3F8", solid: false },
+    { icon: MapPin, label: "Irala 1950, 2° piso · CABA", value: t.contact.addressValue, href: "https://www.google.com/maps/search/?api=1&query=Irala+1950+CABA+Argentina", rgb: BLUE_RGB, iconColor: "#7FB3F8", solid: false },
   ];
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -62,44 +80,54 @@ export default function Contact() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // TODO: conectar a route handler / CRM real (hoy es un placeholder)
-    await new Promise((r) => setTimeout(r, 1000));
-    setLoading(false);
-    setSent(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...form,
+          website, // honeypot
+          elapsedMs: Date.now() - mountedAt.current,
+        }),
+      });
+      if (res.ok) {
+        setSent(true);
+      } else {
+        setError(res.status === 429 ? "rate" : "generic");
+      }
+    } catch {
+      setError("generic");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <section id="contacto" className="relative py-20 lg:py-28 overflow-hidden">
-      {/* Clean gradient base */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0D1A2D] via-[#0A1526] to-[#07101D]" />
-      {/* Soft glows */}
-      <div
-        className="hidden sm:block absolute top-0 right-0 w-[720px] h-[720px] pointer-events-none"
-        style={{ background: `radial-gradient(circle at top right, rgba(${BLUE_RGB},0.14) 0%, transparent 58%)` }}
-      />
-      <div
-        className="hidden sm:block absolute -bottom-20 -left-20 w-[520px] h-[520px] pointer-events-none animate-float-slow"
-        style={{ background: `radial-gradient(circle, rgba(${BLUE_RGB},0.08) 0%, transparent 70%)` }}
-      />
-
-      <div className="relative z-10 max-w-[1200px] mx-auto px-5 sm:px-8 lg:px-12">
+    <section id="contacto" className="section relative">
+      {/* Sin fondo ni glows propios: se apoya en el fondo único de la página
+          (AmbientLight). Cualquier luz local acá dibujaría una costura contra el
+          footer y la sección anterior. */}
+      <div className="relative z-10 container-x">
         <div className="grid lg:grid-cols-5 gap-10 lg:gap-14 items-stretch">
 
           {/* ── Left: info panel ── */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
+            viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+            transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-2 flex flex-col"
           >
-            <span className="text-xs font-semibold tracking-[0.22em] uppercase text-blue-400 mb-5 block">
-              {t.contact.eyebrow}
-            </span>
-            <h2 className="text-3xl md:text-4xl lg:text-[42px] font-bold text-white leading-[1.1] mb-5">
-              {t.contact.titlePre}{" "}
-              <span className="gradient-text">{t.contact.titleHighlight}</span>
-            </h2>
+            <div className="title-halo">
+              <span className="text-xs font-semibold tracking-[0.22em] uppercase text-blue-400 mb-5 block">
+                {t.contact.eyebrow}
+              </span>
+              <h2 className="text-3xl md:text-4xl lg:text-[42px] font-bold text-white leading-[1.1] mb-5">
+                {t.contact.titlePre}{" "}
+                <span className="gradient-text">{t.contact.titleHighlight}</span>
+              </h2>
+            </div>
             <p className="text-gray-400 text-[15px] leading-relaxed mb-10 max-w-sm">
               {t.contact.body}
             </p>
@@ -134,7 +162,7 @@ export default function Contact() {
                         {m.label}
                         <ArrowUpRight size={12} className="opacity-0 group-hover:opacity-60 transition-opacity" />
                       </p>
-                      <p className="text-gray-500 text-xs mt-0.5">{m.value}</p>
+                      <p className="text-gray-400 text-xs mt-0.5">{m.value}</p>
                     </div>
                   </a>
                 );
@@ -144,10 +172,10 @@ export default function Contact() {
 
           {/* ── Right: form card ── */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 28 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.08 }}
+            viewport={{ once: true, margin: "0px 0px -10% 0px" }}
+            transition={{ duration: 0.85, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
             className="lg:col-span-3"
           >
             {/* Gradient border wrapper */}
@@ -158,12 +186,11 @@ export default function Contact() {
               {/* Premium "respuesta < 24hs" badge */}
               <div className="absolute -top-3.5 right-5 sm:right-8 z-20">
                 <div
-                  className="animate-badge-pulse flex items-center gap-2 pl-2.5 pr-3.5 py-1.5 rounded-full text-[11px] font-semibold text-white whitespace-nowrap"
+                  className="flex items-center gap-2 pl-2.5 pr-3.5 py-1.5 rounded-full text-[11px] font-semibold text-white whitespace-nowrap"
                   style={{
-                    background: "linear-gradient(135deg, rgba(34,197,94,0.24), rgba(10,18,33,0.92))",
-                    border: "1px solid rgba(34,197,94,0.45)",
-                    backdropFilter: "blur(10px)",
-                    WebkitBackdropFilter: "blur(10px)",
+                    background: "#0C1A2C",
+                    border: "1px solid rgba(34,197,94,0.4)",
+                    boxShadow: "0 10px 26px rgba(0,0,0,0.45)",
                   }}
                 >
                   <span className="relative flex h-2 w-2">
@@ -175,30 +202,44 @@ export default function Contact() {
               </div>
 
               <div
-                className="rounded-[25px] h-full p-6 sm:p-9 md:p-10"
+                className="relative rounded-[25px] h-full p-6 sm:p-9 md:p-10 border border-white/[0.10] overflow-hidden"
                 style={{
-                  background: "rgba(10,18,33,0.85)",
-                  backdropFilter: "blur(20px)",
-                  WebkitBackdropFilter: "blur(20px)",
-                  boxShadow: "0 40px 90px rgba(0,0,0,0.4)",
+                  // Superficie navy SÓLIDA y consistente (sin backdrop-filter): antes
+                  // el blur+saturate dejaba pasar la luz ambiental, que se mueve al
+                  // scrollear → el panel "cambiaba de color" y se veía manchado. Ahora
+                  // es un panel firme, premium y parejo en todo momento.
+                  background: "linear-gradient(165deg, #17293F 0%, #111F32 52%, #0C1826 100%)",
+                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), 0 40px 100px rgba(0,0,0,0.5)",
                 }}
               >
+                {/* Sheen superior — el reflejo que hace que se lea como vidrio */}
+                <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
+                  style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)" }} />
                 {!sent ? (
                   <>
                     <div className="mb-8">
                       <h3 className="text-white font-bold text-2xl mb-1.5">{t.contact.formTitle}</h3>
-                      <p className="text-gray-500 text-sm">{t.contact.formSubtitle}</p>
+                      <p className="text-gray-400 text-sm">{t.contact.formSubtitle}</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
+                      {/* Honeypot — fuera de pantalla y del orden de tabulación.
+                          `aria-hidden` evita que un lector de pantalla lo anuncie. */}
+                      <div className="absolute -left-[9999px] top-0 w-px h-px overflow-hidden" aria-hidden="true">
+                        <label htmlFor="website">No completar</label>
+                        <input id="website" name="website" type="text" tabIndex={-1}
+                          autoComplete="off" value={website}
+                          onChange={(e) => setWebsite(e.target.value)} />
+                      </div>
+
                       <div className="grid sm:grid-cols-2 gap-5">
                         <Field label={t.contact.fieldName}>
-                          <input type="text" required value={form.name}
+                          <input type="text" required maxLength={LIMITS.name} value={form.name}
                             onChange={(e) => set("name", e.target.value)}
                             placeholder={t.contact.placeholderName} className={fieldClass} />
                         </Field>
                         <Field label={t.contact.fieldCompany}>
-                          <input type="text" required value={form.company}
+                          <input type="text" required maxLength={LIMITS.company} value={form.company}
                             onChange={(e) => set("company", e.target.value)}
                             placeholder={t.contact.placeholderCompany} className={fieldClass} />
                         </Field>
@@ -206,23 +247,29 @@ export default function Contact() {
 
                       <div className="grid sm:grid-cols-2 gap-5">
                         <Field label={t.contact.fieldEmail}>
-                          <input type="email" required value={form.email}
+                          <input type="email" required maxLength={LIMITS.email} value={form.email}
                             onChange={(e) => set("email", e.target.value)}
                             placeholder={t.contact.placeholderEmail} className={fieldClass} />
                         </Field>
                         <Field label={t.contact.fieldService}>
-                          <select value={form.service} onChange={(e) => set("service", e.target.value)}
-                            className={`${fieldClass} appearance-none cursor-pointer`}>
-                            <option value="" className="bg-[#0A1221]">{t.contact.selectDefault}</option>
-                            {SERVICE_VALUES.map((v) => (
-                              <option key={v} value={v} className="bg-[#0A1221]">{t.contact.serviceOptions[v]}</option>
-                            ))}
-                          </select>
+                          <div className="relative">
+                            <select value={form.service} onChange={(e) => set("service", e.target.value)}
+                              className={`${fieldClass} appearance-none cursor-pointer pr-10`}>
+                              <option value="" className="bg-[#0A1221]">{t.contact.selectDefault}</option>
+                              {SERVICE_VALUES.map((v) => (
+                                <option key={v} value={v} className="bg-[#0A1221]">{t.contact.serviceOptions[v]}</option>
+                              ))}
+                            </select>
+                            <ChevronDown
+                              size={16}
+                              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                            />
+                          </div>
                         </Field>
                       </div>
 
                       <Field label={t.contact.fieldMessage}>
-                        <textarea required rows={3} value={form.message}
+                        <textarea required rows={3} maxLength={LIMITS.message} value={form.message}
                           onChange={(e) => set("message", e.target.value)}
                           placeholder={t.contact.placeholderMessage}
                           className={`${fieldClass} resize-none`} />
@@ -231,19 +278,28 @@ export default function Contact() {
                       <button
                         type="submit"
                         disabled={loading}
-                        className="w-full flex items-center justify-center gap-3 py-4 rounded-xl text-white font-semibold text-[15px] transition-all duration-200 disabled:opacity-60 hover:brightness-110 active:scale-[0.99]"
+                        className="border-beam group relative w-full flex items-center justify-center gap-3 py-4 rounded-control text-white font-semibold text-[15px] transition-all duration-300 disabled:opacity-60 hover:-translate-y-0.5 active:scale-[0.99] hover:shadow-[0_16px_44px_rgba(43,111,212,0.5)]"
                         style={{
-                          background: BLUE,
-                          boxShadow: `0 8px 28px rgba(${BLUE_RGB},0.35)`,
+                          background: "linear-gradient(180deg, #2E6FD0 0%, #2258AE 100%)",
+                          boxShadow: `0 8px 28px rgba(${BLUE_RGB},0.4)`,
                         }}
                       >
+                        {/* Brillo interno que se enciende en hover (desktop) */}
+                        <span aria-hidden className="pointer-events-none absolute inset-0 rounded-control opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          style={{ background: "linear-gradient(180deg, rgba(255,255,255,0.18), transparent 55%)" }} />
                         {loading
                           ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                           : <Send size={15} />}
                         {loading ? t.contact.submitting : t.contact.submit}
                       </button>
 
-                      <p className="text-center text-gray-600 text-xs">
+                      {error && (
+                        <p role="alert" className="text-center text-[13px] text-red-300">
+                          {error === "rate" ? t.contact.errorRate : t.contact.errorGeneric}
+                        </p>
+                      )}
+
+                      <p className="text-center text-gray-400 text-xs">
                         {t.contact.disclaimer}
                       </p>
                     </form>
