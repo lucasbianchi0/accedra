@@ -94,7 +94,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
       <Navbar />
 
       {/* ── Hero (full-bleed video cover, like the home) ── */}
-      <section className="relative flex flex-col justify-center overflow-hidden min-h-[600px] lg:min-h-[80vh] pt-20 pb-20 lg:pt-24 lg:pb-28">
+      <section className="relative flex flex-col justify-center overflow-hidden min-h-[600px] lg:min-h-[80vh] pt-28 pb-20 lg:pb-28">
         {/* Video background with a static poster fallback that always renders */}
         <div className="absolute inset-0 z-0 bg-[#0D1A2D]">
           {/* Static fallback — always visible; covers Low Power Mode / blocked autoplay */}

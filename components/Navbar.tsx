@@ -290,8 +290,6 @@ export default function Navbar() {
                       <span className="text-sm font-semibold uppercase tracking-wide">Volver</span>
                     </button>
 
-                    <span className="text-blue-400 text-xs font-bold uppercase tracking-[0.2em] mb-4 pl-1">{t.nav.services}</span>
-
                     <div className="space-y-1">
                       {solutions.map((s) => {
                         const Icon = s.icon;
