@@ -77,7 +77,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 1.3, delay: 0.15, ease: EASE }}
-            className="text-[35px] min-[400px]:text-[41px] sm:text-[42px] md:text-[50px] lg:text-[58px] font-bold text-white leading-[1.06] tracking-[-0.02em] mb-6"
+            className="text-[37px] min-[400px]:text-[43px] sm:text-[46px] md:text-[55px] lg:text-[64px] font-bold text-white leading-[1.06] tracking-[-0.02em] mb-6"
           >
             {t.hero.titlePre}<br className="hidden sm:block" />{" "}
             <span className="gradient-text">{t.hero.titleHighlight}</span>

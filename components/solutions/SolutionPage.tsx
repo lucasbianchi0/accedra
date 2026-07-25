@@ -9,7 +9,6 @@ import { INDUSTRIES } from "./industriesData";
 import { TECH_LOGOS } from "./techLogos";
 import Navbar from "@/components/Navbar";
 import Contact from "@/components/Contact";
-import MobileCTA from "@/components/MobileCTA";
 import CountUp from "@/components/CountUp";
 import CapabilitiesBento from "./CapabilitiesBento";
 import ProcessCardsRow from "./ProcessCardsRow";
@@ -147,7 +146,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                 Solución {industry.forLabel}
               </div>
             )}
-            <h1 className="text-4xl md:text-5xl lg:text-[56px] font-bold text-white leading-[1.05] mb-6">
+            <h1 className="text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] mb-6">
               {data.title}{" "}
               <span style={accentHighlight}>{data.highlight}</span>
             </h1>
@@ -264,7 +263,6 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
 
       {/* ── Form de contacto (igual que el home) ── */}
       <Contact />
-      {!industry && <MobileCTA />}
     </main>
   );
 }
