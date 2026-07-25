@@ -50,8 +50,6 @@ export default function Navbar() {
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
-    // Al cerrar el menú, volvemos a la vista principal (no que reabra en soluciones).
-    if (!open) setSolView(false);
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
@@ -208,8 +206,11 @@ export default function Navbar() {
         </div>
       </motion.nav>
 
-      {/* Mobile menu — full-screen premium overlay */}
-      <AnimatePresence>
+      {/* Mobile menu — full-screen premium overlay.
+          onExitComplete: la sub-vista de soluciones vuelve a "principal" RECIÉN
+          cuando el menú terminó de cerrarse, para que al clickear una opción no se
+          vea el panel deslizándose para atrás mientras se desvanece. */}
+      <AnimatePresence onExitComplete={() => setSolView(false)}>
         {open && (
           <motion.div
             initial={{ opacity: 0 }}

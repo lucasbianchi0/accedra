@@ -89,8 +89,8 @@ export default function ProcessCardsRow({ slug = "" }: { slug?: string }) {
       <div className="container-x relative z-10">
         {/* Header con línea que se extiende a la derecha */}
         <div className="flex items-end gap-6 mb-14 lg:mb-16">
-          <div className="flex-shrink-0 max-w-2xl">
-            <Reveal as="h2" delay={0.08} className="section-title text-left mt-0">
+          <div className="min-w-0 max-w-2xl">
+            <Reveal as="h2" delay={0.08} className="section-title text-left mt-0 text-balance">
               {/* Prefijo en blanco pleno, nombre de la solución en azul sólido:
                   una palabra de acento, sin el gradiente ni el gris lavado. */}
               Cómo trabajamos{data.name ? " en " : ""}
