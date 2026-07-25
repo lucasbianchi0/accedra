@@ -111,10 +111,10 @@ function CardsGrid({ t }: { t: ReturnType<typeof useT> }) {
             >
               {/* Glow de fondo en hover — tiñe TODA la card con el color de identidad
                   de la solución. z-[1]: sobre el fill base, debajo del contenido. */}
-              <div className="absolute inset-0 z-[1] rounded-[inherit] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+              <div className="absolute inset-0 z-[1] rounded-[inherit] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                 style={{ background: `radial-gradient(ellipse 100% 76% at 50% 30%, rgba(${accent},0.30) 0%, rgba(${accent},0.11) 42%, transparent 72%)` }} />
-              {/* Ring en hover/foco — mismo acento */}
-              <div className="absolute inset-0 z-[4] rounded-[inherit] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 pointer-events-none"
+              {/* Ring en hover/foco — mismo acento. En mobile (sin hover) va siempre encendido. */}
+              <div className="absolute inset-0 z-[4] rounded-[inherit] opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-visible:opacity-100 transition-opacity duration-300 pointer-events-none"
                 style={{ boxShadow: `inset 0 0 0 1px rgba(${accent},0.6), inset 0 26px 60px rgba(${accent},0.16), 0 0 40px rgba(${accent},0.25)` }} />
 
               {/* Fondo premium: textura + spotlight (conservado de la opción 1) */}
@@ -143,9 +143,9 @@ function CardsGrid({ t }: { t: ReturnType<typeof useT> }) {
               <div className="relative z-[2] h-48 overflow-hidden">
                 <div className="absolute inset-0"
                   style={{ background: `radial-gradient(ellipse 60% 85% at 50% 88%, rgba(${BLUE_RGB},0.32) 0%, transparent 66%)` }} />
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[280px] rounded-full blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[280px] rounded-full blur-3xl opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                   style={{ background: `radial-gradient(circle, rgba(${accent},0.85) 0%, transparent 66%)` }} />
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[170px] rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[220px] h-[170px] rounded-full blur-2xl opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                   style={{ background: `radial-gradient(circle, rgba(${accent},0.6) 0%, transparent 70%)` }} />
                 <div className="absolute left-1/2 -translate-x-1/2 origin-bottom transition-transform duration-500 scale-[0.92] group-hover:-translate-y-4 group-hover:scale-[0.97]"
                   style={{ bottom: "-40px", filter: "drop-shadow(0 18px 30px rgba(0,0,0,0.32))", "--seq-delay": `${i}s` } as CSSProperties}>

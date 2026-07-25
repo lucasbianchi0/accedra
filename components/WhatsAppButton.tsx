@@ -6,6 +6,7 @@ import { whatsappLink } from "@/lib/whatsapp";
 
 export default function WhatsAppButton() {
   const [visible, setVisible] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     // Aparece recién al scrollear más allá del hero, para no chocar con el
@@ -16,15 +17,25 @@ export default function WhatsAppButton() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Ocultar la burbuja cuando el menú mobile está abierto (el Navbar bloquea el
+  // scroll del body): si no, esta burbuja z-50 se cuela sobre el overlay del menú.
+  useEffect(() => {
+    const sync = () => setMenuOpen(document.body.style.overflow === "hidden");
+    sync();
+    const observer = new MutationObserver(sync);
+    observer.observe(document.body, { attributes: true, attributeFilter: ["style"] });
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <AnimatePresence>
-      {visible && (
+      {visible && !menuOpen && (
         <motion.div
           initial={{ opacity: 0, scale: 0.5, y: 24 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.5, y: 24 }}
           transition={{ type: "spring", damping: 16, stiffness: 200 }}
-          className="fixed bottom-24 md:bottom-6 right-5 z-50"
+          className="fixed bottom-6 right-5 z-50"
         >
           {/* Halo verde que respira (detrás, no recortado) */}
           <span aria-hidden className="wa-halo absolute inset-0 rounded-full blur-md pointer-events-none"

@@ -47,7 +47,7 @@ export default function Testimonials() {
 
   // Ancho de cada slot según viewport (ahora el carrusel es full-bleed): en mobile
   // la card central domina con peeks chicos; en desktop entran ~3 y llenan el ancho.
-  const frac = w < 700 ? 0.9 : w < 1100 ? 0.62 : 0.46;
+  const frac = w < 700 ? 0.94 : w < 1100 ? 0.62 : 0.46;
   const slot = w ? w * frac : 560;
   const offset = w / 2 - (pos + 0.5) * slot;
   const go = (d: number) => { setAnim(true); setPos((p) => p + d); };
@@ -105,7 +105,7 @@ export default function Testimonials() {
                     }}
                   >
                     <div
-                      className="relative rounded-card px-9 sm:px-11 pt-9 pb-9 border flex flex-col justify-center min-h-[240px] sm:min-h-[268px]"
+                      className="relative rounded-card px-6 sm:px-11 pt-7 sm:pt-9 pb-7 sm:pb-9 border flex flex-col justify-center min-h-[200px] sm:min-h-[268px]"
                       style={{
                         background: "rgba(255,255,255,0.04)",
                         backdropFilter: "blur(16px)",
@@ -117,10 +117,10 @@ export default function Testimonials() {
                       }}
                     >
                       {/* Comilla decorativa */}
-                      <Quote size={34} className="text-blue-500/25 mb-5" />
+                      <Quote size={30} className="text-blue-500/25 mb-4 sm:mb-5" />
 
                       {/* Lo que dice */}
-                      <p className="text-gray-100 text-[18px] sm:text-[19px] leading-relaxed mb-7">
+                      <p className="text-gray-100 text-[16px] sm:text-[19px] leading-relaxed mb-6 sm:mb-7">
                         &ldquo;{t.testimonials.items[logicalOf(k)].quote}&rdquo;
                       </p>
 

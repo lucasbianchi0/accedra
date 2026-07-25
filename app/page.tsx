@@ -8,7 +8,6 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import ScrollProgress from "@/components/ScrollProgress";
 import WhatsAppButton from "@/components/WhatsAppButton";
-import MobileCTA from "@/components/MobileCTA";
 import AmbientLight from "@/components/AmbientLight";
 import type { Metadata } from "next";
 
@@ -42,7 +41,6 @@ export default function Home() {
         <Footer />
       </div>
       <WhatsAppButton />
-      <MobileCTA />
     </main>
   );
 }

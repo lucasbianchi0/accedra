@@ -68,12 +68,12 @@ export default function WhyUs() {
                       {/* Cuerpo */}
                       <div className="relative z-[2] flex flex-1 flex-col p-6">
                         <div className="flex items-start justify-between gap-3 mb-3">
-                          <h3 className="text-white text-[17px] font-bold leading-snug group-hover:text-blue-100 transition-colors">{c.title}</h3>
+                          <h3 className="text-white text-[19px] sm:text-[17px] font-bold leading-snug group-hover:text-blue-100 transition-colors">{c.title}</h3>
                           <ArrowUpRight size={18} className="flex-shrink-0 mt-1 text-gray-500 transition-all duration-300 group-hover:text-blue-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                         </div>
 
                         {/* Descripción: una línea de contexto del caso */}
-                        <p className="text-gray-400 text-[13.5px] leading-relaxed mb-6 line-clamp-3">{c.desc}</p>
+                        <p className="text-gray-400 text-[15px] sm:text-[13.5px] leading-relaxed mb-6 line-clamp-3">{c.desc}</p>
 
                         {/* Divisor con acento azul */}
                         <div className="mt-auto h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(43,111,212,0.4) 18%, rgba(255,255,255,0.10) 50%, rgba(43,111,212,0.4) 82%, transparent)" }} />
@@ -82,8 +82,8 @@ export default function WhyUs() {
                         <div className="grid grid-cols-3 gap-3 pt-5">
                           {c.stats.map((s) => (
                             <div key={s.label}>
-                              <div className="font-bold text-[16px] leading-none whitespace-nowrap" style={{ color: "#5AA2F5", textShadow: "0 0 18px rgba(90,162,245,0.45)" }}>{s.value}</div>
-                              <div className="text-gray-400 text-[11px] mt-1.5 leading-tight">{s.label}</div>
+                              <div className="font-bold text-[17px] sm:text-[16px] leading-none whitespace-nowrap" style={{ color: "#5AA2F5", textShadow: "0 0 18px rgba(90,162,245,0.45)" }}>{s.value}</div>
+                              <div className="text-gray-400 text-[12px] sm:text-[11px] mt-1.5 leading-tight">{s.label}</div>
                             </div>
                           ))}
                         </div>

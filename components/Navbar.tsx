@@ -213,7 +213,7 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 flex flex-col md:hidden"
+            className="fixed inset-0 z-40 flex flex-col md:hidden overflow-x-hidden"
             style={{
               background: "rgba(7,16,29,0.97)",
               backdropFilter: "blur(24px)",
@@ -230,7 +230,7 @@ export default function Navbar() {
             <div className="h-[72px] flex-shrink-0" />
 
             {/* Nav — Soluciones (acordeón) + resto */}
-            <nav className="relative flex-1 overflow-y-auto flex flex-col justify-center px-6">
+            <nav className="relative flex-1 overflow-y-auto overflow-x-hidden flex flex-col justify-center px-6">
               {/* Soluciones accordion */}
               <div className="border-b" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
                 <button
