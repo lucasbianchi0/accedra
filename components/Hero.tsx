@@ -77,7 +77,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 1.3, delay: 0.15, ease: EASE }}
-            className="text-[37px] min-[400px]:text-[43px] sm:text-[46px] md:text-[55px] lg:text-[64px] font-bold text-white leading-[1.06] tracking-[-0.02em] mb-6"
+            className="text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-[-0.02em] mb-6"
           >
             {t.hero.titlePre}<br className="hidden sm:block" />{" "}
             <span className="gradient-text">{t.hero.titleHighlight}</span>
@@ -90,7 +90,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.1, delay: 0.42, ease: EASE }}
-            className="text-[15px] md:text-lg text-gray-400 leading-relaxed mb-10 max-w-xl"
+            className="text-gray-300 text-lg leading-relaxed mb-10 max-w-xl"
           >
             {t.hero.subtitlePre}
             <span className="text-gray-200 font-medium">{t.hero.subtitleStrong}</span>.
