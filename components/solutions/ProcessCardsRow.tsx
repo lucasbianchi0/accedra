@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Search, PencilRuler, ServerCog, Headset, ArrowRight } from "lucide-react";
-import { Reveal, RevealGroup, revealItemFade } from "@/components/Reveal";
+import { Reveal, revealOnScroll } from "@/components/Reveal";
 
 
 // Las 4 fases del método son las mismas (relevar → diseñar → implementar →
@@ -102,13 +102,13 @@ export default function ProcessCardsRow({ slug = "" }: { slug?: string }) {
         </div>
 
         {/* 4 cards */}
-        <RevealGroup className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4" stagger={0.16} delay={0.15}>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {data.steps.map((s, i) => {
             const Ic = PHASE_ICONS[i];
             return (
               <motion.div
                 key={s.title}
-                variants={revealItemFade}
+                {...revealOnScroll}
                 onMouseMove={handleMove}
                 className="group relative flex flex-col items-start text-left rounded-panel p-8 overflow-hidden transition-transform duration-300 hover:-translate-y-1.5"
                 style={{
@@ -148,7 +148,7 @@ export default function ProcessCardsRow({ slug = "" }: { slug?: string }) {
               </motion.div>
             );
           })}
-        </RevealGroup>
+        </div>
 
         {/* Cierre en banda de marca: azul pleno + botón blanco invertido. Remata la
             sección oscura con un golpe de color intencional y jerarquiza el CTA. */}

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Building2, ArrowRight, ArrowUpRight } from "lucide-react";
 import type { Case } from "./solutionsData";
 import { imgFor } from "@/components/cases/caseImage";
-import { Reveal, RevealGroup, revealItem, EASE } from "@/components/Reveal";
+import { Reveal, revealOnScroll, EASE } from "@/components/Reveal";
 
 const CARD_STYLE = {
   // Vidrio premium: mismo material que Testimonials/bento/proceso — fill
@@ -66,7 +66,7 @@ function EditorialCase({ c, href }: { c: Case; href: string }) {
 function VerticalCase({ c, href }: { c: Case; href: string }) {
   const img = c.image ?? imgFor(c.industry);
   return (
-    <motion.div variants={revealItem} className="h-full">
+    <motion.div {...revealOnScroll} className="h-full">
       <Link href={href}
         className="group relative flex h-full flex-col rounded-card border overflow-hidden transition-all duration-500 hover:-translate-y-2"
         style={CARD_STYLE}>
@@ -126,11 +126,11 @@ export default function CasesSection({ cases, slug }: { cases: Case[]; slug: str
         {single ? (
           <EditorialCase c={items[0]} href={`/casos/${slug}/0`} />
         ) : (
-          <RevealGroup className={pair ? "grid md:grid-cols-2 gap-6 max-w-[860px] mx-auto" : "grid md:grid-cols-3 gap-6"} stagger={0.17}>
+          <div className={pair ? "grid md:grid-cols-2 gap-6 max-w-[860px] mx-auto" : "grid md:grid-cols-3 gap-6"}>
             {items.map((c, i) => (
               <VerticalCase key={i} c={c} href={`/casos/${slug}/${i}`} />
             ))}
-          </RevealGroup>
+          </div>
         )}
 
         <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }}

@@ -5,7 +5,7 @@ import { ArrowRight, ArrowUpRight, Package, Mountain, Landmark, Building2, type 
 import { useT } from "@/lib/i18n/useT";
 import Link from "next/link";
 import { HOME_CASES } from "./homeCases";
-import { Reveal, RevealGroup, revealItem } from "@/components/Reveal";
+import { Reveal, revealOnScroll } from "@/components/Reveal";
 import Testimonials from "@/components/Testimonials";
 
 const BLUE_RGB = "43,111,212";
@@ -37,11 +37,11 @@ export default function WhyUs() {
 
           {/* ── Cards de casos ── */}
           {cases.length > 0 && (
-            <RevealGroup className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6" stagger={0.1} amount={0.12}>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
               {cases.map((c, i) => {
                 const TagIcon = INDUSTRY_ICONS[c.tag] ?? Building2;
                 return (
-                  <motion.div key={c.title} variants={revealItem} className="group h-full">
+                  <motion.div key={c.title} {...revealOnScroll} className="group h-full">
                     <Link href={`/casos/home/${i}`} aria-label={`Ver caso: ${c.title}`}
                       className="relative flex h-full flex-col rounded-panel overflow-hidden border border-white/[0.12] focus-visible:outline-none transition-all duration-500 hover:-translate-y-2"
                       style={{
@@ -92,7 +92,7 @@ export default function WhyUs() {
                   </motion.div>
                 );
               })}
-            </RevealGroup>
+            </div>
           )}
 
           {/* ── Banner de cierre — banda de marca con gradiente animado (cta-ocean),

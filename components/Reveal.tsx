@@ -103,3 +103,24 @@ export const revealItemFade: Variants = {
   hidden: { opacity: 0 },
   show: { opacity: 1, transition: { duration: 1.2, ease: EASE } },
 };
+
+// Props para revelar CADA ítem con su PROPIO trigger de scroll (no en grupo).
+// Motivo: en mobile las grillas se apilan y el RevealGroup animaba TODAS las
+// cards juntas al asomar el contenedor (que es altísimo) → las de abajo ya
+// habían aparecido cuando llegabas a ellas. Con estos props, cada card aparece
+// cuando ELLA entra en viewport. Se aplican con spread sobre un `motion.*`:
+//   <motion.div {...revealOnScroll} className="...">…</motion.div>
+export const revealOnScroll = {
+  initial: { opacity: 0, y: 34 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, amount: 0.2, margin: "0px 0px -8% 0px" },
+  transition: { duration: 0.85, ease: EASE },
+};
+
+// Igual pero sólo fade (sin desplazamiento), para cards donde el `y` no queda bien.
+export const revealOnScrollFade = {
+  initial: { opacity: 0 },
+  whileInView: { opacity: 1 },
+  viewport: { once: true, amount: 0.2, margin: "0px 0px -8% 0px" },
+  transition: { duration: 0.8, ease: EASE },
+};

@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Capability } from "./solutionsData";
-import { Reveal, RevealGroup, revealItem } from "@/components/Reveal";
+import { Reveal, revealOnScroll } from "@/components/Reveal";
 
 
 // Fade de la foto hacia el fondo de la card (sin borde/línea dura).
@@ -34,11 +34,10 @@ export default function CapabilitiesBento({
           <Reveal as="h2" delay={0.08} className="section-title mt-0">{title}</Reveal>
         </div>
 
-        <RevealGroup className="grid md:grid-cols-2 lg:grid-cols-3 gap-5" stagger={0.15} amount={0.12}>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {items.map((c) => {
             return (
-              <motion.div key={c.title}
-                variants={revealItem}
+              <motion.div key={c.title} {...revealOnScroll}
                 className="group relative rounded-card overflow-hidden flex flex-col border border-white/10 transition-colors duration-300"
                 style={{
                   // Vidrio premium (mismo material que Testimonials/bento/proceso):
@@ -93,7 +92,7 @@ export default function CapabilitiesBento({
               </motion.div>
             );
           })}
-        </RevealGroup>
+        </div>
 
       </div>
     </section>

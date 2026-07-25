@@ -7,7 +7,7 @@ import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion
 import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import ServiceIllustration from "@/components/ServiceIllustration";
-import { Reveal, EASE } from "@/components/Reveal";
+import { Reveal, EASE, revealOnScroll } from "@/components/Reveal";
 
 const BLUE_RGB = "43,111,212";
 
@@ -72,12 +72,7 @@ export default function Services() {
 // ─────────────────────────────────────────────────────────────────────────────
 function CardsGrid({ t }: { t: ReturnType<typeof useT> }) {
   return (
-    <motion.div
-      initial="hidden" whileInView="show"
-      viewport={{ once: true, amount: 0.15, margin: "0px 0px -10% 0px" }}
-      variants={{ show: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } } }}
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-5 items-stretch"
-    >
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 lg:gap-5 items-stretch">
       {columns.map((col, i) => {
         const cd = t.services.columns[i];
         const featured = !!col.featured;
@@ -89,8 +84,7 @@ function CardsGrid({ t }: { t: ReturnType<typeof useT> }) {
         const rowSpan =
           (i === 4 ? "sm:col-span-2 " : "") + (i >= 3 ? "lg:col-span-3" : "lg:col-span-2");
         return (
-          <motion.div key={col.slug}
-            variants={{ hidden: { opacity: 0, y: 24 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: EASE } } }}
+          <motion.div key={col.slug} {...revealOnScroll}
             className={`h-full ${rowSpan}`}>
             <Link href={`/soluciones/${col.slug}`}
               aria-label={`${t.services.viewSolution}: ${cd.title}`}
@@ -173,6 +167,6 @@ function CardsGrid({ t }: { t: ReturnType<typeof useT> }) {
           </motion.div>
         );
       })}
-    </motion.div>
+    </div>
   );
 }
