@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { HOME_CASES } from "@/components/homeCases";
 import { imgFor } from "./caseImage";
+import Image from "next/image";
 
 const BLUE = "#2B6FD4";
 const BLUE_RGB = "43,111,212";
@@ -93,8 +94,9 @@ export default function CaseDetail({ solucion, index }: { solucion: string; inde
                 comía la pantalla entera y no se veía nada del contenido.
                 El techo y el piso evitan que se estire o se aplaste de más. */}
             <div className="rounded-card overflow-hidden relative h-[220px] sm:h-[320px] lg:h-[38vh] lg:max-h-[380px] lg:min-h-[260px]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={item.image} alt="" aria-hidden="true" className="hero-zoom absolute inset-0 w-full h-full object-cover" />
+              <Image src={item.image} alt="" aria-hidden="true" fill priority
+                sizes="(max-width: 1024px) 100vw, 850px"
+                className="hero-zoom object-cover" />
               <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(7,16,29,0.45) 0%, transparent 42%)" }} />
             </div>
           </div>
@@ -170,9 +172,9 @@ export default function CaseDetail({ solucion, index }: { solucion: string; inde
                   className="group relative flex flex-col rounded-2xl border overflow-hidden transition-all duration-300 hover:-translate-y-1.5"
                   style={{ background: "#0D1A2D", borderColor: "rgba(255,255,255,0.09)", boxShadow: "inset 0 1px 0 rgba(255,255,255,0.07), 0 10px 34px rgba(0,0,0,0.35)" }}>
                   <div className="relative h-40">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={o.image} alt="" aria-hidden="true"
-                      className="photo-zoom absolute inset-0 w-full h-full object-cover"
+                    <Image src={o.image} alt="" aria-hidden="true" fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 400px"
+                      className="photo-zoom object-cover"
                       style={{ maskImage: "linear-gradient(to bottom, #000 55%, transparent 98%)", WebkitMaskImage: "linear-gradient(to bottom, #000 55%, transparent 98%)" }} />
                     <span className="absolute bottom-3 left-4 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"
                       style={{ background: `rgba(${BLUE_RGB},0.35)`, color: "#EAF2FE", border: `1px solid rgba(${BLUE_RGB},0.5)`, backdropFilter: "blur(4px)" }}>

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, Package, Mountain, Landmark, Building2, type LucideIcon } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import Link from "next/link";
+import Image from "next/image";
 import { HOME_CASES } from "./homeCases";
 import { Reveal, revealOnScroll } from "@/components/Reveal";
 import Testimonials from "@/components/Testimonials";
@@ -56,8 +57,14 @@ export default function WhyUs() {
 
                       {/* Imagen + chip de industria */}
                       <div className="relative h-48 overflow-hidden">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={c.image} alt={c.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" draggable={false} />
+                        <Image
+                          src={c.image}
+                          alt={c.title}
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 420px"
+                          className="object-cover transition-transform duration-700 group-hover:scale-[1.06]"
+                          draggable={false}
+                        />
                         <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"
                           style={{ background: "rgba(10,18,32,0.72)", color: "#DCE9FB", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(6px)" }}>
                           <TagIcon size={12} className="text-blue-300" />

@@ -6,6 +6,7 @@ import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import CountUp from "@/components/CountUp";
 import { EASE } from "@/components/Reveal";
+import Image from "next/image";
 
 const stats = ["17+", "400+", "26+", "100+"];
 
@@ -33,12 +34,17 @@ export default function Hero() {
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
       {/* Video background (with a static image fallback that always renders) */}
       <div className="absolute inset-0 z-0 bg-[#0D1A2D]">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        {/* priority: es la imagen visible del hero mientras el video carga, o sea
+            lo que se pinta primero. Sin priority Next la trata como lazy y llega
+            tarde al LCP. */}
+        <Image
           src={HERO_POSTER}
           alt=""
           aria-hidden="true"
-          className="hero-zoom absolute inset-0 w-full h-full object-cover"
+          fill
+          priority
+          sizes="100vw"
+          className="hero-zoom object-cover"
         />
         <video
           ref={videoRef}
@@ -46,7 +52,12 @@ export default function Hero() {
           muted
           loop
           playsInline
-          preload="auto"
+          // "metadata" en vez de "auto": con "auto" el navegador se llevaba el
+          // ancho de banda bajando el video ANTES de terminar de pintar el texto
+          // del hero, que es el elemento LCP. Como el poster es el primer frame
+          // exacto del video, no hay salto visual; el video sólo entra un
+          // instante después.
+          preload="metadata"
           poster={HERO_POSTER}
           onPlaying={() => setVideoPlaying(true)}
           className={`hero-zoom absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${

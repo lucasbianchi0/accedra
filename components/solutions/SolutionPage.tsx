@@ -21,6 +21,7 @@ import AmbientLight from "@/components/AmbientLight";
 import JsonLd from "@/components/seo/JsonLd";
 import { serviceLd, breadcrumbLd } from "@/lib/seo/jsonLd";
 import { EASE } from "@/components/Reveal";
+import Image from "next/image";
 
 
 // Stats de credibilidad (a nivel empresa, iguales en todas las soluciones).
@@ -98,12 +99,16 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
         {/* Video background with a static poster fallback that always renders */}
         <div className="absolute inset-0 z-0 bg-[#0D1A2D]">
           {/* Static fallback — always visible; covers Low Power Mode / blocked autoplay */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          {/* priority: igual que en el home, es lo que se ve mientras el video
+              carga — tiene que entrar en el primer pintado, no diferido. */}
+          <Image
             src={staticHeroSrc}
             alt=""
             aria-hidden="true"
-            className="hero-zoom absolute inset-0 w-full h-full object-cover"
+            fill
+            priority
+            sizes="100vw"
+            className="hero-zoom object-cover"
           />
           {/* Video solo en la página base y en desktop; industria/mobile usan poster */}
           {showVideo && (
@@ -113,7 +118,10 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
               muted
               loop
               playsInline
-              preload="auto"
+              // Ver Hero.tsx: "auto" compite por ancho de banda con el pintado
+              // del texto del hero (elemento LCP). El poster es el primer frame
+              // del video, así que la transición sigue siendo invisible.
+              preload="metadata"
               poster={heroVideoPoster}
               onPlaying={() => setVideoPlaying(true)}
               className={`hero-zoom absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${

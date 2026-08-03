@@ -4,6 +4,7 @@ import { useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Building2, X, ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 const BLUE_RGB = "43,111,212";
 
@@ -63,8 +64,9 @@ export default function CaseModal({
 
             {/* Foto hero */}
             <div className="relative h-56 sm:h-64 overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={active.image} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" />
+              <Image src={active.image} alt="" aria-hidden="true" fill
+                sizes="(max-width: 720px) 100vw, 720px"
+                className="object-cover" />
               <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(11,20,34,0.25) 0%, rgba(11,20,34,0.65) 60%, #0B1422 100%)" }} />
               <span className="absolute bottom-4 left-6 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"
                 style={{ background: `rgba(${BLUE_RGB},0.4)`, color: "#EAF2FE", border: `1px solid rgba(${BLUE_RGB},0.55)`, backdropFilter: "blur(4px)" }}>

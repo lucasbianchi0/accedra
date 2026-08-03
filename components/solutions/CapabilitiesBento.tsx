@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Capability } from "./solutionsData";
 import { Reveal, revealOnScroll } from "@/components/Reveal";
+import Image from "next/image";
 
 
 // Fade de la foto hacia el fondo de la card (sin borde/línea dura).
@@ -53,10 +54,14 @@ export default function CapabilitiesBento({
                   style={{ boxShadow: `inset 0 0 0 1px rgba(var(--accent-rgb,43,111,212),0.55), 0 34px 80px rgba(var(--accent-rgb,43,111,212),0.28)` }} />
                 {/* Foto */}
                 <div className="relative h-44">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={c.photo} alt="" aria-hidden="true"
-                    className="absolute inset-0 w-full h-full object-cover"
-                    style={{ maskImage: PHOTO_MASK, WebkitMaskImage: PHOTO_MASK }} />
+                  {/* `photo` es opcional en el modelo: sin foto la card queda con
+                      el fondo de vidrio, igual que antes. */}
+                  {c.photo && (
+                    <Image src={c.photo} alt="" aria-hidden="true" fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 420px"
+                      className="object-cover"
+                      style={{ maskImage: PHOTO_MASK, WebkitMaskImage: PHOTO_MASK }} />
+                  )}
                   {/* Tinte de marca: se atenúa en hover para que la foto se encienda. */}
                   <div className="absolute inset-0 pointer-events-none transition-opacity duration-500 lg:group-hover:opacity-60"
                     style={{ background: `linear-gradient(155deg, rgba(var(--accent-rgb,43,111,212),0.22) 0%, rgba(13,26,45,0) 52%)` }} />

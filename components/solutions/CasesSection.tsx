@@ -6,6 +6,7 @@ import { Building2, ArrowRight, ArrowUpRight } from "lucide-react";
 import type { Case } from "./solutionsData";
 import { imgFor } from "@/components/cases/caseImage";
 import { Reveal, revealOnScroll, EASE } from "@/components/Reveal";
+import Image from "next/image";
 
 const CARD_STYLE = {
   // Vidrio premium: mismo material que Testimonials/bento/proceso — fill
@@ -39,9 +40,9 @@ function EditorialCase({ c, href }: { c: Case; href: string }) {
           style={{ boxShadow: `inset 0 0 0 1px rgba(var(--accent-rgb,43,111,212),0.5), 0 44px 100px rgba(var(--accent-rgb,43,111,212),0.24)` }} />
         <div className="grid lg:grid-cols-2">
           <div className="relative h-60 sm:h-72 lg:h-auto lg:min-h-[430px] overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={img} alt="" aria-hidden="true"
-              className="photo-zoom absolute inset-0 w-full h-full object-cover" />
+            <Image src={img} alt="" aria-hidden="true" fill
+              sizes="(max-width: 1024px) 100vw, 660px"
+              className="photo-zoom object-cover" />
             <div className="absolute inset-0 transition-opacity duration-700 ease-out group-hover:opacity-50"
               style={{ background: `linear-gradient(150deg, rgba(var(--accent-rgb,43,111,212),0.24) 0%, transparent 52%)` }} />
             <div className="absolute inset-0 lg:hidden" style={{ background: "linear-gradient(to top, #0A1524 3%, transparent 62%)" }} />
@@ -78,9 +79,9 @@ function VerticalCase({ c, href }: { c: Case; href: string }) {
           style={{ background: `radial-gradient(ellipse 85% 100% at 50% 100%, rgba(var(--accent-rgb,43,111,212),0.16), transparent 68%)` }} />
         {/* Foto */}
         <div className="relative h-44 overflow-hidden">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={img} alt="" aria-hidden="true"
-            className="photo-zoom absolute inset-0 w-full h-full object-cover" />
+          <Image src={img} alt="" aria-hidden="true" fill
+            sizes="(max-width: 768px) 100vw, 430px"
+            className="photo-zoom object-cover" />
           <div className="absolute inset-0 transition-opacity duration-700 ease-out group-hover:opacity-40" style={{ background: `linear-gradient(150deg, rgba(var(--accent-rgb,43,111,212),0.22) 0%, transparent 55%)` }} />
           <span className="absolute top-4 left-4"><IndustryBadge industry={c.industry} /></span>
         </div>
