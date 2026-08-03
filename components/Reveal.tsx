@@ -1,12 +1,30 @@
 "use client";
 
 import { motion, useReducedMotion, type Variants } from "framer-motion";
-import { useSyncExternalStore, type ElementType, type ReactNode } from "react";
+import { useSyncExternalStore, type CSSProperties, type ElementType, type ReactNode } from "react";
 
 // Ease "expo-out": sale rápido y desacelera largo → la sensación cara/suave.
 // Un único ease + duración para toda la página da coherencia de ritmo: todas las
 // apariciones "hablan el mismo idioma" y se sienten conectadas.
 export const EASE = [0.16, 1, 0.3, 1] as const;
+
+/* Variante CSS del mismo ease, para las entradas de hero.
+   Esas NO pueden ir por framer: el <h1> es el elemento LCP y con framer no se
+   pinta hasta que React hidrata (~5s en mobile contra un FCP de 1s). La clase
+   .hero-enter de globals.css corre la misma animación por CSS, arrancando en el
+   primer frame; este helper arma las variables que consume. */
+export const enter = (
+  y: string,
+  dur: string,
+  delay: string,
+  blur?: string
+): CSSProperties =>
+  ({
+    "--enter-y": y,
+    "--enter-dur": dur,
+    "--enter-delay": delay,
+    ...(blur ? { "--enter-blur": blur } : {}),
+  }) as CSSProperties;
 // Reveals deliberadamente pausados (consultora premium): entran despacio y
 // asientan largo. Subir esto ralentiza TODA la página desde un solo lugar.
 const DUR = 1.5;

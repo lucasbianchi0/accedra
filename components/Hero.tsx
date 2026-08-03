@@ -1,14 +1,21 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import CountUp from "@/components/CountUp";
-import { EASE } from "@/components/Reveal";
 import Image from "next/image";
+import { enter } from "@/components/Reveal";
 
 const stats = ["17+", "400+", "26+", "100+"];
+
+/* Cascada de entrada del hero — mismos valores que tenía con framer-motion. */
+const ENTER = {
+  title: enter("40px", "1.3s", "0.15s", "12px"),
+  subtitle: enter("16px", "1.1s", "0.42s"),
+  ctas: enter("16px", "1.1s", "0.66s"),
+  stats: enter("30px", "1.2s", "0.9s"),
+};
 
 // Poster = PRIMER FRAME del propio video (local). Antes era una foto de Pexels
 // distinta del video, y por eso se veía "otra cosa un segundo" y después el
@@ -83,36 +90,32 @@ export default function Hero() {
           útiles en un iPhone de 360 y el h1 no entraba. */}
       <div className="relative z-10 container-x pt-28 pb-20">
         <div className="max-w-3xl">
-          {/* Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 40, filter: "blur(12px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 1.3, delay: 0.15, ease: EASE }}
-            className="text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-[-0.02em] mb-6"
+          {/* Headline — animado por CSS (.hero-enter), no por framer: es el
+              elemento LCP y con framer no se pintaba hasta después de hidratar.
+              Los valores son los mismos que tenía la versión con motion. */}
+          <h1
+            className="hero-enter text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-[-0.02em] mb-6"
+            style={ENTER.title}
           >
             {t.hero.titlePre}<br className="hidden sm:block" />{" "}
             <span className="gradient-text">{t.hero.titleHighlight}</span>
             <br className="hidden sm:block" />{" "}
             {t.hero.titlePost}
-          </motion.h1>
+          </h1>
 
           {/* Subheadline */}
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.1, delay: 0.42, ease: EASE }}
-            className="text-gray-300 text-lg leading-relaxed mb-10 max-w-xl"
+          <p
+            className="hero-enter text-gray-300 text-lg leading-relaxed mb-10 max-w-xl"
+            style={ENTER.subtitle}
           >
             {t.hero.subtitlePre}
             <span className="text-gray-200 font-medium">{t.hero.subtitleStrong}</span>.
-          </motion.p>
+          </p>
 
           {/* CTAs */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1.1, delay: 0.66, ease: EASE }}
-            className="flex flex-col sm:flex-row gap-4"
+          <div
+            className="hero-enter flex flex-col sm:flex-row gap-4"
+            style={ENTER.ctas}
           >
             <a
               href="#contacto"
@@ -128,7 +131,7 @@ export default function Hero() {
             >
               {t.hero.ctaServices}
             </a>
-          </motion.div>
+          </div>
         </div>
 
         {/* Stats bar — panel de vidrio (glassmorphism).
@@ -136,12 +139,10 @@ export default function Hero() {
             (haría saltar el color). El look vidriado se logra con capa translúcida +
             sheen + brillo interior, y así TODA la barra aparece junta (fade + slide) con
             los números contando, sin ningún cambio de color. */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, delay: 0.9, ease: EASE }}
-          className="relative mt-16 lg:mt-20 max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-px rounded-[20px] overflow-hidden border"
+        <div
+          className="hero-enter relative mt-16 lg:mt-20 max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-px rounded-[20px] overflow-hidden border"
           style={{
+            ...ENTER.stats,
             borderColor: "rgba(255,255,255,0.18)",
             background: "rgba(255,255,255,0.14)",
             boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), 0 24px 60px rgba(0,0,0,0.42)",
@@ -161,7 +162,7 @@ export default function Hero() {
               <div className="text-xs text-gray-400 font-medium tracking-wide">{t.hero.stats[i]}</div>
             </div>
           ))}
-        </motion.div>
+        </div>
 
       </div>
     </section>

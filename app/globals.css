@@ -349,6 +349,41 @@ h1, h2, h3, h4, .section-title, .gradient-text {
 }
 
 
+/* ── Entrada del hero ─────────────────────────────────────────
+   Esta animación existía en framer-motion (initial/animate) y era el cuello
+   del LCP: el <h1> se servía en opacity:0 y no se volvía visible hasta que
+   React hidrataba y framer arrancaba — ~5s en mobile, con el FCP ya en 1s.
+   En CSS arranca en el primer frame pintado, en paralelo con la descarga del
+   JS en vez de después.
+
+   La curva es la MISMA que EASE en components/Reveal.tsx ([0.16,1,0.3,1]);
+   cada elemento pasa su desplazamiento, blur, duración y delay por variables
+   para conservar la cascada original. `both` aplica el estado inicial durante
+   el delay, que es lo que hacía `initial` en framer. */
+@keyframes hero-enter {
+  from {
+    opacity: 0;
+    transform: translateY(var(--enter-y, 16px));
+    filter: blur(var(--enter-blur, 0px));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0px);
+  }
+}
+
+.hero-enter {
+  animation: hero-enter var(--enter-dur, 1.1s) cubic-bezier(0.16, 1, 0.3, 1)
+    var(--enter-delay, 0s) both;
+}
+
+/* Equivalente CSS de <MotionConfig reducedMotion="user">, que es lo que cubría
+   estos elementos cuando los animaba framer. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-enter { animation: none; }
+}
+
 /* ── Premium motion utilities ─────────────────────────────── */
 
 /* Gentle ambient float for decorative glow orbs */

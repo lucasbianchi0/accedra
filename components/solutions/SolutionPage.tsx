@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { SOLUTIONS } from "./solutionsData";
 import { INDUSTRIES } from "./industriesData";
@@ -20,8 +19,15 @@ import { getLocalizedSolution } from "@/lib/i18n/solutions";
 import AmbientLight from "@/components/AmbientLight";
 import JsonLd from "@/components/seo/JsonLd";
 import { serviceLd, breadcrumbLd } from "@/lib/seo/jsonLd";
-import { EASE } from "@/components/Reveal";
+import { enter } from "@/components/Reveal";
 import Image from "next/image";
+
+/* Cascada de entrada de la portada — mismos valores que tenía con framer. */
+const ENTER = {
+  block: enter("34px", "1.2s", "0s", "12px"),
+  stats: enter("24px", "1.1s", "0.55s"),
+  brands: enter("0px", "1.0s", "0.8s"),
+};
 
 
 // Stats de credibilidad (a nivel empresa, iguales en todas las soluciones).
@@ -146,8 +152,10 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
           style={{ background: "rgba(var(--accent-rgb,43,111,212),0.09)" }} />
 
         <div className="relative z-10 max-w-[1320px] w-full mx-auto px-5 sm:px-8 lg:px-12">
-          <motion.div initial={{ opacity: 0, y: 34, filter: "blur(12px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} transition={{ duration: 1.2, ease: EASE }}
-            className="max-w-2xl">
+          {/* Entrada por CSS (.hero-enter), no por framer: el <h1> de acá es el
+              elemento LCP y con framer no se pintaba hasta después de hidratar.
+              Mismos valores que tenía la versión con motion. */}
+          <div className="hero-enter max-w-2xl" style={ENTER.block}>
             {industry && (
               <div className="inline-flex items-center gap-2 mb-5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] text-white/90"
                 style={{ background: `rgba(var(--accent-rgb,43,111,212),0.18)`, border: `1px solid rgba(var(--accent-rgb,43,111,212),0.4)` }}>
@@ -176,17 +184,17 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                 {st.ctaSeeSolution}
               </a>
             </div>
-          </motion.div>
+          </div>
 
           {/* Stats — panel de vidrio (glassmorphism) dentro de la portada.
               SIN backdrop-filter a propósito: el blur real es incompatible con un
               fade-in (haría saltar el color). El look vidriado se logra con capa
               translúcida + sheen + brillo interior, y así TODA la barra aparece junta
               (fade + slide) con los números contando, sin ningún cambio de color. */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1.1, delay: 0.55, ease: EASE }}
-            className="relative mt-14 lg:mt-16 mx-auto max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-px rounded-[20px] overflow-hidden border"
+          <div
+            className="hero-enter relative mt-14 lg:mt-16 mx-auto max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-px rounded-[20px] overflow-hidden border"
             style={{
+              ...ENTER.stats,
               borderColor: "rgba(255,255,255,0.18)",
               background: "rgba(255,255,255,0.14)",
               boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), 0 24px 60px rgba(0,0,0,0.42)",
@@ -204,12 +212,12 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                 <span className="text-[11px] text-gray-400 font-medium mt-2 leading-tight">{s.label}</span>
               </div>
             ))}
-          </motion.div>
+          </div>
 
           {/* Marcas con las que trabajamos — debajo de las stats */}
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.0, delay: 0.8, ease: EASE }}
-            className="mt-10 lg:mt-12 max-w-3xl mx-auto">
+          <div
+            className="hero-enter mt-10 lg:mt-12 max-w-3xl mx-auto"
+            style={ENTER.brands}>
             <p className="text-center text-[11px] font-semibold uppercase tracking-[0.22em] text-gray-400 mb-5">
               {data.brandsLabel ?? "Partner certificado de"}
             </p>
@@ -255,7 +263,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                 );
               })}
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
 
