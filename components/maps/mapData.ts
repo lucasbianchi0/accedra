@@ -1,20 +1,12 @@
 // Argentina by province — Mercator-projected SVG paths, one color per province.
 // Generated from Natural Earth 10m admin-1 (Antarctic claims & Malvinas filtered out).
+//
+// De este archivo hoy sólo se usa `cities`: alimenta las coordenadas de los
+// marcadores del globo. Los paths por provincia (el grueso del JSON) los
+// consumía ArgentinaMap, que se eliminó por no estar en uso. Se dejan en el
+// .json por si se retoma el mapa plano, pero SIN exportarlos: así el bundler
+// los descarta y no viajan al navegador.
 import argData from "./argProvinces.json";
-
-export type Province = {
-  name: string;
-  code: string;
-  path: string;
-  color: string;
-  cx: number;
-  cy: number;
-};
-
-export const MAP_VIEWBOX: string = argData.viewBox;
-export const MAP_W: number = argData.W;
-export const MAP_H: number = argData.H;
-export const PROVINCES: Province[] = argData.provinces as Province[];
 
 const CITY = argData.cities as Record<string, number[]>;
 
