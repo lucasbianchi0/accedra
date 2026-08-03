@@ -65,6 +65,12 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
   },
+  // Verificación de Google Search Console por meta tag. Se setea el token en
+  // NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION (Vercel → Settings → Environment
+  // Variables); sin la variable no se emite ningún meta.
+  verification: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 export const viewport: Viewport = {
