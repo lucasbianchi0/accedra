@@ -1,5 +1,9 @@
 import type { NextRequest } from "next/server";
-import { LIMITS, MIN_FILL_MS, validate } from "@/lib/contact/schema";
+import {
+  LIMITS, MIN_FILL_MS, validate, extractAttribution,
+  type ContactData, type AttributionData,
+} from "@/lib/contact/schema";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { checkRateLimit, isDurable } from "@/lib/contact/rateLimit";
 import { buildHtml, buildText } from "@/lib/contact/emailTemplate";
 
@@ -31,10 +35,16 @@ export async function POST(req: NextRequest) {
   const from = process.env.CONTACT_FROM;
   const apiKey = process.env.RESEND_API_KEY;
 
-  // Sin configuración no se puede entregar el mensaje. Falla ruidosamente en vez
-  // de responder 200: el bug original era justamente simular un envío exitoso.
-  if (!to || !from || !apiKey) {
-    console.error("[contact] faltan CONTACT_TO / CONTACT_FROM / RESEND_API_KEY");
+  const puedeMandarMail = Boolean(to && from && apiKey);
+  const puedePersistir = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+
+  // Falla ruidosamente en vez de responder 200: el bug original era justamente
+  // simular un envío exitoso. Ahora hay dos destinos, así que sólo se aborta si
+  // no hay NINGUNO configurado — con uno solo el lead no se pierde.
+  if (!puedeMandarMail && !puedePersistir) {
+    console.error(
+      "[contact] sin destino configurado: faltan CONTACT_TO/CONTACT_FROM/RESEND_API_KEY y SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY"
+    );
     return json(500, { error: "server" });
   }
 
@@ -87,15 +97,79 @@ export async function POST(req: NextRequest) {
     console.warn("[contact] rate limit en memoria — poco fiable en serverless");
   }
 
-  const { name, company, email } = result.data;
   const meta = { ip, receivedAt: new Date() };
+  const attribution = extractAttribution(parsed);
 
-  // Se mandan las dos versiones: la de texto es el fallback para clientes que
-  // bloquean HTML y además mejora la reputación anti-spam del envío.
-  const text = buildText(result.data, meta);
-  const html = buildHtml(result.data, meta);
+  // Los dos destinos se intentan por separado y ninguno aborta al otro. Antes
+  // un fallo de Resend devolvía 502 y el lead se evaporaba; ahora sólo se
+  // considera fallido el envío si NO llegó a ningún lado.
+  const [persistido, enviado] = await Promise.all([
+    guardarLead(result.data, attribution, ip, req.headers.get("user-agent")),
+    puedeMandarMail
+      ? enviarMail({ to: to!, from: from!, apiKey: apiKey!, data: result.data, meta })
+      : Promise.resolve(false),
+  ]);
 
+  if (!persistido && !enviado) return json(502, { error: "delivery" });
+
+  // Un destino caído es un incidente operativo, no un error del visitante: el
+  // lead está a salvo en el otro lado, así que se responde 200 y queda el log.
+  if (!persistido) console.error("[contact] lead enviado por mail pero NO persistido");
+  if (!enviado) console.error("[contact] lead persistido pero NO enviado por mail");
+
+  return json(200, { ok: true });
+}
+
+/** Persiste el lead con su atribución. Devuelve si pudo guardarlo. */
+async function guardarLead(
+  data: ContactData,
+  attribution: AttributionData,
+  ip: string,
+  userAgent: string | null
+): Promise<boolean> {
+  const db = getSupabaseAdmin();
+  if (!db) {
+    console.warn("[contact] Supabase sin configurar — no se persiste el lead");
+    return false;
+  }
+
+  const { error } = await db.from("leads").insert({
+    name: data.name,
+    company: data.company,
+    email: data.email,
+    message: data.message,
+    service: data.service || null,
+    ...attribution,
+    // clientIp() devuelve "unknown" cuando no hay headers de proxy, y esa
+    // cadena no es un inet válido: se guarda null en vez de romper el insert.
+    ip: ip === "unknown" ? null : ip,
+    user_agent: userAgent?.slice(0, 512) ?? null,
+  });
+
+  if (error) {
+    console.error("[contact] error al persistir en Supabase:", error.message);
+    return false;
+  }
+  return true;
+}
+
+/** Envía la notificación por mail. Devuelve si Resend la aceptó. */
+async function enviarMail({
+  to,
+  from,
+  apiKey,
+  data,
+  meta,
+}: {
+  to: string;
+  from: string;
+  apiKey: string;
+  data: ContactData;
+  meta: { ip: string; receivedAt: Date };
+}): Promise<boolean> {
   try {
+    // Se mandan las dos versiones: la de texto es el fallback para clientes que
+    // bloquean HTML y además mejora la reputación anti-spam del envío.
     const res = await fetch(RESEND_ENDPOINT, {
       method: "POST",
       headers: {
@@ -107,21 +181,20 @@ export async function POST(req: NextRequest) {
         to: [to],
         // El From queda en tu dominio verificado (si no, DMARC lo rebota);
         // responder desde el mail va al remitente real.
-        reply_to: email,
-        subject: `Consulta web — ${name} (${company})`,
-        text,
-        html,
+        reply_to: data.email,
+        subject: `Consulta web — ${data.name} (${data.company})`,
+        text: buildText(data, meta),
+        html: buildHtml(data, meta),
       }),
     });
 
     if (!res.ok) {
       console.error("[contact] Resend respondió", res.status, await res.text());
-      return json(502, { error: "delivery" });
+      return false;
     }
+    return true;
   } catch (err) {
     console.error("[contact] fallo al enviar:", err);
-    return json(502, { error: "delivery" });
+    return false;
   }
-
-  return json(200, { ok: true });
 }

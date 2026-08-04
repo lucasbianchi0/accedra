@@ -37,6 +37,45 @@ export type ContactData = {
   service: Service | "";
 };
 
+/**
+ * Campos de atribución que acompañan al envío. Vienen del cliente (los arma
+ * lib/attribution.ts desde la URL), o sea que son ENTRADA HOSTIL: cualquiera
+ * puede mandar un POST con lo que quiera acá. Por eso se sanean en vez de
+ * rechazarse — un gclid inválido no debe hacer que se pierda un lead legítimo.
+ */
+export const ATTRIBUTION_FIELDS = [
+  "gclid", "gbraid", "wbraid",
+  "utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+  "referrer", "landing_page", "submitted_from",
+] as const;
+
+export type AttributionField = (typeof ATTRIBUTION_FIELDS)[number];
+export type AttributionData = Partial<Record<AttributionField, string>>;
+
+/** Tope por campo de atribución. Las URLs largas se recortan, no se descartan. */
+const ATTR_MAX_LEN = 512;
+
+/**
+ * Extrae y limpia la atribución de un payload arbitrario. Nunca falla: lo que
+ * no sirve se descarta en silencio y el lead se guarda igual.
+ */
+export function extractAttribution(raw: unknown): AttributionData {
+  if (typeof raw !== "object" || raw === null) return {};
+  const body = raw as Record<string, unknown>;
+  const out: AttributionData = {};
+
+  for (const k of ATTRIBUTION_FIELDS) {
+    const v = body[k];
+    if (typeof v !== "string") continue;
+    // Se quitan los caracteres de control por el mismo motivo que en el resto
+    // del formulario: ensucian logs y son la firma de intentos de inyección.
+    const limpio = v.replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, ATTR_MAX_LEN);
+    if (limpio) out[k] = limpio;
+  }
+
+  return out;
+}
+
 export type ValidationResult =
   | { ok: true; data: ContactData }
   | { ok: false; reason: string };

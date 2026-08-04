@@ -6,6 +6,7 @@ import ScrollToTop from "@/components/ScrollToTop";
 import MotionProvider from "@/components/MotionProvider";
 import SmoothScroll from "@/components/SmoothScroll";
 import JsonLd from "@/components/seo/JsonLd";
+import Attribution from "@/components/Attribution";
 import { organizationLd, websiteLd } from "@/lib/seo/jsonLd";
 import { SITE_URL, DEFAULT_TITLE, DEFAULT_DESCRIPTION, ORG } from "@/lib/seo/site";
 
@@ -94,6 +95,10 @@ export default function RootLayout({
         {/* Structured data global: la empresa (ProfessionalService/LocalBusiness)
             y el sitio. Va en el SSR, disponible para Google y crawlers de IA. */}
         <JsonLd data={[organizationLd(), websiteLd()]} />
+        {/* Captura el origen de la visita (gclid, UTMs, referente) apenas entra
+            y lo conserva mientras navega: sin esto el identificador del anuncio
+            se pierde entre la página de aterrizaje y el formulario. */}
+        <Attribution />
         <MotionProvider>
           <SmoothScroll>
             {/* Dentro de SmoothScroll para que useLenis() tenga el contexto de

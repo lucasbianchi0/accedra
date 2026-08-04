@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Send, MapPin, Phone, Mail, CheckCircle, ArrowUpRight, ChevronDown } from "lucide-react";
 import { whatsappLink } from "@/lib/whatsapp";
+import { forSubmit } from "@/lib/attribution";
 import { useT } from "@/lib/i18n/useT";
 import { LIMITS } from "@/lib/contact/schema";
 
@@ -89,6 +90,9 @@ export default function Contact() {
           ...form,
           website, // honeypot
           elapsedMs: Date.now() - mountedAt.current,
+          // Origen de la visita guardado al aterrizar. Sin esto no se puede
+          // saber qué anuncio o búsqueda trajo a este lead.
+          ...forSubmit(window.location.pathname),
         }),
       });
       if (res.ok) {
