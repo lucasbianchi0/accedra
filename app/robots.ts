@@ -6,8 +6,9 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      // Landings por industria (noindex) y la página de preview interna: fuera
-      // del crawl para no diluir el índice con variantes/duplicados.
+      // Sólo la página de preview interna queda fuera del crawl. Las landings por
+      // industria SÍ se rastrean e indexan: tienen contenido propio (contexto,
+      // normativa y FAQs por vertical) y están en el sitemap.
       disallow: ["/preview-mapa"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,

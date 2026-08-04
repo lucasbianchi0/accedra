@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 import { SITE_URL, SERVICES } from "@/lib/seo/site";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
+import { INDUSTRY_SLUGS } from "@/components/solutions/industriesData";
+import { getIndustrySeo } from "@/components/solutions/industrySeo";
 import { HOME_CASES } from "@/components/homeCases";
 
-// Sitemap de las rutas INDEXABLES. Se excluyen a propósito:
-//  · las landings /soluciones/[slug]/[industria] (noindex, evitan duplicados)
+// Sitemap de las rutas INDEXABLES. Se excluye a propósito:
 //  · /preview-mapa (interna)
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -23,6 +24,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
+  // Landings por industria (solución × industria). Sólo entran las que tienen
+  // contenido propio en INDUSTRY_SEO — es la misma condición que decide el
+  // `index` en generateMetadata, así que sitemap y robots nunca se contradicen.
+  // Prioridad 0.8: por debajo de la solución base (0.9), que sigue siendo la
+  // página canónica del servicio.
+  const industries: MetadataRoute.Sitemap = SERVICES.flatMap((s) =>
+    INDUSTRY_SLUGS.filter((ind) => getIndustrySeo(s.slug, ind)).map((ind) => ({
+      url: `${SITE_URL}/soluciones/${s.slug}/${ind}`,
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.8,
+    })),
+  );
+
   // Detalle de cada caso de éxito: los del home (/casos/home/n) y los de cada
   // solución que tenga casos cargados (/casos/<slug>/n).
   const cases: MetadataRoute.Sitemap = [];
@@ -35,5 +50,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   });
 
-  return [...home, ...solutions, ...cases];
+  return [...home, ...solutions, ...industries, ...cases];
 }

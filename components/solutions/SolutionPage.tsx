@@ -12,6 +12,10 @@ import CountUp from "@/components/CountUp";
 import CapabilitiesBento from "./CapabilitiesBento";
 import ProcessCardsRow from "./ProcessCardsRow";
 import CasesSection from "./CasesSection";
+import IndustryContext from "./IndustryContext";
+import IndustryFaq from "./IndustryFaq";
+import IndustryLinks from "./IndustryLinks";
+import { getIndustrySeo } from "./industrySeo";
 import { useLang } from "@/lib/i18n/LangProvider";
 import { useT } from "@/lib/i18n/useT";
 import { es } from "@/lib/i18n/dictionaries/es";
@@ -51,6 +55,10 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
   const override = industry ? raw.industryContent?.[industry.slug] : undefined;
   const subtitle = override?.subtitle ?? data.subtitle;
   const heroImage = industry?.heroImage ?? data.heroImage;
+  // Capa SEO/GEO de la combinación: contexto propio, normativa y FAQs. Es lo que
+  // vuelve indexable a la landing, así que si falta no se renderiza nada extra
+  // (y generateMetadata deja la página en noindex por la misma condición).
+  const industrySeo = industry ? getIndustrySeo(slug, industry.slug) : null;
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoPlaying, setVideoPlaying] = useState(false);
@@ -84,8 +92,9 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
 
   return (
     <main className="relative bg-navy-800 min-h-screen" style={{ "--accent-rgb": data.accentRgb } as CSSProperties}>
-      {/* Structured data: sólo en la página base de la solución (las de industria
-          son noindex → no aportan al índice y ensuciarían el grafo). */}
+      {/* Structured data de la página base. Las landings por industria emiten el
+          suyo (Service + FAQPage + Breadcrumb) desde su page.tsx, que es Server
+          Component — así el grafo va en el HTML inicial y no tras la hidratación. */}
       {!industry && (() => {
         const svc = serviceLd(slug);
         const crumbs = breadcrumbLd([
@@ -162,16 +171,21 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                 Solución {industry.forLabel}
               </div>
             )}
-            <h1 className="text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] mb-6">
+            {/* La línea "para <industria>" va DENTRO del h1, no en un <p> aparte.
+                Visualmente es idéntico (mismos tamaños y separaciones que antes),
+                pero hace que el encabezado principal sea distinto en cada landing:
+                si no, las 6 industrias de una solución comparten h1 exacto — que es
+                la señal que Google lee como página duplicada. */}
+            <h1 className={`text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] ${industry ? "mb-7" : "mb-6"}`}>
               {data.title}{" "}
               <span style={accentHighlight}>{data.highlight}</span>
+              {industry && (
+                <span className="block text-2xl md:text-3xl lg:text-[34px] leading-tight mt-4">
+                  <span className="text-white/55">para </span>
+                  <span style={accentHighlight}>{industry.name}</span>
+                </span>
+              )}
             </h1>
-            {industry && (
-              <p className="text-2xl md:text-3xl lg:text-[34px] font-bold leading-tight -mt-2 mb-7">
-                <span className="text-white/55">para </span>
-                <span style={accentHighlight}>{industry.name}</span>
-              </p>
-            )}
             <p className="text-gray-300 text-lg leading-relaxed max-w-xl mb-9">{subtitle}</p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="#contacto"
@@ -267,15 +281,32 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
         </div>
       </section>
 
+      {/* ── Contexto de la industria (sólo landings) ──
+          Va inmediatamente después de la portada, antes de las capacidades: es el
+          texto propio de esta combinación y conviene que esté alto en el documento,
+          no enterrado al final. */}
+      {industrySeo && <IndustryContext seo={industrySeo} />}
+
       {/* ── Capabilities ── */}
       <CapabilitiesBento slug={slug} eyebrow={st.capsEyebrow} title={st.capsTitle} items={data.capabilities} consultable={!industry} />
 
       {/* ── Cómo trabajamos (pasos por solución) ── */}
       <ProcessCardsRow slug={slug} />
 
-      {/* ── Casos de éxito (solo páginas de solución) ── */}
-      {!industry && data.cases.length > 0 && <CasesSection cases={data.cases} slug={slug} />}
+      {/* ── Casos de éxito ──
+          Ahora también en las landings de industria: son prueba social real y
+          contenido indexable, y ocultarlos sólo tenía sentido cuando estas páginas
+          no competían en búsqueda. */}
+      {data.cases.length > 0 && <CasesSection cases={data.cases} slug={slug} />}
 
+      {/* ── Preguntas frecuentes (sólo landings) ── */}
+      {industrySeo && <IndustryFaq faqs={industrySeo.faqs} />}
+
+      {/* ── Malla de enlaces internos ──
+          En la página base lista las industrias; en una landing, las hermanas y la
+          misma industria en otras soluciones. Sin esto las landings quedan
+          huérfanas y no reciben autoridad. */}
+      <IndustryLinks slug={slug} industria={industry?.slug} />
 
       {/* ── Form de contacto (igual que el home) ── */}
       <Contact />
