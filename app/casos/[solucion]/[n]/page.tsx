@@ -33,7 +33,11 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const c = metaFor(solucion, Number(n));
   if (!c) return {};
   const url = `/casos/${solucion}/${n}`;
-  const title = `${c.title} · Caso de éxito · Accedra`;
+  // Se saca "· Caso de éxito ·" del medio: eran 17 caracteres para decir algo
+  // que nadie escribe en Google, y empujaban el título a 72 — por encima de lo
+  // que el buscador muestra sin cortar. El resultado del caso, que es lo que
+  // aporta valor, ahora entra completo.
+  const title = `${c.title} | Accedra`;
   return {
     title: { absolute: title },
     description: c.desc,
