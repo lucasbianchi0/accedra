@@ -3,6 +3,8 @@
 // (Organization ↔ WebSite ↔ Service) para que los buscadores los lean como un grafo
 // único, no como fragmentos sueltos.
 import { SITE_URL, ORG, SERVICES, abs, DEFAULT_DESCRIPTION } from "./site";
+import { INDUSTRIES } from "@/components/solutions/industriesData";
+import { getIndustrySeo, type IndustryFaq } from "@/components/solutions/industrySeo";
 
 const ORG_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
@@ -76,6 +78,54 @@ export function serviceLd(slug: string) {
     serviceType: svc.name,
     provider: { "@id": ORG_ID },
     areaServed: { "@type": "Country", name: "Argentina" },
+  };
+}
+
+// Service de una landing por industria. A diferencia de `serviceLd`, acota el
+// servicio a un público concreto vía `audience` — es la señal que le dice al
+// buscador que ésta NO es una copia de la página base sino la misma solución
+// dirigida a otro segmento, que es exactamente lo que es.
+export function industryServiceLd(slug: string, industria: string) {
+  const svc = SERVICES.find((s) => s.slug === slug);
+  const ind = INDUSTRIES[industria];
+  const seo = getIndustrySeo(slug, industria);
+  if (!svc || !ind || !seo) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: `${svc.name} ${ind.forLabel}`,
+    description: seo.metaDescription,
+    url: abs(`/soluciones/${slug}/${industria}`),
+    serviceType: svc.name,
+    provider: { "@id": ORG_ID },
+    areaServed: { "@type": "Country", name: "Argentina" },
+    // A quién está dirigido. `audienceType` es texto libre; usamos el nombre de
+    // la industria tal como lo escribiríamos en una oración.
+    audience: { "@type": "BusinessAudience", audienceType: ind.name },
+    // Enlaza de vuelta a la página base para que el grafo exprese la jerarquía
+    // solución → solución-para-industria, y no dos servicios sin relación.
+    isRelatedTo: {
+      "@type": "Service",
+      name: svc.name,
+      url: abs(`/soluciones/${slug}`),
+    },
+    keywords: seo.keywords.join(", "),
+  };
+}
+
+// FAQPage. Es el nodo de mayor rendimiento para GEO: los motores generativos
+// (AI Overviews, Perplexity, ChatGPT) citan estas respuestas casi textualmente,
+// y Google las usa para los resultados enriquecidos de preguntas frecuentes.
+export function faqLd(faqs: IndustryFaq[]) {
+  if (!faqs.length) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
   };
 }
 

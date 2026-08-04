@@ -133,6 +133,21 @@ async function guardarLead(
     return false;
   }
 
+  // leads.session_id tiene FK a sessions. Si el beacon del pageview no llegó
+  // —ad blocker, pestaña cerrada, red caída— la sesión no existe y el insert
+  // fallaría por violación de clave foránea, perdiendo el lead entero.
+  // Se da de alta primero: si ya estaba, el upsert no la toca.
+  if (attribution.session_id) {
+    const { error: errSesion } = await db
+      .from("sessions")
+      .upsert({ id: attribution.session_id }, { onConflict: "id", ignoreDuplicates: true });
+    if (errSesion) {
+      console.warn("[contact] no se pudo asegurar la sesión:", errSesion.message);
+      // Se sigue sin el vínculo antes que arriesgar el lead.
+      delete attribution.session_id;
+    }
+  }
+
   const { error } = await db.from("leads").insert({
     name: data.name,
     company: data.company,

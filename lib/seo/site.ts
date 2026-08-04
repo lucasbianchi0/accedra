@@ -45,9 +45,20 @@ export const SERVICES = [
   { slug: "software-ai", name: "Software & AI", desc: "Software a medida e inteligencia artificial aplicada a tus procesos." },
 ] as const;
 
-export const DEFAULT_TITLE = `${ORG.name} | ${ORG.tagline}`;
+// Constante propia y no derivada de ORG.tagline: ese campo dice
+// "Infraestructura y Servicios Tecnológicos", una frase que no aparece en
+// NINGÚN texto visible del sitio y que además nadie busca en Google. Un title
+// que promete algo que la página nunca dice es una coincidencia débil.
+// La marca va primero porque el objetivo principal es ganar la búsqueda
+// "accedra"; después las dos categorías con volumen real de búsqueda.
+export const DEFAULT_TITLE = "Accedra | Infraestructura IT y Ciberseguridad para Empresas";
+
+// Arranca con la keyword en vez de con "17 años": lo primero que lee alguien
+// que escanea resultados tiene que decirle qué hacés. "En Argentina" va al
+// final y aplicado a los proyectos, no a la empresa — da la señal local sin
+// leerse como una frontera.
 export const DEFAULT_DESCRIPTION =
-  "17 años transformando la infraestructura IT de las empresas líderes de Argentina. Networking, Seguridad, Firma Biométrica y Consultoría Microsoft.";
+  "Infraestructura IT para empresas: networking, ciberseguridad, firma biométrica y consultoría Microsoft. 17 años y +400 proyectos en Argentina.";
 
 /** Construye una URL absoluta a partir de un path del sitio. */
 export function abs(path = "/"): string {

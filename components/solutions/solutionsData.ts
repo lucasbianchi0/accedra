@@ -179,7 +179,7 @@ export const SOLUTIONS: Record<string, Solution> = {
         ],
       },
     },
-    metaTitle: "Networking · Accedra",
+    metaTitle: "Networking Empresarial: Cableado, Switching y WiFi | Accedra",
     metaDescription:
       "Infraestructura de red de alta disponibilidad: cableado estructurado, switching, wireless y VoIP. Partner certificado Cisco, Aruba y más.",
   },
@@ -291,7 +291,7 @@ export const SOLUTIONS: Record<string, Solution> = {
         ],
       },
     },
-    metaTitle: "Firma Digital & Biométrica · Accedra",
+    metaTitle: "Firma Digital y Biométrica con Validez Legal | Accedra",
     metaDescription:
       "Firma electrónica, biométrica y digital según la normativa aplicable: eSignAnywhere, tabletas Wacom, factoring digital. Digitalización documental sin papel.",
   },
@@ -400,9 +400,9 @@ export const SOLUTIONS: Record<string, Solution> = {
         ],
       },
     },
-    metaTitle: "Consultoría Microsoft & Power BI · Accedra",
+    metaTitle: "Consultoría Microsoft: Power BI, 365 y Azure | Accedra",
     metaDescription:
-      "Consultoría Microsoft: Power BI, Microsoft 365, Dynamics, SharePoint y Azure. Analítica y productividad para tu empresa.",
+      "Consultoría Microsoft: Power BI, Microsoft 365, Dynamics, SharePoint y Azure. Convertimos tus datos en decisiones y tu operación en procesos ágiles.",
   },
 
   seguridad: {
@@ -509,7 +509,7 @@ export const SOLUTIONS: Record<string, Solution> = {
         ],
       },
     },
-    metaTitle: "Ciberseguridad · Accedra",
+    metaTitle: "Ciberseguridad Empresarial: Zero Trust y Firewalls | Accedra",
     metaDescription:
       "Ciberseguridad de nivel corporativo: firewalls de nueva generación, Zero Trust, Cisco Umbrella y AMP, protección de endpoints y email.",
   },
@@ -557,7 +557,69 @@ export const SOLUTIONS: Record<string, Solution> = {
       "Escalabilidad y estándares enterprise",
       "Acompañamiento de largo plazo",
     ],
-    metaTitle: "Software a medida & Inteligencia Artificial · Accedra",
+    industryContent: {
+      bancos: {
+        subtitle:
+          "Automatizá el back office y la lectura de documentación, integrado al core que ya opera — con trazabilidad de cada decisión.",
+        pains: [
+          "Tu equipo carga a mano datos que ya están en un formulario.",
+          "Las conciliaciones consumen días de trabajo repetitivo.",
+          "Necesitás auditar qué decidió cada proceso automatizado.",
+          "Los sistemas no se hablan y alguien copia entre pantallas.",
+        ],
+      },
+      seguros: {
+        subtitle:
+          "Acortá el circuito de siniestros con lectura automática de documentación y flujos que enrutan solos — de días a horas.",
+        pains: [
+          "La denuncia de un siniestro tarda días en cargarse al sistema.",
+          "Alguien lee y transcribe cada presupuesto de taller a mano.",
+          "El equipo técnico responde las mismas consultas del canal todo el día.",
+          "No hay registro claro de en qué etapa está cada expediente.",
+        ],
+      },
+      juridicos: {
+        subtitle:
+          "Encontrá antecedentes propios preguntando en lenguaje natural y analizá contratos por lote — con la fuente siempre citada.",
+        pains: [
+          "El conocimiento del estudio está disperso y depende de quién se acuerde.",
+          "Revisar cincuenta contratos parecidos consume horas facturables.",
+          "Buscar por nombre de archivo no encuentra lo que necesitás.",
+          "La producción repetitiva se lleva el tiempo del trabajo de fondo.",
+        ],
+      },
+      laboratorios: {
+        subtitle:
+          "Conectá analizadores, sistema de gestión y obras sociales, y procesá órdenes automáticamente — con trazabilidad completa.",
+        pains: [
+          "Alguien transcribe resultados de un equipo al sistema de gestión.",
+          "Las órdenes y autorizaciones se cargan a mano, en formatos distintos.",
+          "Planificás turnos e insumos sobre la memoria del mes anterior.",
+          "Los sistemas no se integran y cada paso suma un error posible.",
+        ],
+      },
+      logistica: {
+        subtitle:
+          "Optimizá rutas con todas las restricciones reales y anticipá demanda por zona — integrado a tu TMS, no en una planilla aparte.",
+        pains: [
+          "La planificación de rutas depende de la experiencia de una persona.",
+          "Dimensionás flota y personal sin una proyección confiable.",
+          "Los sistemas no se integran y la información se recarga a mano.",
+          "Cuando la realidad cambia, replanificar el día es imposible.",
+        ],
+      },
+      retail: {
+        subtitle:
+          "Previsión de demanda por artículo y sucursal que alimenta la reposición, más atención automatizada — integrado a tu ERP.",
+        pains: [
+          "Comprás de más y liquidás, o de menos y perdés la venta.",
+          "Nadie alcanza a revisar la reposición artículo por artículo.",
+          "El equipo responde las mismas consultas de clientes todo el día.",
+          "La previsión termina en un archivo que nadie usa para comprar.",
+        ],
+      },
+    },
+    metaTitle: "Software a Medida e Inteligencia Artificial | Accedra",
     metaDescription:
       "Desarrollo de software a medida e integración de IA: aplicaciones, APIs, modelos de machine learning, chatbots y automatización de procesos.",
   },

@@ -29,6 +29,26 @@ export type TrackInput = {
   metadata?: Record<string, unknown>;
 };
 
+/**
+ * Id de la sesión vigente, sin crear una nueva si no existe.
+ *
+ * Lo usa el formulario de contacto para poder vincular el lead con su
+ * recorrido de navegación. Devuelve null si no hay sesión: el lead se guarda
+ * igual, sólo queda sin cruzar.
+ */
+export function currentSessionId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) return null;
+    const g = JSON.parse(raw) as Guardado;
+    if (!g?.id || typeof g.last !== "number") return null;
+    return Date.now() - g.last < SESSION_IDLE_MS ? g.id : null;
+  } catch {
+    return null;
+  }
+}
+
 function uuid(): string {
   // randomUUID no existe en contextos no seguros (http en LAN, WebViews viejos).
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();

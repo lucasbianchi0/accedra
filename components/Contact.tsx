@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Send, MapPin, Phone, Mail, CheckCircle, ArrowUpRight, ChevronDown } from "lucide-react";
 import { whatsappLink } from "@/lib/whatsapp";
 import { forSubmit } from "@/lib/attribution";
-import { track } from "@/lib/track";
+import { track, currentSessionId } from "@/lib/track";
 import { useT } from "@/lib/i18n/useT";
 import { LIMITS } from "@/lib/contact/schema";
 
@@ -94,6 +94,9 @@ export default function Contact() {
           // Origen de la visita guardado al aterrizar. Sin esto no se puede
           // saber qué anuncio o búsqueda trajo a este lead.
           ...forSubmit(window.location.pathname),
+          // Vincula el lead con su recorrido de navegación. Es lo que permite
+          // ir del contrato firmado hasta el anuncio que lo originó.
+          session_id: currentSessionId(),
         }),
       });
       if (res.ok) {

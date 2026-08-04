@@ -50,7 +50,12 @@ export const ATTRIBUTION_FIELDS = [
 ] as const;
 
 export type AttributionField = (typeof ATTRIBUTION_FIELDS)[number];
-export type AttributionData = Partial<Record<AttributionField, string>>;
+export type AttributionData = Partial<Record<AttributionField, string>> & {
+  /** Sesión de navegación que originó el lead. */
+  session_id?: string;
+};
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Tope por campo de atribución. Las URLs largas se recortan, no se descartan. */
 const ATTR_MAX_LEN = 512;
@@ -72,6 +77,12 @@ export function extractAttribution(raw: unknown): AttributionData {
     const limpio = v.replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, ATTR_MAX_LEN);
     if (limpio) out[k] = limpio;
   }
+
+  // El id de sesión lo genera el navegador: se valida el formato para no
+  // ensuciar la tabla con claves arbitrarias. Si no sirve, se descarta y el
+  // lead se guarda igual, sólo que sin cruzar con su navegación.
+  const sid = body.session_id;
+  if (typeof sid === "string" && UUID_RE.test(sid.trim())) out.session_id = sid.trim();
 
   return out;
 }
