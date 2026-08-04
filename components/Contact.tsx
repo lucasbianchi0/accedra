@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { Send, MapPin, Phone, Mail, CheckCircle, ArrowUpRight, ChevronDown } from "lucide-react";
 import { whatsappLink } from "@/lib/whatsapp";
 import { forSubmit } from "@/lib/attribution";
+import { track } from "@/lib/track";
 import { useT } from "@/lib/i18n/useT";
 import { LIMITS } from "@/lib/contact/schema";
 
@@ -70,10 +71,10 @@ export default function Contact() {
   }, []);
 
   const contactInfo = [
-    { icon: WhatsAppIcon, label: t.contact.whatsappLabel, value: t.contact.whatsappValue, href: whatsappLink(), rgb: "37,211,102", iconColor: "#ffffff", solid: true },
-    { icon: Phone, label: "(+54 11) 5365-9887", value: t.contact.phoneValue, href: "tel:+541153659887", rgb: BLUE_RGB, iconColor: "#7FB3F8", solid: false },
-    { icon: Mail, label: "info@accedra.com.ar", value: t.contact.emailValue, href: "mailto:info@accedra.com.ar", rgb: BLUE_RGB, iconColor: "#7FB3F8", solid: false },
-    { icon: MapPin, label: "Irala 1950, 2° piso · CABA", value: t.contact.addressValue, href: "https://www.google.com/maps/search/?api=1&query=Irala+1950+CABA+Argentina", rgb: BLUE_RGB, iconColor: "#7FB3F8", solid: false },
+    { icon: WhatsAppIcon, label: t.contact.whatsappLabel, value: t.contact.whatsappValue, href: whatsappLink(), rgb: "37,211,102", iconColor: "#ffffff", solid: true, evento: "whatsapp" },
+    { icon: Phone, label: "(+54 11) 5365-9887", value: t.contact.phoneValue, href: "tel:+541153659887", rgb: BLUE_RGB, iconColor: "#7FB3F8", solid: false, evento: "telefono" },
+    { icon: Mail, label: "info@accedra.com.ar", value: t.contact.emailValue, href: "mailto:info@accedra.com.ar", rgb: BLUE_RGB, iconColor: "#7FB3F8", solid: false, evento: "email" },
+    { icon: MapPin, label: "Irala 1950, 2° piso · CABA", value: t.contact.addressValue, href: "https://www.google.com/maps/search/?api=1&query=Irala+1950+CABA+Argentina", rgb: BLUE_RGB, iconColor: "#7FB3F8", solid: false, evento: "mapa" },
   ];
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
@@ -96,6 +97,9 @@ export default function Contact() {
         }),
       });
       if (res.ok) {
+        // Se emite recién con el 200: contar intentos fallidos como conversión
+        // le enseñaría a Ads a optimizar hacia tráfico que no convierte.
+        track({ type: "form", name: "submit", target: form.service || "sin_servicio" });
         setSent(true);
       } else {
         setError(res.status === 429 ? "rate" : "generic");
@@ -145,6 +149,7 @@ export default function Contact() {
                     href={m.href}
                     target={m.href.startsWith("http") ? "_blank" : undefined}
                     rel="noopener noreferrer"
+                    onClick={() => track({ type: "click", name: m.evento, target: "contacto" })}
                     className="flex items-center gap-4 group rounded-2xl p-3 -mx-3 hover:bg-white/[0.04] transition-colors"
                   >
                     <div

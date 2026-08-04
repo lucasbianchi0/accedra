@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { whatsappLink } from "@/lib/whatsapp";
+import { track } from "@/lib/track";
 
 export default function WhatsAppButton() {
   const [visible, setVisible] = useState(false);
@@ -51,6 +52,10 @@ export default function WhatsAppButton() {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Hablar por WhatsApp"
+            // WhatsApp saca al usuario del sitio: sin este evento la conversión
+            // es invisible para Ads y las campañas optimizan con la mitad de
+            // los datos. Va con sendBeacon, que sobrevive a la navegación.
+            onClick={() => track({ type: "click", name: "whatsapp", target: "flotante" })}
             whileHover={{ scale: 1.06 }}
             whileTap={{ scale: 0.94 }}
             className="relative overflow-hidden flex items-center gap-2.5 p-3.5 sm:pl-4 sm:pr-5 sm:py-3 rounded-full text-white font-semibold text-sm select-none"

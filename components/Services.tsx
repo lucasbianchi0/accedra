@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react";
 import { useRef } from "react";
 import Link from "next/link";
+import { track } from "@/lib/track";
 import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
@@ -88,6 +89,9 @@ function CardsGrid({ t }: { t: ReturnType<typeof useT> }) {
             className={`h-full ${rowSpan}`}>
             <Link href={`/soluciones/${col.slug}`}
               aria-label={`${t.services.viewSolution}: ${cd.title}`}
+              // Qué solución despierta más interés en la home. Es la señal que
+              // dice hacia qué servicio conviene empujar presupuesto de Ads.
+              onClick={() => track({ type: "click", name: "solucion_card", target: col.slug })}
               className="group relative flex h-full flex-col rounded-[1.5rem] overflow-hidden border focus-visible:outline-none transition-transform duration-500 hover:-translate-y-1.5"
               style={{
                 // Vidrio translúcido + blur del fondo, igual que Testimonios/WhyUs.

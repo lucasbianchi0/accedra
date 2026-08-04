@@ -11,6 +11,7 @@ import {
 import { useT } from "@/lib/i18n/useT";
 import LangSwitcher from "@/components/LangSwitcher";
 import { whatsappLink } from "@/lib/whatsapp";
+import { track } from "@/lib/track";
 
 const BLUE_RGB = "43,111,212";
 
@@ -336,6 +337,7 @@ export default function Navbar() {
                 href={whatsappLink()}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => track({ type: "click", name: "whatsapp", target: "menu" })}
                 className="flex items-center justify-center gap-2.5 w-full py-4 rounded-full text-white font-semibold text-[15px] transition-opacity hover:opacity-90 active:scale-[0.99]"
                 style={{ background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)", boxShadow: "0 8px 24px rgba(37,211,102,0.35)" }}
               >
