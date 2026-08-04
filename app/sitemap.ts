@@ -11,6 +11,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   const home: MetadataRoute.Sitemap = [
     { url: SITE_URL, lastModified: now, changeFrequency: "weekly", priority: 1 },
+    // Indexable a propósito: además de ser obligatoria, es una señal de confianza
+    // que Google valora en sitios que recolectan datos.
+    { url: `${SITE_URL}/privacidad`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ];
 
   const solutions: MetadataRoute.Sitemap = SERVICES.map((s) => ({

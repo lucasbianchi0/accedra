@@ -117,9 +117,17 @@ export default function Footer() {
           <p className="text-gray-500 text-xs">
             © {new Date().getFullYear()} Accedra S.A. {t.footer.rights}
           </p>
-          <p className="text-gray-500 text-xs">
-            {t.footer.madeIn}
-          </p>
+          <div className="flex items-center gap-4">
+            {/* Requisito para publicar en plataformas de anuncios cuando el sitio
+                recolecta datos personales, además de la obligación de la Ley 25.326. */}
+            <Link
+              href="/privacidad"
+              className="text-gray-500 hover:text-gray-300 text-xs transition-colors"
+            >
+              Política de Privacidad
+            </Link>
+            <span className="text-gray-500 text-xs">{t.footer.madeIn}</span>
+          </div>
         </div>
       </div>
     </footer>
