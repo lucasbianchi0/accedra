@@ -154,9 +154,16 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
         </div>
 
         {/* Glow orbs — color de identidad de la solución */}
-        <div className="absolute top-1/3 right-1/4 w-96 h-96 rounded-full blur-3xl z-1 pointer-events-none animate-float"
+        {/* Aureolas decorativas. `hidden sm:block` como en el hero del home: son
+            puro adorno y en mobile costaban dos veces. Una, el blur de 96px sobre
+            GPU de teléfono. Y dos —la que se veía en las métricas— están ancladas
+            en PORCENTAJE del alto de la sección (`top-1/3`, `bottom-1/4`), así que
+            cada vez que el hero cambiaba de alto al terminar de cargar, las
+            aureolas se movían y eso puntuaba como layout shift: 0,082 de CLS que
+            no venía del contenido sino de dos manchas de luz. */}
+        <div className="hidden sm:block absolute top-1/3 right-1/4 w-96 h-96 rounded-full blur-3xl z-1 pointer-events-none animate-float"
           style={{ background: "rgba(var(--accent-rgb,43,111,212),0.12)" }} />
-        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 rounded-full blur-3xl z-1 pointer-events-none animate-float-slow"
+        <div className="hidden sm:block absolute bottom-1/4 left-1/3 w-72 h-72 rounded-full blur-3xl z-1 pointer-events-none animate-float-slow"
           style={{ background: "rgba(var(--accent-rgb,43,111,212),0.09)" }} />
 
         <div className="relative z-10 max-w-[1320px] w-full mx-auto px-5 sm:px-8 lg:px-12">
@@ -247,7 +254,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                       {b.logo && (
                         <span className="inline-flex items-center justify-center rounded-lg bg-white p-1.5 shadow-[0_4px_14px_rgba(0,0,0,0.25)]">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={b.logo} alt="" aria-hidden="true" loading="lazy" decoding="async" className="h-5 w-5 object-contain" />
+                          <img src={b.logo} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
                         </span>
                       )}
                       <span className="text-white text-[15px] sm:text-base font-medium whitespace-nowrap">{b.name}</span>
@@ -260,7 +267,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                     <div key={key} className="flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity duration-200">
                       {b.logo && (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={b.logo} alt="" aria-hidden="true" loading="lazy" decoding="async"
+                        <img src={b.logo} alt="" aria-hidden="true"
                           className="h-6 sm:h-7 w-auto max-w-[120px] object-contain"
                           style={{ filter: "brightness(0) invert(1)" }} />
                       )}
@@ -270,7 +277,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                 }
                 return (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img key={key} src={b.logo} alt={b.name} title={b.name} loading="lazy" decoding="async"
+                  <img key={key} src={b.logo} alt={b.name} title={b.name}
                     className="h-7 sm:h-9 w-auto max-w-[140px] object-contain opacity-60 hover:opacity-95 transition-opacity duration-200"
                     style={{ filter: "brightness(0) invert(1)" }} />
                 );
