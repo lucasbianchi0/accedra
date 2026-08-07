@@ -1,8 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Scale } from "lucide-react";
-import { Reveal, revealOnScroll } from "@/components/Reveal";
+import { Reveal } from "@/components/Reveal";
 import type { IndustrySeo } from "./industrySeo";
 
 // Bloque de contexto de una landing por industria: el H2 con la keyword long-tail,
@@ -29,9 +28,9 @@ export default function IndustryContext({ seo }: { seo: IndustrySeo }) {
           {/* Cuerpo editorial */}
           <div className="max-w-2xl space-y-5">
             {seo.intro.map((p, i) => (
-              <motion.p key={i} {...revealOnScroll} className="text-gray-300 text-[17px] leading-relaxed">
+              <Reveal as="p" key={i} preset="item" className="text-gray-300 text-[17px] leading-relaxed">
                 {p}
-              </motion.p>
+              </Reveal>
             ))}
           </div>
 
@@ -39,8 +38,9 @@ export default function IndustryContext({ seo }: { seo: IndustrySeo }) {
               que los motores generativos usan para ubicar la página en un dominio
               temático concreto. No es asesoramiento legal: es contexto. */}
           {seo.compliance && seo.compliance.length > 0 && (
-            <motion.aside
-              {...revealOnScroll}
+            <Reveal
+              as="aside"
+              preset="item"
               className="relative rounded-panel p-7 lg:p-8 self-start overflow-hidden"
               style={{
                 background: "linear-gradient(180deg, rgba(255,255,255,0.065) 0%, rgba(255,255,255,0.02) 60%, rgba(255,255,255,0.012) 100%)",
@@ -72,7 +72,7 @@ export default function IndustryContext({ seo }: { seo: IndustrySeo }) {
                 Referencias de contexto, no asesoramiento legal. El alcance concreto
                 se define en cada implementación.
               </p>
-            </motion.aside>
+            </Reveal>
           )}
         </div>
       </div>

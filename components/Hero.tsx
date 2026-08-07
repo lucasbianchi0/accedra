@@ -1,85 +1,34 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import CountUp from "@/components/CountUp";
-import Image from "next/image";
+import HeroMedia from "@/components/HeroMedia";
 import { enter } from "@/components/Reveal";
 
 const stats = ["17+", "400+", "26+", "100+"];
 
 /* Cascada de entrada del hero — mismos valores que tenía con framer-motion. */
 const ENTER = {
-  title: enter("40px", "1.3s", "0.15s", "12px"),
+  // El <h1> arranca en 0s, sin demora. Es el elemento LCP: Chrome no lo cuenta
+  // como candidato mientras esté en `opacity: 0`, así que cualquier
+  // `animation-delay` acá se suma tal cual a la métrica. 0,15s de retraso es
+  // 0,15s peor de LCP a cambio de nada que se perciba — el resto de la cascada
+  // conserva sus tiempos y el escalonado se sigue leyendo igual.
+  title: enter("40px", "1.3s", "0s", "12px"),
   subtitle: enter("16px", "1.1s", "0.42s"),
   ctas: enter("16px", "1.1s", "0.66s"),
   stats: enter("30px", "1.2s", "0.9s"),
 };
 
-// Poster = PRIMER FRAME del propio video (local). Antes era una foto de Pexels
-// distinta del video, y por eso se veía "otra cosa un segundo" y después el
-// video. Al coincidir poster y primer frame, el video sólo cobra vida, sin salto.
-const HERO_POSTER = "/videos/5028622.jpg";
-const HERO_VIDEO = "/videos/5028622.mp4";
-
 export default function Hero() {
   const t = useT();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [videoPlaying, setVideoPlaying] = useState(false);
-
-  // El video ahora es local y liviano → se reproduce también en mobile.
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.playbackRate = 0.75;
-    const p = v.play();
-    if (p !== undefined) p.catch(() => {});
-  }, []);
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Video background (with a static image fallback that always renders) */}
-      <div className="absolute inset-0 z-0 bg-[#0D1A2D]">
-        {/* priority: es la imagen visible del hero mientras el video carga, o sea
-            lo que se pinta primero. Sin priority Next la trata como lazy y llega
-            tarde al LCP. */}
-        <Image
-          src={HERO_POSTER}
-          alt=""
-          aria-hidden="true"
-          fill
-          priority
-          sizes="100vw"
-          className="hero-zoom object-cover"
-        />
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          // "metadata" en vez de "auto": con "auto" el navegador se llevaba el
-          // ancho de banda bajando el video ANTES de terminar de pintar el texto
-          // del hero, que es el elemento LCP. Como el poster es el primer frame
-          // exacto del video, no hay salto visual; el video sólo entra un
-          // instante después.
-          preload="metadata"
-          poster={HERO_POSTER}
-          onPlaying={() => setVideoPlaying(true)}
-          className={`hero-zoom absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-            videoPlaying ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          <source src={HERO_VIDEO} type="video/mp4" />
-        </video>
-        {/* Gradient overlay. El borde INFERIOR funde al canvas de la página
-            (navy-800 #0a1424), no a navy-700: así el hero se derrite en el fondo
-            único en vez de cerrar un tono más claro y marcar una costura contra
-            la barra de clientes. */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0D1A2D]/95 via-[#0D1A2D]/80 to-[#0D1A2D]/60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a1424] via-transparent to-[#0D1A2D]/30" />
-      </div>
+      {/* Poster + video de fondo. Toda la lógica de carga vive en HeroMedia:
+          es lo que decide el LCP de la página y merece su propio archivo. */}
+      <HeroMedia />
 
       {/* Blue glow orbs (decorativos — se ocultan en mobile por performance) */}
       <div className="hidden sm:block absolute top-1/3 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl z-1 pointer-events-none animate-float" />
@@ -94,7 +43,7 @@ export default function Hero() {
               elemento LCP y con framer no se pintaba hasta después de hidratar.
               Los valores son los mismos que tenía la versión con motion. */}
           <h1
-            className="hero-enter text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-[-0.02em] mb-6"
+            className="text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-[-0.02em] mb-6"
             style={ENTER.title}
           >
             {t.hero.titlePre}<br className="hidden sm:block" />{" "}

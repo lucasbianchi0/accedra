@@ -1,13 +1,12 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ArrowRight, ArrowUpRight, Package, Mountain, Landmark, Building2, type LucideIcon } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import Link from "next/link";
 import { track } from "@/lib/track";
 import Image from "next/image";
 import { HOME_CASES } from "./homeCases";
-import { Reveal, revealOnScroll } from "@/components/Reveal";
+import { Reveal } from "@/components/Reveal";
 import Testimonials from "@/components/Testimonials";
 
 const BLUE_RGB = "43,111,212";
@@ -43,7 +42,7 @@ export default function WhyUs() {
               {cases.map((c, i) => {
                 const TagIcon = INDUSTRY_ICONS[c.tag] ?? Building2;
                 return (
-                  <motion.div key={c.title} {...revealOnScroll} className="group h-full">
+                  <Reveal key={c.title} preset="item" className="group h-full">
                     <Link href={`/casos/home/${i}`} aria-label={`Ver caso: ${c.title}`}
                       onClick={() => track({ type: "click", name: "caso_card", target: `home/${i}` })}
                       className="relative flex h-full flex-col rounded-panel overflow-hidden border border-white/[0.12] focus-visible:outline-none transition-all duration-500 hover:-translate-y-2"
@@ -98,7 +97,7 @@ export default function WhyUs() {
                         </div>
                       </div>
                     </Link>
-                  </motion.div>
+                  </Reveal>
                 );
               })}
             </div>

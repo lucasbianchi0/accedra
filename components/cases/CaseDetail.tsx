@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, ArrowUpRight, Building2, Target, Wrench, FileText, TrendingUp } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { HOME_CASES } from "@/components/homeCases";
 import { imgFor } from "./caseImage";
 import Image from "next/image";
+import { enter } from "@/components/Reveal";
 
 const BLUE = "#2B6FD4";
 const BLUE_RGB = "43,111,212";
@@ -74,18 +74,17 @@ export default function CaseDetail({ solucion, index }: { solucion: string; inde
         </button>
 
         {/* Encabezado */}
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="max-w-3xl">
+        <div className="hero-enter max-w-3xl" style={enter("16px", "0.5s", "0s")}>
           <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] px-3 py-1.5 rounded-full mb-5"
             style={{ background: `rgba(${BLUE_RGB},0.14)`, color: "#9EC5FF", border: `1px solid rgba(${BLUE_RGB},0.3)` }}>
             <Building2 size={12} /> {item.industry} · Caso de éxito
           </span>
           <h1 className="text-3xl md:text-4xl font-bold text-white leading-[1.1] mb-3.5">{item.result}</h1>
           {item.lead && <p className="text-gray-300 text-lg leading-relaxed max-w-2xl">{item.lead}</p>}
-        </motion.div>
+        </div>
 
         {/* Foto enmarcada */}
-        <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.1 }}
-          className="relative mt-7">
+        <div className="hero-enter relative mt-7" style={enter("0px", "0.6s", "0.1s")}>
           <div className="absolute -inset-2 rounded-[30px] pointer-events-none blur-2xl"
             style={{ background: `radial-gradient(60% 90% at 50% 0%, rgba(${BLUE_RGB},0.22), transparent 72%)` }} />
           <div className="relative rounded-panel p-px"
@@ -100,7 +99,7 @@ export default function CaseDetail({ solucion, index }: { solucion: string; inde
               <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(7,16,29,0.45) 0%, transparent 42%)" }} />
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
 
       {/* Cuerpo: relato + ficha lateral */}

@@ -1,11 +1,10 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { Building2, ArrowRight, ArrowUpRight } from "lucide-react";
 import type { Case } from "./solutionsData";
 import { imgFor } from "@/components/cases/caseImage";
-import { Reveal, revealOnScroll, EASE } from "@/components/Reveal";
+import { Reveal } from "@/components/Reveal";
 import Image from "next/image";
 
 const CARD_STYLE = {
@@ -31,8 +30,7 @@ function IndustryBadge({ industry, className = "" }: { industry: string; classNa
 function EditorialCase({ c, href }: { c: Case; href: string }) {
   const img = c.image ?? imgFor(c.industry);
   return (
-    <motion.div initial={{ opacity: 0, y: 44, filter: "blur(14px)" }} whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }} viewport={{ once: true, amount: 0.15, margin: "0px 0px -10% 0px" }}
-      transition={{ duration: 1.4, ease: EASE }}>
+    <Reveal y={44} dur={1.4} amount={0.15}>
       <Link href={href}
         className="group relative block rounded-panel overflow-hidden border transition-all duration-500 hover:-translate-y-1"
         style={CARD_STYLE}>
@@ -59,7 +57,7 @@ function EditorialCase({ c, href }: { c: Case; href: string }) {
           </div>
         </div>
       </Link>
-    </motion.div>
+    </Reveal>
   );
 }
 
@@ -67,7 +65,7 @@ function EditorialCase({ c, href }: { c: Case; href: string }) {
 function VerticalCase({ c, href }: { c: Case; href: string }) {
   const img = c.image ?? imgFor(c.industry);
   return (
-    <motion.div {...revealOnScroll} className="h-full">
+    <Reveal preset="item" className="h-full">
       <Link href={href}
         className="group relative flex h-full flex-col rounded-card border overflow-hidden transition-all duration-500 hover:-translate-y-2"
         style={CARD_STYLE}>
@@ -97,7 +95,7 @@ function VerticalCase({ c, href }: { c: Case; href: string }) {
           </span>
         </div>
       </Link>
-    </motion.div>
+    </Reveal>
   );
 }
 
@@ -134,7 +132,7 @@ export default function CasesSection({ cases, slug }: { cases: Case[]; slug: str
           </div>
         )}
 
-        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.2 }}
+        <Reveal preset="itemFade" delay={0.2}
           className="mt-14 flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
           <p className="text-gray-400 text-[15px]">¿Querés que el próximo caso sea el tuyo?</p>
           <Link href="#contacto"
@@ -142,7 +140,7 @@ export default function CasesSection({ cases, slug }: { cases: Case[]; slug: str
             style={{ background: "rgb(var(--accent-rgb,43,111,212))", boxShadow: `0 8px 28px rgba(var(--accent-rgb,43,111,212),0.35)` }}>
             Solicitar un diagnóstico <ArrowRight size={15} />
           </Link>
-        </motion.div>
+        </Reveal>
       </div>
     </section>
   );

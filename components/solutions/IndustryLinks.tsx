@@ -1,23 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
-import { Reveal, revealOnScroll } from "@/components/Reveal";
-import { SOLUTIONS, SOLUTION_SLUGS } from "./solutionsData";
+import { Reveal } from "@/components/Reveal";
+import { SOLUTIONS } from "./solutionsData";
 import { INDUSTRIES, INDUSTRY_SLUGS } from "./industriesData";
 import { getIndustrySeo } from "./industrySeo";
 
-// Malla de enlaces internos entre las landings de industria.
+// Enlaces internos desde la página base de una solución hacia sus landings por
+// industria.
 //
-// Es la pieza que faltaba para que estas páginas puedan rankear: hasta ahora eran
-// huérfanas —no se llegaba a ellas desde ningún lado— y una página sin enlaces
+// Es lo que evita que esas landings queden huérfanas: una página sin enlaces
 // entrantes no recibe autoridad aunque esté en el sitemap y sin noindex.
 //
-// Dos modos:
-//  · sin `industria` (página base de la solución) → enlaza a sus 6 industrias.
-//  · con `industria` (landing) → enlaza a las industrias hermanas Y a la misma
-//    industria en las otras soluciones, tejiendo la malla en los dos ejes.
+// Sólo se renderiza en la página base. Las landings de industria no muestran esta
+// sección (ni hermanas ni cross-solución) por decisión de diseño.
 
 type Card = { href: string; title: string; desc: string };
 
@@ -25,7 +22,7 @@ function LinkCards({ cards }: { cards: Card[] }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {cards.map((c) => (
-        <motion.div key={c.href} {...revealOnScroll}>
+        <Reveal key={c.href} preset="item">
           <Link
             href={c.href}
             className="group/link relative flex flex-col h-full rounded-panel p-6 overflow-hidden transition-transform duration-300 hover:-translate-y-1"
@@ -47,7 +44,7 @@ function LinkCards({ cards }: { cards: Card[] }) {
               Ver solución <ArrowRight size={14} />
             </span>
           </Link>
-        </motion.div>
+        </Reveal>
       ))}
     </div>
   );
@@ -67,72 +64,30 @@ function Header({ title }: { title: string }) {
   );
 }
 
-export default function IndustryLinks({
-  slug,
-  industria,
-}: {
-  slug: string;
-  industria?: string;
-}) {
+export default function IndustryLinks({ slug }: { slug: string }) {
   const solution = SOLUTIONS[slug];
   if (!solution) return null;
 
   // Sólo se enlazan combinaciones con contenido propio: enlazar una variante sin
   // texto diferenciado le pasaría autoridad a una página que no debería indexarse.
-  const siblings = INDUSTRY_SLUGS.filter(
-    (i) => i !== industria && getIndustrySeo(slug, i),
-  );
-
-  const crossSolutions = industria
-    ? SOLUTION_SLUGS.filter((s) => s !== slug && getIndustrySeo(s, industria))
-    : [];
-
-  if (!siblings.length && !crossSolutions.length) return null;
-
-  const ind = industria ? INDUSTRIES[industria] : null;
+  const industries = INDUSTRY_SLUGS.filter((i) => getIndustrySeo(slug, i));
+  if (!industries.length) return null;
 
   return (
     <section className="section relative overflow-hidden">
       <div className="container-x relative z-10">
-        {siblings.length > 0 && (
-          <>
-            <Header
-              title={
-                ind
-                  ? `${solution.name} en otras industrias`
-                  : `${solution.name} por industria`
-              }
-            />
-            <LinkCards
-              cards={siblings.map((i) => {
-                const target = INDUSTRIES[i];
-                const seo = getIndustrySeo(slug, i);
-                return {
-                  href: `/soluciones/${slug}/${i}`,
-                  title: `${solution.name} ${target.forLabel}`,
-                  desc: seo?.h2 ?? target.context,
-                };
-              })}
-            />
-          </>
-        )}
-
-        {ind && crossSolutions.length > 0 && (
-          <div className={siblings.length > 0 ? "mt-20 lg:mt-24" : ""}>
-            <Header title={`Otras soluciones ${ind.forLabel}`} />
-            <LinkCards
-              cards={crossSolutions.map((s) => {
-                const target = SOLUTIONS[s];
-                const seo = getIndustrySeo(s, industria!);
-                return {
-                  href: `/soluciones/${s}/${industria}`,
-                  title: `${target.name} ${ind.forLabel}`,
-                  desc: seo?.h2 ?? target.subtitle,
-                };
-              })}
-            />
-          </div>
-        )}
+        <Header title={`${solution.name} por industria`} />
+        <LinkCards
+          cards={industries.map((i) => {
+            const target = INDUSTRIES[i];
+            const seo = getIndustrySeo(slug, i);
+            return {
+              href: `/soluciones/${slug}/${i}`,
+              title: `${solution.name} ${target.forLabel}`,
+              desc: seo?.h2 ?? target.context,
+            };
+          })}
+        />
       </div>
     </section>
   );

@@ -1,8 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { Plus } from "lucide-react";
-import { Reveal, revealOnScroll } from "@/components/Reveal";
+import { Reveal } from "@/components/Reveal";
 import type { IndustryFaq as Faq } from "./industrySeo";
 
 // Preguntas frecuentes de una landing por industria.
@@ -29,7 +28,7 @@ export default function IndustryFaq({ faqs }: { faqs: Faq[] }) {
 
         <div className="max-w-3xl space-y-3">
           {faqs.map((f) => (
-            <motion.div key={f.q} {...revealOnScroll}>
+            <Reveal key={f.q} preset="item">
               <details
                 className="group/faq rounded-panel overflow-hidden transition-colors duration-300"
                 style={{
@@ -57,7 +56,7 @@ export default function IndustryFaq({ faqs }: { faqs: Faq[] }) {
                   </p>
                 </div>
               </details>
-            </motion.div>
+            </Reveal>
           ))}
         </div>
       </div>

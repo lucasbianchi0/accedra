@@ -35,6 +35,11 @@ export default function ClientsBar() {
                 <img
                   src={client.logo}
                   alt={client.name}
+                  // lazy + async: sin esto React emite un <link rel="preload"> por
+                  // cada logo y en mobile veintipico de preloads le pelean el caño
+                  // al poster del hero, que es el elemento LCP.
+                  loading="lazy"
+                  decoding="async"
                   className="w-auto object-contain"
                   style={{
                     height: `calc(clamp(26px, 3.8vw, 42px) * ${client.scale ?? 1})`,

@@ -14,7 +14,6 @@ import ProcessCardsRow from "./ProcessCardsRow";
 import CasesSection from "./CasesSection";
 import IndustryContext from "./IndustryContext";
 import IndustryFaq from "./IndustryFaq";
-import IndustryLinks from "./IndustryLinks";
 import { getIndustrySeo } from "./industrySeo";
 import { useLang } from "@/lib/i18n/LangProvider";
 import { useT } from "@/lib/i18n/useT";
@@ -248,7 +247,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                       {b.logo && (
                         <span className="inline-flex items-center justify-center rounded-lg bg-white p-1.5 shadow-[0_4px_14px_rgba(0,0,0,0.25)]">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={b.logo} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
+                          <img src={b.logo} alt="" aria-hidden="true" loading="lazy" decoding="async" className="h-5 w-5 object-contain" />
                         </span>
                       )}
                       <span className="text-white text-[15px] sm:text-base font-medium whitespace-nowrap">{b.name}</span>
@@ -261,7 +260,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                     <div key={key} className="flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity duration-200">
                       {b.logo && (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={b.logo} alt="" aria-hidden="true"
+                        <img src={b.logo} alt="" aria-hidden="true" loading="lazy" decoding="async"
                           className="h-6 sm:h-7 w-auto max-w-[120px] object-contain"
                           style={{ filter: "brightness(0) invert(1)" }} />
                       )}
@@ -271,7 +270,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                 }
                 return (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img key={key} src={b.logo} alt={b.name} title={b.name}
+                  <img key={key} src={b.logo} alt={b.name} title={b.name} loading="lazy" decoding="async"
                     className="h-7 sm:h-9 w-auto max-w-[140px] object-contain opacity-60 hover:opacity-95 transition-opacity duration-200"
                     style={{ filter: "brightness(0) invert(1)" }} />
                 );
@@ -288,7 +287,10 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
       {industrySeo && <IndustryContext seo={industrySeo} />}
 
       {/* ── Capabilities ── */}
-      <CapabilitiesBento slug={slug} eyebrow={st.capsEyebrow} title={st.capsTitle} items={data.capabilities} consultable={!industry} />
+      {/* `consultable` va también en las landings de industria: el form de contacto
+          (#contacto) se renderiza en ambas, así que el CTA de hover tiene destino
+          válido y no hay motivo para que la card se comporte distinto. */}
+      <CapabilitiesBento slug={slug} eyebrow={st.capsEyebrow} title={st.capsTitle} items={data.capabilities} consultable />
 
       {/* ── Cómo trabajamos (pasos por solución) ── */}
       <ProcessCardsRow slug={slug} />
@@ -301,12 +303,6 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
 
       {/* ── Preguntas frecuentes (sólo landings) ── */}
       {industrySeo && <IndustryFaq faqs={industrySeo.faqs} />}
-
-      {/* ── Malla de enlaces internos ──
-          En la página base lista las industrias; en una landing, las hermanas y la
-          misma industria en otras soluciones. Sin esto las landings quedan
-          huérfanas y no reciben autoridad. */}
-      <IndustryLinks slug={slug} industria={industry?.slug} />
 
       {/* ── Form de contacto (igual que el home) ── */}
       <Contact />

@@ -25,12 +25,25 @@ export const ORG = {
     postalCode: "C1276",
     country: "AR",
   },
-  // Coordenadas APROXIMADas de Irala 1950 (Barracas, CABA). Verificar/afinar con
-  // la ubicación exacta antes de producción — impactan el SEO local.
-  geo: { lat: -34.6449, lng: -58.3796 },
+  // Coordenadas geocodificadas de Irala 1950 (La Boca, CABA — no Barracas, como
+  // decía la nota anterior). Las de antes estaban ~1,4 km al noroeste: para SEO
+  // local eso es la diferencia entre aparecer o no en el paquete de mapas, y
+  // tienen que coincidir con el pin de Google Business Profile.
+  geo: { lat: -34.6467, lng: -58.365 },
+  // Horario de atención. Alimenta el `openingHoursSpecification` del JSON-LD y
+  // tiene que coincidir con el cargado en Google Business Profile: si el schema
+  // y la ficha dicen cosas distintas, Google se queda con la ficha y la
+  // discrepancia resta consistencia.
+  hours: {
+    days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+    opens: "09:00",
+    closes: "18:00",
+  },
   sameAs: [
     "https://www.linkedin.com/company/accedra-s.a.",
     "https://www.instagram.com/accedra_sa/",
+    // Cuando la ficha de Google Business esté verificada, su URL va acá: es el
+    // link que ata la entidad "sitio" con la entidad "negocio".
   ],
   areaServed: "AR",
 } as const;

@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
 import { Send, MapPin, Phone, Mail, CheckCircle, ArrowUpRight, ChevronDown } from "lucide-react";
 import { whatsappLink } from "@/lib/whatsapp";
 import { forSubmit } from "@/lib/attribution";
 import { track, currentSessionId } from "@/lib/track";
 import { useT } from "@/lib/i18n/useT";
 import { LIMITS } from "@/lib/contact/schema";
+import { Reveal } from "@/components/Reveal";
 
 const BLUE = "#2B6FD4";
 const BLUE_RGB = "43,111,212";
@@ -123,11 +123,9 @@ export default function Contact() {
         <div className="grid lg:grid-cols-5 gap-10 lg:gap-14 items-stretch">
 
           {/* ── Left: info panel ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-            transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
+          <Reveal
+            preset="item"
+            y={28}
             className="lg:col-span-2 flex flex-col"
           >
             <div className="title-halo">
@@ -180,14 +178,13 @@ export default function Contact() {
                 );
               })}
             </div>
-          </motion.div>
+          </Reveal>
 
           {/* ── Right: form card ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-            transition={{ duration: 0.85, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
+          <Reveal
+            preset="item"
+            y={28}
+            delay={0.12}
             className="lg:col-span-3"
           >
             {/* Gradient border wrapper */}
@@ -317,10 +314,8 @@ export default function Contact() {
                     </form>
                   </>
                 ) : (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.96 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="py-16 text-center h-full flex flex-col justify-center"
+                  <div
+                    className="rv-pop py-16 text-center h-full flex flex-col justify-center"
                   >
                     <div
                       className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6"
@@ -332,11 +327,11 @@ export default function Contact() {
                     <p className="text-gray-400 text-base max-w-sm mx-auto">
                       {t.contact.successBody}
                     </p>
-                  </motion.div>
+                  </div>
                 )}
               </div>
             </div>
-          </motion.div>
+          </Reveal>
         </div>
       </div>
     </section>

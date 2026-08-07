@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Mail, Phone, MapPin } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
-import { Reveal, RevealGroup, revealItem } from "@/components/Reveal";
+import { Reveal, RevealGroup, RevealItem } from "@/components/Reveal";
 
 // Destinos no traducibles, alineados POR ÍNDICE con footer.servicesItems y
 // footer.companyItems del diccionario (mismo patrón que services.columns).
@@ -37,10 +36,10 @@ export default function Footer() {
           {/* Brand — a `1.5fr` la marca queda ancha pero sin la columna hueca que
               dejaba el `col-span-2` sobre 4 columnas iguales. En tablet ocupa la
               fila completa y los dos bloques de links se reparten debajo. */}
-          <motion.div variants={revealItem} className="sm:col-span-2 lg:col-span-1">
+          <RevealItem className="sm:col-span-2 lg:col-span-1">
             <div className="mb-5">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/logos/accedra-outlined.svg" alt="Accedra" className="h-7 w-auto" />
+              <img src="/logos/accedra-outlined.svg" alt="Accedra" loading="lazy" decoding="async" className="h-7 w-auto" />
               <span className="logo-sub block text-[11px] tracking-[0.25em] text-blue-400 uppercase mt-2">
                 IT Solutions
               </span>
@@ -72,11 +71,11 @@ export default function Footer() {
                 </svg>
               </a>
             </div>
-          </motion.div>
+          </RevealItem>
 
           {/* Links */}
           {sections.map((section) => (
-            <motion.div key={section.title} variants={revealItem}>
+            <RevealItem key={section.title}>
               <h4 className="text-white font-semibold text-sm mb-5 tracking-wide">{section.title}</h4>
               <ul className="space-y-1">
                 {section.items.map((item, i) => (
@@ -92,7 +91,7 @@ export default function Footer() {
                   </li>
                 ))}
               </ul>
-            </motion.div>
+            </RevealItem>
           ))}
         </RevealGroup>
 

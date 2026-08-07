@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import {
   Menu, X, ArrowRight, ChevronDown, ChevronLeft,
   Network, SquarePen, LayoutDashboard, ShieldCheck, Sparkles,
@@ -108,7 +108,7 @@ export default function Navbar() {
 
   return (
     <>
-      <motion.nav
+      <m.nav
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
@@ -149,7 +149,7 @@ export default function Navbar() {
               </button>
               <AnimatePresence>
                 {solOpen && (
-                  <motion.div
+                  <m.div
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 8 }}
@@ -157,7 +157,7 @@ export default function Navbar() {
                     className="absolute left-1/2 -translate-x-1/2 top-full pt-3 w-[290px]"
                   >
                     {solutionPanel}
-                  </motion.div>
+                  </m.div>
                 )}
               </AnimatePresence>
             </div>
@@ -194,18 +194,18 @@ export default function Navbar() {
           >
             <AnimatePresence mode="wait" initial={false}>
               {open ? (
-                <motion.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                <m.span key="x" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.15 }}>
                   <X size={18} className="text-white" />
-                </motion.span>
+                </m.span>
               ) : (
-                <motion.span key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
+                <m.span key="menu" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.15 }}>
                   <Menu size={18} className="text-white" />
-                </motion.span>
+                </m.span>
               )}
             </AnimatePresence>
           </button>
         </div>
-      </motion.nav>
+      </m.nav>
 
       {/* Mobile menu — full-screen premium overlay.
           onExitComplete: la sub-vista de soluciones vuelve a "principal" RECIÉN
@@ -213,7 +213,7 @@ export default function Navbar() {
           vea el panel deslizándose para atrás mientras se desvanece. */}
       <AnimatePresence onExitComplete={() => setSolView(false)}>
         {open && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -238,7 +238,7 @@ export default function Navbar() {
             <div className="relative flex-1 overflow-hidden">
               <AnimatePresence mode="wait" initial={false}>
                 {!solView ? (
-                  <motion.nav
+                  <m.nav
                     key="main"
                     initial={{ opacity: 0, x: -24 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -272,9 +272,9 @@ export default function Navbar() {
                         <ArrowRight size={15} className="ml-auto text-gray-700 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-200" />
                       </a>
                     ))}
-                  </motion.nav>
+                  </m.nav>
                 ) : (
-                  <motion.nav
+                  <m.nav
                     key="sol"
                     initial={{ opacity: 0, x: 24 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -312,7 +312,7 @@ export default function Navbar() {
                         );
                       })}
                     </div>
-                  </motion.nav>
+                  </m.nav>
                 )}
               </AnimatePresence>
             </div>
@@ -353,7 +353,7 @@ export default function Navbar() {
                 <LangSwitcher variant="mobile" />
               </div>
             </div>
-          </motion.div>
+          </m.div>
         )}
       </AnimatePresence>
     </>

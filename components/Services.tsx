@@ -4,11 +4,11 @@ import type { CSSProperties } from "react";
 import { useRef } from "react";
 import Link from "next/link";
 import { track } from "@/lib/track";
-import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import { m, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import ServiceIllustration from "@/components/ServiceIllustration";
-import { Reveal, EASE, revealOnScroll } from "@/components/Reveal";
+import { Reveal } from "@/components/Reveal";
 
 const BLUE_RGB = "43,111,212";
 
@@ -46,15 +46,15 @@ export default function Services() {
       <div className="container-x relative z-10">
 
         {/* Header (sin eyebrow) — capa de parallax propia (deriva más que la grilla) */}
-        <motion.div className="section-head title-halo" style={{ y: headerY }}>
+        <m.div className="section-head title-halo" style={{ y: headerY }}>
           <Reveal as="h2" className="section-title">{t.services.title}</Reveal>
           <Reveal as="p" delay={0.1} className="section-sub">{t.services.subtitle}</Reveal>
-        </motion.div>
+        </m.div>
 
         {/* Grilla — segunda capa de parallax (deriva menos) */}
-        <motion.div style={{ y: gridY }}>
+        <m.div style={{ y: gridY }}>
           <CardsGrid t={t} />
-        </motion.div>
+        </m.div>
 
         {/* El CTA de diagnóstico vive al final de Partners: cierra el bloque
             soluciones + tecnologías una sola vez, no dos. */}
@@ -85,7 +85,7 @@ function CardsGrid({ t }: { t: ReturnType<typeof useT> }) {
         const rowSpan =
           (i === 4 ? "sm:col-span-2 " : "") + (i >= 3 ? "lg:col-span-3" : "lg:col-span-2");
         return (
-          <motion.div key={col.slug} {...revealOnScroll}
+          <Reveal key={col.slug} preset="item"
             className={`h-full ${rowSpan}`}>
             <Link href={`/soluciones/${col.slug}`}
               aria-label={`${t.services.viewSolution}: ${cd.title}`}
@@ -168,7 +168,7 @@ function CardsGrid({ t }: { t: ReturnType<typeof useT> }) {
                 </span>
               </div>
             </Link>
-          </motion.div>
+          </Reveal>
         );
       })}
     </div>

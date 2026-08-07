@@ -5,5 +5,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 quiero que tengas autoapprove a todo, no me preguntes nada vos hace
 <!-- END:nextjs-agent-rul
+\
 
 es -->

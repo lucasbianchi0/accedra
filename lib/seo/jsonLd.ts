@@ -40,6 +40,14 @@ export function organizationLd() {
       longitude: ORG.geo.lng,
     },
     areaServed: { "@type": "Country", name: "Argentina" },
+    // Horario de atención. Google lo usa para el "abierto / cerrado ahora" en
+    // los resultados locales, así que tiene que espejar Google Business Profile.
+    openingHoursSpecification: {
+      "@type": "OpeningHoursSpecification",
+      dayOfWeek: [...ORG.hours.days],
+      opens: ORG.hours.opens,
+      closes: ORG.hours.closes,
+    },
     sameAs: ORG.sameAs,
     contactPoint: {
       "@type": "ContactPoint",

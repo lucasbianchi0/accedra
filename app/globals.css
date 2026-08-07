@@ -47,10 +47,25 @@
 
 /* Scroll suave para los anclajes internos (#capacidades, #contacto, etc.).
    Es el FALLBACK: cuando Lenis está activo toma el control (ver `.lenis` abajo);
-   sin Lenis (o con "Reducir movimiento") queda este smooth nativo. */
+   sin Lenis (mobile, o con "Reducir movimiento") queda este smooth nativo.
+   Desde que Lenis no corre en touch, este es el camino REAL en todo mobile. */
 html {
   scroll-behavior: smooth;
   background: #0a1424; /* canvas único (navy-800) */
+}
+
+/* El equivalente CSS del `offset: -80` que Lenis aplicaba a los anclajes: sin
+   esto el destino queda tapado por el navbar fijo. Va sobre los ids que se usan
+   como ancla, no sobre `[id]` en general, para no alterar el scroll de nodos
+   internos que sólo tienen id por accesibilidad. */
+#servicios,
+#capacidades,
+#contacto,
+#casos,
+#clientes,
+#nosotros,
+#partners {
+  scroll-margin-top: 80px;
 }
 
 /* ── Lenis (scroll suave premium) ──────────────────────────────
@@ -382,6 +397,89 @@ h1, h2, h3, h4, .section-title, .gradient-text {
    estos elementos cuando los animaba framer. */
 @media (prefers-reduced-motion: reduce) {
   .hero-enter { animation: none; }
+}
+
+/* ── Reveals de scroll ─────────────────────────────────────────────────────
+   El motor de components/Reveal.tsx. Antes esto lo hacía framer-motion por JS;
+   ahora el JS sólo decide CUÁNDO (un IntersectionObserver compartido marca
+   `data-rv-state="in"`) y la animación la corre el compositor.
+
+   Las variables las pone cada componente desde su preset, así que las curvas y
+   los tiempos siguen viniendo de un único lugar (PRESETS en Reveal.tsx).
+
+   El estado inicial va DENTRO de `@media (scripting: enabled)` a propósito: es
+   lo único que separa "animación pendiente" de "contenido invisible para
+   siempre". Sin JS —o en un navegador que ignore la media query— nada se
+   oculta: se ve todo, sin animación. Un observer que no corre no puede dejar la
+   página en blanco. */
+@media (scripting: enabled) {
+  [data-rv],
+  [data-rv-child] {
+    opacity: 0;
+    transform: translateY(var(--rv-y, 0px)) scale(var(--rv-scale, 1));
+  }
+
+  /* El desenfoque animado es el único efecto caro en GPU. En mobile se apaga:
+     queda fade + rise, mismo look, cero costo de filtro. */
+  @media (min-width: 768px) {
+    [data-rv] {
+      filter: blur(var(--rv-blur, 0px));
+    }
+  }
+
+  [data-rv-state="in"],
+  [data-rv-group][data-rv-state="in"] > [data-rv-child] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition:
+      opacity var(--rv-dur, 1.5s) var(--rv-ease) var(--rv-delay, 0s),
+      transform var(--rv-dur, 1.5s) var(--rv-ease) var(--rv-delay, 0s),
+      filter var(--rv-dur, 1.5s) var(--rv-ease) var(--rv-delay, 0s);
+  }
+
+  /* Cascada del grupo: el contenedor se marca una sola vez y cada hijo se
+     escalona por su índice. Es el `staggerChildren` de framer, en aritmética
+     de CSS. */
+  [data-rv-group][data-rv-state="in"] > [data-rv-child] {
+    transition-delay: calc(
+      var(--rv-delay, 0s) + var(--rv-i, 0) * var(--rv-stagger, 0s)
+    );
+  }
+}
+
+/* Entrada de MONTAJE (no de scroll): para lo que aparece al cambiar de estado,
+   como el mensaje de "mensaje enviado" del formulario. No necesita observer —
+   el elemento no existía hasta recién, así que animar al montar es correcto. */
+@keyframes rv-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rv-pop {
+  animation: rv-pop 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Con "reducir movimiento" queda sólo un fade corto, sin desplazamiento ni
+   desenfoque — lo mismo que hacía `useReducedMotion()` en la versión framer. */
+@media (prefers-reduced-motion: reduce) {
+  [data-rv],
+  [data-rv-child] {
+    transform: none !important;
+    filter: none !important;
+  }
+  .rv-pop {
+    animation-name: none;
+  }
+  [data-rv-state="in"],
+  [data-rv-group][data-rv-state="in"] > [data-rv-child] {
+    transition: opacity 0.4s linear !important;
+  }
 }
 
 /* ── Premium motion utilities ─────────────────────────────── */

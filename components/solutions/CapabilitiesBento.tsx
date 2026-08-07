@@ -1,10 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import type { Capability } from "./solutionsData";
-import { Reveal, revealOnScroll } from "@/components/Reveal";
+import { Reveal } from "@/components/Reveal";
 import Image from "next/image";
 
 
@@ -22,7 +21,7 @@ export default function CapabilitiesBento({
   eyebrow: string;
   title: string;
   items: Capability[];
-  consultable?: boolean; // muestra el botón "Consultar" en hover (solo páginas base, no industria)
+  consultable?: boolean; // muestra el botón "Consultar" en hover (requiere que la página tenga #contacto)
 }) {
   return (
     <section id="capacidades" data-solution={slug} className="section scroll-mt-24 relative">
@@ -38,7 +37,7 @@ export default function CapabilitiesBento({
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {items.map((c) => {
             return (
-              <motion.div key={c.title} {...revealOnScroll}
+              <Reveal key={c.title} preset="item"
                 className="group relative rounded-card overflow-hidden flex flex-col border border-white/10 transition-colors duration-300"
                 style={{
                   // Vidrio premium (mismo material que Testimonials/bento/proceso):
@@ -94,7 +93,7 @@ export default function CapabilitiesBento({
                     )}
                   </div>
                 </div>
-              </motion.div>
+              </Reveal>
             );
           })}
         </div>

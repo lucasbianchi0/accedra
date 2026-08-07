@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { Search, PencilRuler, ServerCog, Headset, ArrowRight } from "lucide-react";
-import { Reveal, revealOnScroll } from "@/components/Reveal";
+import { Reveal } from "@/components/Reveal";
 
 
 // Las 4 fases del método son las mismas (relevar → diseñar → implementar →
@@ -106,9 +105,9 @@ export default function ProcessCardsRow({ slug = "" }: { slug?: string }) {
           {data.steps.map((s, i) => {
             const Ic = PHASE_ICONS[i];
             return (
-              <motion.div
+              <Reveal
                 key={s.title}
-                {...revealOnScroll}
+                preset="item"
                 onMouseMove={handleMove}
                 className="group relative flex flex-col items-start text-left rounded-panel p-8 overflow-hidden transition-transform duration-300 hover:-translate-y-1.5"
                 style={{
@@ -145,7 +144,7 @@ export default function ProcessCardsRow({ slug = "" }: { slug?: string }) {
 
                 {/* Descripción */}
                 <p className="relative z-10 text-gray-400 text-[14.5px] leading-relaxed">{s.desc}</p>
-              </motion.div>
+              </Reveal>
             );
           })}
         </div>

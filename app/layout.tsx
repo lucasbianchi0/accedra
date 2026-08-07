@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { LangProvider } from "@/lib/i18n/LangProvider";
-import ScrollToTop from "@/components/ScrollToTop";
 import MotionProvider from "@/components/MotionProvider";
 import SmoothScroll from "@/components/SmoothScroll";
 import JsonLd from "@/components/seo/JsonLd";
@@ -10,22 +9,36 @@ import Attribution from "@/components/Attribution";
 import { organizationLd, websiteLd } from "@/lib/seo/jsonLd";
 import { SITE_URL, DEFAULT_TITLE, DEFAULT_DESCRIPTION, ORG } from "@/lib/seo/site";
 
+/* Las tres familias suman ~105 KB y viajan con `<link rel="preload">`, o sea
+   ANTES del elemento LCP. En mobile, contra 1,6 Mbps, eso es medio segundo de
+   caño ocupado justo cuando se está decidiendo la métrica. De ahí que cada
+   familia declare explícitamente si merece o no ese lugar. */
+
+// Cuerpo de toda la página: es lo que se pinta primero. Preload sí.
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
 });
 
+// `preload: false` a propósito. Montserrat NO pinta contenido: sus dos únicos
+// usos son `.logo-word` y `.logo-sub` (el "IT SOLUTIONS" bajo el logo), que son
+// etiquetas decorativas de 11px. Precargarla le sacaba turno a la fuente del
+// <h1>, que es el elemento LCP. Sin preload se descarga igual, pero cuando hay
+// caño libre en vez de compitiendo con lo que decide el score.
+// Sin `weight` toma la variante variable: un archivo en lugar de dos.
 const montserrat = Montserrat({
   subsets: ["latin"],
-  weight: ["300", "500"],
   variable: "--font-montserrat",
+  preload: false,
 });
 
 // Display corporativa/tech para títulos (fuerte, geométrica). El cuerpo sigue en
 // Inter para máxima legibilidad; los títulos toman esta vía --font-display.
+// Esta SÍ va con preload: el <h1> del hero es el elemento LCP de la home y la
+// usa en peso 700. Sin `weight` viene como fuente variable — un solo archivo
+// cubre 500/600/700 en vez de tres.
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
   variable: "--font-space-grotesk",
 });
 
@@ -100,10 +113,10 @@ export default function RootLayout({
             se pierde entre la página de aterrizaje y el formulario. */}
         <Attribution />
         <MotionProvider>
+          {/* SmoothScroll monta el reset de scroll que corresponda a cada rama
+              (Lenis en desktop, nativo en el resto): el de Lenis necesita el
+              contexto de la librería y por eso no puede vivir acá afuera. */}
           <SmoothScroll>
-            {/* Dentro de SmoothScroll para que useLenis() tenga el contexto de
-                Lenis y pueda resetear el scroll al cambiar de ruta. */}
-            <ScrollToTop />
             <LangProvider>{children}</LangProvider>
           </SmoothScroll>
         </MotionProvider>

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import { partners } from "./partnersData";
@@ -33,6 +32,10 @@ function LogoItem({ logo, name, filter }: { logo: string; name: string; filter: 
       <img
         src={logo}
         alt={name}
+        // Partners vive muy abajo en la página: cargarlos con prioridad es
+        // gastarle ancho de banda al hero. Ver el comentario de ClientsBar.
+        loading="lazy"
+        decoding="async"
         className="max-h-10 w-auto max-w-[140px] object-contain opacity-90 transition-opacity duration-500 hover:opacity-100 sm:max-h-[52px] sm:max-w-[168px]"
         style={{ filter }}
       />
@@ -88,11 +91,10 @@ export default function Partners() {
         </Reveal>
 
         {/* Sello de confianza */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3 }}
+        <Reveal
+          preset="item"
+          y={10}
+          delay={0.3}
           className="mt-12 flex justify-center"
         >
           <div
@@ -108,7 +110,7 @@ export default function Partners() {
               {t.partners.pill}
             </span>
           </div>
-        </motion.div>
+        </Reveal>
 
       </div>
     </section>

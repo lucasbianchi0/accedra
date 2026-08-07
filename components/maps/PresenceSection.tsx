@@ -1,7 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
 import Globe from "./Globe";
+import { Reveal } from "@/components/Reveal";
 
 const STATS = [
   {
@@ -34,12 +34,7 @@ export default function PresenceSection() {
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
           {/* ── Left: copy + stats ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.5 }}
-          >
+          <Reveal preset="item" y={20} dur={0.5} amount={0.3}>
             <p className="text-sm font-semibold tracking-[0.22em] uppercase mb-6 text-blue-400">
               Presencia regional
             </p>
@@ -61,18 +56,18 @@ export default function PresenceSection() {
                 </div>
               ))}
             </div>
-          </motion.div>
+          </Reveal>
 
           {/* ── Right: dotted globe focused on Argentina ── */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, amount: 0.15 }}
-            transition={{ duration: 0.6 }}
+          <Reveal
+            preset="itemFade"
+            scale={0.95}
+            dur={0.6}
+            amount={0.15}
             className="order-first lg:order-last"
           >
             <Globe />
-          </motion.div>
+          </Reveal>
         </div>
       </div>
     </section>

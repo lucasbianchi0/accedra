@@ -1,49 +1,65 @@
 "use client";
 
-import { ReactLenis } from "lenis/react";
+import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import ScrollToTop from "@/components/ScrollToTop";
 
 /**
  * Scroll suave premium (Lenis). Le da a toda la página la inercia "cara" de las
- * consultoras modernas: la rueda no salta, desacelera con peso. Sincroniza con el
- * parallax del fondo porque Lenis mueve el scroll real de la ventana (los
- * listeners de `scroll` y `window.scrollY` siguen funcionando igual).
+ * consultoras modernas: la rueda no salta, desacelera con peso.
  *
- * En "Reducir movimiento" NO se inicializa: queda el scroll nativo del sistema.
- * En touch tampoco suaviza (mobile ya trae su propia inercia); sólo desktop/rueda.
+ * SÓLO SE MONTA EN DESKTOP, y esto no cambia nada de lo que se ve:
+ * la config ya tenía `syncTouch: false`, o sea que en un teléfono Lenis no
+ * suavizaba absolutamente nada — se limitaba a correr un loop de rAF permanente
+ * y a competir por un hilo principal que en mobile es el recurso escaso (el TBT
+ * es el rubro más pesado del score y sale casi todo de ahí). El scroll táctil
+ * nativo ya trae su propia inercia, mejor que cualquier emulación por JS.
+ *
+ * Lo único que Lenis aportaba en mobile era la curva de los anclajes internos.
+ * Eso lo cubre `scroll-behavior: smooth` + `scroll-margin-top: 80px` en
+ * globals.css, que es nativo, gratis y no ocupa el hilo principal.
+ *
+ * Además va por `import()` dinámico: en mobile la librería no se descarga ni se
+ * parsea. No alcanzaba con no ejecutarla — un `import` estático la habría puesto
+ * igual en el bundle de arranque.
  */
+const LenisRoot = dynamic(() => import("@/components/LenisRoot"), {
+  ssr: false,
+});
+
+// `pointer: coarse` es el discriminante correcto acá: pregunta por el tipo de
+// entrada (dedo vs mouse), que es exactamente lo que decide si el smooth de
+// rueda tiene sentido. Un `max-width` mandaría a scroll nativo a una notebook
+// con ventana angosta, y dejaría a una tablet grande con el loop corriendo al
+// pedo.
+const NO_LENIS = "(pointer: coarse), (prefers-reduced-motion: reduce)";
+
 export default function SmoothScroll({ children }: { children: React.ReactNode }) {
-  // Arranca habilitado para que el markup del server y el primer render del
-  // cliente coincidan (ReactLenis root no agrega DOM: sólo corre un efecto).
-  const [reduced, setReduced] = useState(false);
+  // Arranca DESHABILITADO y el efecto lo enciende sólo si corresponde. El orden
+  // importa: server y primer render del cliente deben coincidir, y el server no
+  // sabe si hay touch. Empezar en "sin Lenis" y encender después es seguro
+  // (montar Lenis no toca el DOM, sólo corre un efecto); al revés produciría un
+  // frame con Lenis activo en mobile.
+  const [enabled, setEnabled] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const update = () => setReduced(mq.matches);
+    const mq = window.matchMedia(NO_LENIS);
+    const update = () => setEnabled(!mq.matches);
     update();
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
 
-  if (reduced) return <>{children}</>;
+  // Cada rama trae SU reset de scroll entre rutas: el de Lenis va dentro de
+  // LenisRoot (necesita el contexto de la librería), el nativo es este.
+  if (!enabled) {
+    return (
+      <>
+        <ScrollToTop />
+        {children}
+      </>
+    );
+  }
 
-  return (
-    <ReactLenis
-      root
-      options={{
-        // `lerp` = qué tan rápido "alcanza" el scroll al gesto. Más alto = más
-        // ágil/responsivo; más bajo = más pesado. 0.1 suaviza sin sentirse trabado.
-        lerp: 0.1,
-        wheelMultiplier: 1.05,
-        // El mobile mantiene su scroll nativo (no lo suavizamos: se sentiría raro).
-        smoothWheel: true,
-        syncTouch: false,
-        // Los anclajes internos (#contacto, #capacidades…) los maneja Lenis, con
-        // la misma curva suave que el resto del scroll.
-        anchors: { offset: -80, duration: 1.4 },
-      }}
-    >
-      {children}
-    </ReactLenis>
-  );
+  return <LenisRoot>{children}</LenisRoot>;
 }
