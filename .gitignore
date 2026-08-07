@@ -45,8 +45,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# Planes de trabajo y datos de negocio. Es material de trabajo vivo: se edita
-# seguido, tiene cifras de la cuenta de Ads y no aporta nada al código.
+# Material interno y comercial. ESTE REPO ES PÚBLICO: lo que entra acá queda
+# publicado e indexado, y borrarlo después no lo deshace. Nada de propuestas,
+# precios, cifras de la cuenta de Ads ni planes de trabajo.
 /plan/
-# el CSV generado se puede regenerar con scripts/ads/generate.mjs
-/scripts/ads/out/
+/docs/propuesta/
+/scripts/ads/
