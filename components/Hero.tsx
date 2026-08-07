@@ -11,10 +11,11 @@ const stats = ["17+", "400+", "26+", "100+"];
 /* Cascada de entrada del hero — mismos valores que tenía con framer-motion. */
 const ENTER = {
   // El <h1> arranca en 0s, sin demora. Es el elemento LCP: Chrome no lo cuenta
-  // como candidato mientras esté en `opacity: 0`, así que cualquier
-  // `animation-delay` acá se suma tal cual a la métrica. 0,15s de retraso es
-  // 0,15s peor de LCP a cambio de nada que se perciba — el resto de la cascada
-  // conserva sus tiempos y el escalonado se sigue leyendo igual.
+  // como candidato mientras esté en `opacity: 0`, así que el `animation-delay`
+  // se suma tal cual a la métrica. Medido: la animación completa (1,3s) cuesta
+  // 0,2s de LCP, no 1,3s — Chrome sella la métrica al primer frame con opacidad
+  // > 0, no al final del fade. Por eso la animación se conserva y sólo se quitó
+  // la demora inicial, que era gratis.
   title: enter("40px", "1.3s", "0s", "12px"),
   subtitle: enter("16px", "1.1s", "0.42s"),
   ctas: enter("16px", "1.1s", "0.66s"),
@@ -43,7 +44,7 @@ export default function Hero() {
               elemento LCP y con framer no se pintaba hasta después de hidratar.
               Los valores son los mismos que tenía la versión con motion. */}
           <h1
-            className="text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-[-0.02em] mb-6"
+            className="hero-enter text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-[-0.02em] mb-6"
             style={ENTER.title}
           >
             {t.hero.titlePre}<br className="hidden sm:block" />{" "}
