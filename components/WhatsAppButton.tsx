@@ -1,9 +1,25 @@
 "use client";
 
-import { m, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { whatsappLink } from "@/lib/whatsapp";
 import { track } from "@/lib/track";
+
+/* La burbuja entra y sale por CSS, no por framer.
+ *
+ * Antes esto era `AnimatePresence` + `m.div` con una transición de resorte. El
+ * problema no era el efecto sino de dónde venía: importar `m` y
+ * `AnimatePresence` mete el core de framer-motion en el bundle de ARRANQUE, y
+ * este botón ni siquiera existe hasta que el visitante scrollea 560px. Se
+ * pagaba en el segundo que decide las métricas algo que se usa mucho después.
+ *
+ * El nodo queda siempre montado y sólo alterna una clase: así hay animación de
+ * SALIDA sin necesidad de que un runtime demore el desmontaje, que es lo único
+ * que `AnimatePresence` aportaba acá. `visibility` + `pointer-events` lo sacan
+ * del alcance del mouse y del foco cuando está oculto.
+ *
+ * El resorte se aproxima con una curva que sobrepasa y vuelve (el `1.56` del
+ * cubic-bezier); a 0,42s la diferencia con el spring real no se percibe.
+ */
 
 export default function WhatsAppButton() {
   const [visible, setVisible] = useState(false);
@@ -28,52 +44,43 @@ export default function WhatsAppButton() {
     return () => observer.disconnect();
   }, []);
 
-  return (
-    <AnimatePresence>
-      {visible && !menuOpen && (
-        <m.div
-          initial={{ opacity: 0, scale: 0.5, y: 24 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.5, y: 24 }}
-          transition={{ type: "spring", damping: 16, stiffness: 200 }}
-          className="fixed bottom-6 right-5 z-50"
-        >
-          {/* Halo verde que respira (detrás, no recortado) */}
-          <span aria-hidden className="wa-halo absolute inset-0 rounded-full blur-md pointer-events-none"
-            style={{ background: "radial-gradient(circle, rgba(37,211,102,0.6) 0%, transparent 70%)" }} />
-          {/* Anillos "ping" que se expanden cada tanto */}
-          <span aria-hidden className="wa-ping absolute inset-0 rounded-full pointer-events-none"
-            style={{ border: "2px solid rgba(37,211,102,0.55)" }} />
-          <span aria-hidden className="wa-ping wa-ping-2 absolute inset-0 rounded-full pointer-events-none"
-            style={{ border: "2px solid rgba(37,211,102,0.4)" }} />
+  const shown = visible && !menuOpen;
 
-          <m.a
-            href={whatsappLink()}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Hablar por WhatsApp"
-            // WhatsApp saca al usuario del sitio: sin este evento la conversión
-            // es invisible para Ads y las campañas optimizan con la mitad de
-            // los datos. Va con sendBeacon, que sobrevive a la navegación.
-            onClick={() => track({ type: "click", name: "whatsapp", target: "flotante" })}
-            whileHover={{ scale: 1.06 }}
-            whileTap={{ scale: 0.94 }}
-            className="relative overflow-hidden flex items-center gap-2.5 p-3.5 sm:pl-4 sm:pr-5 sm:py-3 rounded-full text-white font-semibold text-sm select-none"
-            style={{
-              background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
-              boxShadow: "0 8px 32px rgba(37,211,102,0.4), 0 2px 10px rgba(0,0,0,0.25)",
-            }}
-          >
-            {/* Barrido de luz (clipeado por el rounded-full del botón) */}
-            <span aria-hidden className="wa-sheen absolute inset-y-0 -left-1/4 w-1/4 pointer-events-none"
-              style={{ background: "linear-gradient(100deg, transparent, rgba(255,255,255,0.5), transparent)" }} />
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="white" className="relative z-10 flex-shrink-0">
+  return (
+    <div className="wa-bubble fixed bottom-6 right-5 z-50" data-shown={shown ? "true" : "false"}>
+      {/* Halo verde que respira (detrás, no recortado) */}
+      <span aria-hidden className="wa-halo absolute inset-0 rounded-full blur-md pointer-events-none"
+        style={{ background: "radial-gradient(circle, rgba(37,211,102,0.6) 0%, transparent 70%)" }} />
+      {/* Anillos "ping" que se expanden cada tanto */}
+      <span aria-hidden className="wa-ping absolute inset-0 rounded-full pointer-events-none"
+        style={{ border: "2px solid rgba(37,211,102,0.55)" }} />
+      <span aria-hidden className="wa-ping wa-ping-2 absolute inset-0 rounded-full pointer-events-none"
+        style={{ border: "2px solid rgba(37,211,102,0.4)" }} />
+
+      <a
+        href={whatsappLink()}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Hablar por WhatsApp"
+        // WhatsApp saca al usuario del sitio: sin este evento la conversión
+        // es invisible para Ads y las campañas optimizan con la mitad de
+        // los datos. Va con sendBeacon, que sobrevive a la navegación.
+        onClick={() => track({ type: "click", name: "whatsapp", target: "flotante" })}
+        // `wa-cta`: el hover/tap que antes eran whileHover/whileTap.
+        className="wa-cta relative overflow-hidden flex items-center gap-2.5 p-3.5 sm:pl-4 sm:pr-5 sm:py-3 rounded-full text-white font-semibold text-sm select-none"
+        style={{
+          background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
+          boxShadow: "0 8px 32px rgba(37,211,102,0.4), 0 2px 10px rgba(0,0,0,0.25)",
+        }}
+      >
+        {/* Barrido de luz (clipeado por el rounded-full del botón) */}
+        <span aria-hidden className="wa-sheen absolute inset-y-0 -left-1/4 w-1/4 pointer-events-none"
+          style={{ background: "linear-gradient(100deg, transparent, rgba(255,255,255,0.5), transparent)" }} />
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="white" className="relative z-10 flex-shrink-0">
               <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-            </svg>
-            <span className="relative z-10 hidden sm:inline">Hablar por WhatsApp</span>
-          </m.a>
-        </m.div>
-      )}
-    </AnimatePresence>
+        </svg>
+        <span className="relative z-10 hidden sm:inline">Hablar por WhatsApp</span>
+      </a>
+    </div>
   );
 }

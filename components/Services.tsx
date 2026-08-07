@@ -1,10 +1,9 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { track } from "@/lib/track";
-import { m, useScroll, useTransform, useReducedMotion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import ServiceIllustration from "@/components/ServiceIllustration";
@@ -32,11 +31,49 @@ export default function Services() {
   // la sección cruza el viewport → profundidad, "sección viva". Sutil (rangos
   // chicos) para que sea refinado, no estridente. `transform` no reflowea el
   // layout, así que es barato y no mueve nada de su lugar real.
+  //
+  // Antes esto eran `useScroll` + `useTransform` de framer. Se escribe a mano por
+  // el mismo motivo que el resto de la página dejó la librería: `m` y sus hooks
+  // viajan en el bundle de ARRANQUE, y este efecto no puede ocurrir antes de que
+  // el visitante scrollee hasta la tercera sección. El cálculo es una regla de
+  // tres sobre `getBoundingClientRect`; lo que hacía framer no era más que eso.
   const sectionRef = useRef<HTMLElement>(null);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
-  const headerY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [34, -30]);
-  const gridY = useTransform(scrollYProgress, [0, 1], reduce ? [0, 0] : [14, -18]);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    // En touch no corre: escribir variables en cada evento de scroll obliga a
+    // recomponer mientras el dedo arrastra, y es el hilo principal del teléfono
+    // el recurso que estamos cuidando. Mismo criterio que AmbientLight.
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!fine || reduced) return;
+
+    let raf = 0;
+    const update = () => {
+      raf = 0;
+      const r = el.getBoundingClientRect();
+      // `progress` replica el `offset: ["start end", "end start"]` de framer: 0
+      // cuando el borde superior de la sección toca el borde inferior de la
+      // ventana, 1 cuando su borde inferior toca el superior de la ventana.
+      const span = window.innerHeight + r.height;
+      const p = Math.min(1, Math.max(0, (window.innerHeight - r.top) / span));
+      el.style.setProperty("--head-y", `${34 + p * (-30 - 34)}px`);
+      el.style.setProperty("--grid-y", `${14 + p * (-18 - 14)}px`);
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   return (
     <section id="servicios" ref={sectionRef} className="section relative">
@@ -45,16 +82,18 @@ export default function Services() {
           una costura contra la vecina. */}
       <div className="container-x relative z-10">
 
-        {/* Header (sin eyebrow) — capa de parallax propia (deriva más que la grilla) */}
-        <m.div className="section-head title-halo" style={{ y: headerY }}>
+        {/* Header (sin eyebrow) — capa de parallax propia (deriva más que la grilla).
+            El fallback `0px` de la variable es lo que se ve en mobile y con
+            "reducir movimiento", donde el efecto no corre: sin desplazamiento. */}
+        <div className="section-head title-halo" style={{ transform: "translateY(var(--head-y, 0px))" }}>
           <Reveal as="h2" className="section-title">{t.services.title}</Reveal>
           <Reveal as="p" delay={0.1} className="section-sub">{t.services.subtitle}</Reveal>
-        </m.div>
+        </div>
 
         {/* Grilla — segunda capa de parallax (deriva menos) */}
-        <m.div style={{ y: gridY }}>
+        <div style={{ transform: "translateY(var(--grid-y, 0px))" }}>
           <CardsGrid t={t} />
-        </m.div>
+        </div>
 
         {/* El CTA de diagnóstico vive al final de Partners: cierra el bloque
             soluciones + tecnologías una sola vez, no dos. */}

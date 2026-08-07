@@ -2,17 +2,19 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Montserrat, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { LangProvider } from "@/lib/i18n/LangProvider";
-import MotionProvider from "@/components/MotionProvider";
 import SmoothScroll from "@/components/SmoothScroll";
 import JsonLd from "@/components/seo/JsonLd";
 import Attribution from "@/components/Attribution";
 import { organizationLd, websiteLd } from "@/lib/seo/jsonLd";
 import { SITE_URL, DEFAULT_TITLE, DEFAULT_DESCRIPTION, ORG } from "@/lib/seo/site";
 
-/* Las tres familias suman ~105 KB y viajan con `<link rel="preload">`, o sea
-   ANTES del elemento LCP. En mobile, contra 1,6 Mbps, eso es medio segundo de
-   caño ocupado justo cuando se está decidiendo la métrica. De ahí que cada
-   familia declare explícitamente si merece o no ese lugar. */
+/* Las tres familias van con `<link rel="preload">`, o sea que compiten por el
+   caño justo cuando se deciden FCP y LCP. Se probó recortar esa lista y el
+   resultado fue peor en las tres: las tres pintan algo en el primer viewport
+   (Inter el cuerpo, Space Grotesk el <h1>, Montserrat el logo del navbar).
+   Lo que sí rindió fue bajar el NÚMERO DE ARCHIVOS: sin `weight` explícito
+   next/font sirve la variante variable de cada familia, un archivo por familia
+   en vez de uno por peso. */
 
 // Cuerpo de toda la página: es lo que se pinta primero. Preload sí.
 const inter = Inter({
@@ -20,16 +22,17 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-// `preload: false` a propósito. Montserrat NO pinta contenido: sus dos únicos
-// usos son `.logo-word` y `.logo-sub` (el "IT SOLUTIONS" bajo el logo), que son
-// etiquetas decorativas de 11px. Precargarla le sacaba turno a la fuente del
-// <h1>, que es el elemento LCP. Sin preload se descarga igual, pero cuando hay
-// caño libre en vez de compitiendo con lo que decide el score.
+// Montserrat pinta sólo `.logo-word` y `.logo-sub` (el "IT SOLUTIONS" bajo el
+// logo). Parece candidata obvia a `preload: false`... y NO lo es: medido, sacarle
+// el preload empeoraba el FCP 300 ms en TODAS las páginas, y el LCP heredaba el
+// retraso. El motivo es que el logo del navbar es lo primero que se pinta, así
+// que esta fuente está en el camino del primer pintado aunque el texto sea
+// chiquito. Queda precargada. Si alguien vuelve a intentar quitarla, medir FCP
+// antes y después — la intuición acá miente.
 // Sin `weight` toma la variante variable: un archivo en lugar de dos.
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
-  preload: false,
 });
 
 // Display corporativa/tech para títulos (fuerte, geométrica). El cuerpo sigue en
@@ -112,14 +115,17 @@ export default function RootLayout({
             y lo conserva mientras navega: sin esto el identificador del anuncio
             se pierde entre la página de aterrizaje y el formulario. */}
         <Attribution />
-        <MotionProvider>
-          {/* SmoothScroll monta el reset de scroll que corresponda a cada rama
-              (Lenis en desktop, nativo en el resto): el de Lenis necesita el
-              contexto de la librería y por eso no puede vivir acá afuera. */}
-          <SmoothScroll>
-            <LangProvider>{children}</LangProvider>
-          </SmoothScroll>
-        </MotionProvider>
+        {/* Acá vivía MotionProvider (LazyMotion + MotionConfig de framer). Se fue
+            con la librería: montarlo en la raíz metía framer en el bundle de
+            arranque de TODAS las páginas, que es justo lo que se estaba tratando
+            de evitar. El único consumidor que queda —el overlay del menú mobile—
+            monta su propio LazyMotion cuando se lo abre. */}
+        {/* SmoothScroll monta el reset de scroll que corresponda a cada rama
+            (Lenis en desktop, nativo en el resto): el de Lenis necesita el
+            contexto de la librería y por eso no puede vivir acá afuera. */}
+        <SmoothScroll>
+          <LangProvider>{children}</LangProvider>
+        </SmoothScroll>
       </body>
     </html>
   );

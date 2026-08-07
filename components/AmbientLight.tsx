@@ -26,27 +26,32 @@ const ELECTRIC = "56,189,248";
  * sección grande, recalibrar estos valores.
  * `depth` es el factor de parallax: cuanto más alto, más "lejos" se percibe.
  */
+// `mob: false` = la lámpara no se pinta en mobile. Cada una es una superficie de
+// ~1500×1100 que el compositor tiene que sostener; en un teléfono el conjunto se
+// paga en Style & Layout, que es el rubro más caro del hilo principal ahí. Se
+// conservan las de mayor alpha (las que realmente se ven) y se descartan las de
+// relleno: la onda de luz sigue leyéndose, con la mitad de superficie.
 const PRESETS = {
   // Home: portada · clientes · servicios · partners · nosotros · testimonios ·
   // contacto · footer. Lados alternados para que la luz "serpentee" hacia abajo
   // y el ojo la lea como una sola onda continua, no como manchas sueltas.
   home: [
-    { top: "8%",  left: "64%", w: 1600, h: 1150, rgb: BLUE,   alpha: 0.14, depth: 0.05 },
-    { top: "22%", left: "14%", w: 1250, h: 950,  rgb: CYAN,   alpha: 0.08, depth: 0.03 },
-    { top: "36%", left: "82%", w: 1350, h: 1050, rgb: INDIGO, alpha: 0.11, depth: 0.055 },
-    { top: "50%", left: "26%", w: 1300, h: 1000, rgb: BLUE,   alpha: 0.10, depth: 0.04 },
-    { top: "64%", left: "80%", w: 1250, h: 950,  rgb: CYAN,   alpha: 0.08, depth: 0.03 },
-    { top: "78%", left: "20%", w: 1350, h: 1050, rgb: INDIGO, alpha: 0.10, depth: 0.05 },
-    { top: "91%", left: "68%", w: 1500, h: 1150, rgb: BLUE,   alpha: 0.06, depth: 0.045 },
+    { top: "8%",  left: "64%", w: 1600, h: 1150, rgb: BLUE,   alpha: 0.14, depth: 0.05,  mob: true },
+    { top: "22%", left: "14%", w: 1250, h: 950,  rgb: CYAN,   alpha: 0.08, depth: 0.03,  mob: false },
+    { top: "36%", left: "82%", w: 1350, h: 1050, rgb: INDIGO, alpha: 0.11, depth: 0.055, mob: true },
+    { top: "50%", left: "26%", w: 1300, h: 1000, rgb: BLUE,   alpha: 0.10, depth: 0.04,  mob: true },
+    { top: "64%", left: "80%", w: 1250, h: 950,  rgb: CYAN,   alpha: 0.08, depth: 0.03,  mob: false },
+    { top: "78%", left: "20%", w: 1350, h: 1050, rgb: INDIGO, alpha: 0.10, depth: 0.05,  mob: true },
+    { top: "91%", left: "68%", w: 1500, h: 1150, rgb: BLUE,   alpha: 0.06, depth: 0.045, mob: false },
   ],
   // Solución: portada · capacidades · proceso · casos · form. Página más corta,
   // misma lógica de onda alternada.
   solution: [
-    { top: "12%", left: "62%", w: 1500, h: 1100, rgb: BLUE,   alpha: 0.13, depth: 0.05 },
-    { top: "32%", left: "16%", w: 1200, h: 920,  rgb: CYAN,   alpha: 0.08, depth: 0.03 },
-    { top: "50%", left: "84%", w: 1300, h: 1000, rgb: INDIGO, alpha: 0.10, depth: 0.05 },
-    { top: "68%", left: "24%", w: 1250, h: 960,  rgb: CYAN,   alpha: 0.07, depth: 0.035 },
-    { top: "88%", left: "70%", w: 1450, h: 1100, rgb: BLUE,   alpha: 0.13, depth: 0.045 },
+    { top: "12%", left: "62%", w: 1500, h: 1100, rgb: BLUE,   alpha: 0.13, depth: 0.05,  mob: true },
+    { top: "32%", left: "16%", w: 1200, h: 920,  rgb: CYAN,   alpha: 0.08, depth: 0.03,  mob: false },
+    { top: "50%", left: "84%", w: 1300, h: 1000, rgb: INDIGO, alpha: 0.10, depth: 0.05,  mob: true },
+    { top: "68%", left: "24%", w: 1250, h: 960,  rgb: CYAN,   alpha: 0.07, depth: 0.035, mob: false },
+    { top: "88%", left: "70%", w: 1450, h: 1100, rgb: BLUE,   alpha: 0.13, depth: 0.045, mob: true },
   ],
 } as const;
 
@@ -102,6 +107,13 @@ export default function AmbientLight({
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduced) return;
+    // En touch NO corre nada de esto. El parallax escribe `--sy` en cada evento
+    // de scroll, y cada escritura obliga al compositor a rehacer las lámparas
+    // (superficies de ~1500px) justo mientras el dedo arrastra. Es el mismo
+    // criterio que ya se aplica al spotlight del cursor unas líneas más abajo:
+    // el efecto se paga donde se aprecia. La página queda idéntica, sólo que la
+    // luz no deriva con el scroll.
+    if (!fine) return;
 
     const doc = docRef.current;
     const spot = spotRef.current;
@@ -146,7 +158,7 @@ export default function AmbientLight({
       request();
     };
 
-    if (fine) window.addEventListener("mousemove", onMove, { passive: true });
+    window.addEventListener("mousemove", onMove, { passive: true });
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
 
@@ -164,10 +176,15 @@ export default function AmbientLight({
         {/* Franjas diagonales: el estrato base del mesh. Cruzan a lo ancho y se
             funden por arriba y por abajo, sosteniendo un clima continuo sobre el
             que flotan las lámparas. */}
+        {/* `hidden md:block`: éstas son la excepción a la regla de al lado — usan
+            `filter: blur(40px)` sobre una franja de 70vh, que es exactamente la
+            rasterización cara que las lámparas evitan. En desktop se paga sin
+            drama; en mobile es de lo más caro que hay en la página, y con alpha
+            0,05 sobre un fondo casi negro es lo que menos se ve. */}
         {STREAKS.map((s, i) => (
           <div
             key={`streak-${i}`}
-            className="absolute -left-[20%] -right-[20%] h-[70vh]"
+            className="hidden md:block absolute -left-[20%] -right-[20%] h-[70vh]"
             style={{
               top: s.top,
               background: `linear-gradient(${s.angle}deg, transparent 0%, rgba(${s.rgb},${s.alpha}) 45%, transparent 78%)`,
@@ -179,7 +196,11 @@ export default function AmbientLight({
         {AURORAS.map((a, i) => (
           <div
             key={i}
-            className="absolute -translate-x-1/2 will-change-transform"
+            // `aurora-layer` pone el will-change SÓLO en desktop: prometerle al
+            // compositor que esto se va a mover lo obliga a reservarle una capa
+            // propia a cada lámpara, y en mobile ya no se mueve nada (el parallax
+            // no corre en touch), así que sería memoria de GPU a cambio de nada.
+            className={`aurora-layer absolute -translate-x-1/2${a.mob ? "" : " hidden md:block"}`}
             style={{
               top: a.top,
               left: a.left,
@@ -264,8 +285,12 @@ export default function AmbientLight({
 
         {/* Grano: sin esto, degradados tan amplios muestran banding en pantallas
             de 8 bits — que es lo que delata un fondo hecho a mano. */}
+        {/* `hidden md:block`: el `mix-blend-soft-light` obliga al compositor a
+            releer lo que hay debajo en TODA la altura del documento para poder
+            mezclar. El banding que esto corrige aparece en degradados grandes
+            sobre pantallas de 8 bits — un escenario de monitor, no de teléfono. */}
         <div
-          className="absolute inset-0 opacity-[0.035] mix-blend-soft-light"
+          className="hidden md:block absolute inset-0 opacity-[0.035] mix-blend-soft-light"
           style={{
             backgroundImage:
               "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
