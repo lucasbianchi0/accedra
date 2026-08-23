@@ -1,6 +1,7 @@
 import { SITE_URL, ORG, SERVICES, DEFAULT_DESCRIPTION } from "@/lib/seo/site";
 import { INDUSTRIES, INDUSTRY_SLUGS } from "@/components/solutions/industriesData";
 import { getIndustrySeo } from "@/components/solutions/industrySeo";
+import { SOLUTIONS } from "@/components/solutions/solutionsData";
 
 // /llms.txt — GEO (Generative Engine Optimization). Un resumen en texto plano,
 // legible por LLMs (ChatGPT, Perplexity, Claude, etc.), con lo esencial de la
@@ -28,6 +29,19 @@ export function GET() {
     .filter(Boolean)
     .join("\n\n");
 
+  // Los CASOS son lo que un modelo cita cuando alguien le pregunta "quién hace
+  // esto en Argentina": el antecedente concreto pesa más que la descripción del
+  // servicio. Salen de la misma fuente que las páginas de caso, con sus métricas
+  // y su URL, así que no hay una segunda versión que se desactualice.
+  const casos = Object.entries(SOLUTIONS)
+    .flatMap(([slug, sol]) =>
+      sol.cases.map((c, i) => {
+        const cifras = (c.metrics ?? []).map((m) => `${m.value} ${m.label}`).join(", ");
+        return `- [${c.result}](${SITE_URL}/casos/${slug}/${i}) — ${c.industry}. ${c.challenge}${cifras ? ` Resultado: ${cifras}.` : ""}`;
+      }),
+    )
+    .join("\n");
+
   const body = `# ${ORG.name}
 
 > ${DEFAULT_DESCRIPTION}
@@ -52,6 +66,11 @@ Cada solución tiene una página propia por vertical, con el contexto, el marco
 normativo argentino aplicable y preguntas frecuentes específicas de esa industria.
 
 ${industryLinks}
+
+## Casos de éxito
+Proyectos ejecutados, con el cliente, la industria y las métricas del resultado.
+
+${casos}
 
 ## Enlaces
 - [Contacto](${SITE_URL}/#contacto)

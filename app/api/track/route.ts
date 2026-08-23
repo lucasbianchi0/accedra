@@ -86,6 +86,10 @@ export async function POST(req: NextRequest) {
           // El edge de Vercel resuelve el país sin que tengamos que guardar la IP.
           country: req.headers.get("x-vercel-ip-country"),
           is_bot: esBot,
+          // Tráfico del propio equipo. Se marca igual que los bots y por el
+          // mismo motivo: descartarlo perdería el dato, y las consultas de
+          // analítica ya filtran por el índice de sesiones humanas.
+          is_internal: s.interno === true,
           last_seen_at: new Date().toISOString(),
         },
         // Si la sesión ya existe no se pisa su atribución: la del primer evento

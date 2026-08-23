@@ -278,7 +278,7 @@ export default function Contact() {
                       </div>
 
                       <Field label={t.contact.fieldMessage}>
-                        <textarea required rows={3} maxLength={LIMITS.message} value={form.message}
+                        <textarea rows={3} maxLength={LIMITS.message} value={form.message}
                           onChange={(e) => set("message", e.target.value)}
                           placeholder={t.contact.placeholderMessage}
                           className={`${fieldClass} resize-none`} />

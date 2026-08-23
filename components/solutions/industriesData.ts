@@ -61,6 +61,22 @@ export const INDUSTRIES: Record<string, Industry> = {
       "donde múltiples sucursales, picos de demanda y datos de clientes conviven en una misma red.",
     heroImage: photo(264636),
   },
+  // Minería entra última pero es la de mayor potencial hoy: la inversión del
+  // sector pasa de US$ 1.388 M en 2025 a US$ 7.510 M proyectados para 2026, y
+  // Accedra ya tiene el antecedente más difícil de conseguir en ese mercado
+  // —Finning, 15+ sitios en cuatro provincias con Starlink por SD-WAN y
+  // certificación de Seguridad e Higiene minera—. El slug va sin tilde por
+  // consistencia con el resto: las URLs del sitio no llevan acentos.
+  mineria: {
+    slug: "mineria",
+    name: "Minería",
+    forLabel: "para minería",
+    context:
+      "donde la operación es 24/7 en yacimientos remotos, la conectividad tradicional no llega y cada hora de parada cuesta producción.",
+    // Ruta literal y no `photo()`: la única foto de minería que tenemos es la
+    // del propio caso Finning, y usar la real vale más que un banco de imágenes.
+    heroImage: "/cases/finning.jpg",
+  },
 };
 
 export const INDUSTRY_SLUGS = Object.keys(INDUSTRIES);

@@ -12,6 +12,16 @@
 import { read as leerAtribucion } from "@/lib/attribution";
 
 const SESSION_KEY = "accedra:sid";
+/**
+ * Marca de "esta computadora es del equipo". La setea quien entra una vez a
+ * `?interno=1` y persiste hasta que entre a `?interno=0`.
+ *
+ * Por navegador y no por IP porque el equipo trabaja desde la oficina, desde
+ * casa y desde el celular — una lista de IPs no los cubriría. Y guardar IPs de
+ * visitas anónimas contradice la decisión de `sessions`, que a propósito no las
+ * almacena.
+ */
+const INTERNO_KEY = "accedra:interno";
 /** Inactividad tras la cual se considera una visita nueva. Convención estándar. */
 const SESSION_IDLE_MS = 30 * 60 * 1000;
 
@@ -46,6 +56,26 @@ export function currentSessionId(): string | null {
     return Date.now() - g.last < SESSION_IDLE_MS ? g.id : null;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Lee el parámetro `?interno=` y persiste la marca. Devuelve si este navegador
+ * es del equipo.
+ *
+ * Se evalúa en cada evento y no una sola vez al cargar: la marca se puede
+ * activar a mitad de una sesión y lo esperable es que valga desde ahí.
+ */
+function esInterno(): boolean {
+  try {
+    const p = new URLSearchParams(window.location.search).get("interno");
+    if (p === "1") localStorage.setItem(INTERNO_KEY, "1");
+    else if (p === "0") localStorage.removeItem(INTERNO_KEY);
+    return localStorage.getItem(INTERNO_KEY) === "1";
+  } catch {
+    // localStorage bloqueado: se asume visitante real. Contar de más a un
+    // interno es menos grave que descartar a alguien que sí es tráfico.
+    return false;
   }
 }
 
@@ -102,7 +132,9 @@ export function track(input: TrackInput): void {
       metadata: input.metadata,
       // La atribución viaja sólo al abrir la sesión: repetirla en cada evento
       // sería mandar los mismos bytes decenas de veces por visita.
-      ...(nueva ? { session: { ...leerAtribucion(), device: dispositivo() } } : {}),
+      ...(nueva
+        ? { session: { ...leerAtribucion(), device: dispositivo(), interno: esInterno() } }
+        : {}),
     };
 
     const body = JSON.stringify(payload);

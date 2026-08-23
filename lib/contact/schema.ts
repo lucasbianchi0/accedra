@@ -115,13 +115,17 @@ export function validate(raw: unknown): ValidationResult {
   const name = str("name");
   const company = str("company");
   const email = str("email");
-  const message = str("message");
+  // El mensaje es OPCIONAL a propósito. Era el cuarto campo obligatorio y el
+  // único de texto libre: escribirlo es el paso donde la gente abandona, y en
+  // B2B el primer contacto tiene que costar veinte segundos. Quien quiera
+  // contar su caso lo cuenta igual; el resto ya nos dejó con qué llamarlo.
+  const message = str("message") ?? "";
   const service = str("service") ?? "";
 
-  if (name === null || company === null || email === null || message === null) {
+  if (name === null || company === null || email === null) {
     return { ok: false, reason: "missing" };
   }
-  if (!name || !company || !email || !message) return { ok: false, reason: "empty" };
+  if (!name || !company || !email) return { ok: false, reason: "empty" };
 
   if (
     name.length > LIMITS.name ||

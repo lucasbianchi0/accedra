@@ -1,6 +1,6 @@
 import {
   Network, SquarePen, LayoutDashboard, ShieldCheck,
-  Cable, Waypoints, Wifi, Phone, Server,
+  Cable, Waypoints, Wifi, Server, SatelliteDish,
   PenTool, FileSignature, Receipt, Smartphone, Fingerprint, Blocks,
   BarChart3, Users, Database, Cloud, Workflow, BadgeCheck,
   Flame, Bug, CloudCog, Laptop, MailCheck, Lock,
@@ -74,14 +74,23 @@ export type Solution = {
 export const SOLUTIONS: Record<string, Solution> = {
   networking: {
     slug: "networking",
-    name: "Networking",
+    // El slug queda como "networking" a propósito: renombrarlo rompería las URLs
+    // indexadas y el histórico de Search Console. Lo que cambia es cómo se
+    // presenta la línea, no dónde vive.
+    name: "Conectividad Crítica",
     icon: Network,
     accent: "#3B82F6", accentRgb: "59,130,246", // azul (ancla)
     eyebrow: "Soluciones IT",
-    title: "Networking de",
-    highlight: "alta disponibilidad.",
+    // El titular dice un RESULTADO, no una categoría. "Networking de alta
+    // disponibilidad" lo puede firmar cualquier competidor; conectar una
+    // operación donde no llega la fibra, no.
+    title: "Conectamos operaciones que",
+    highlight: "no pueden parar.",
+    // El subtítulo es el que carga los términos que la gente sí escribe en
+    // Google —cableado estructurado, redes Cisco, WiFi corporativo—. El nombre
+    // de la línea posiciona; esta frase capta la búsqueda.
     subtitle:
-      "Diseñamos, instalamos y mantenemos la infraestructura de red que tu operación necesita — del cableado a la nube, sin puntos ciegos.",
+      "Cableado estructurado, redes Cisco y Meraki, WiFi corporativo, telefonía IP y enlaces satelitales con SD-WAN. Diseño, instalación y soporte de punta a punta, en una sola planta o en quince sitios distribuidos por el país.",
     heroImage: photo(4682189),
     heroVideo: video(3141210),
     introTitle: "Una sola red. Un solo responsable.",
@@ -94,13 +103,25 @@ export const SOLUTIONS: Record<string, Solution> = {
       "Sumaste sucursales o usuarios remotos sin una arquitectura que los unifique.",
       "Dependés de varios proveedores y ninguno se hace responsable de punta a punta.",
     ],
+    // ── El ORDEN acá no es cosmético ──────────────────────────────────────
+    // La primera capacidad es la que define la categoría en la cabeza de quien
+    // lee. Antes abría con "Cableado estructurado", que es la parte más
+    // comoditizada de la oferta y la que atrae al comprador equivocado: gente
+    // buscando cable, no empresas con una operación distribuida.
+    // Ahora abre con lo que efectivamente nos diferencia y casi nadie hace
+    // —satélite integrado por SD-WAN, certificado para minería— y el cableado
+    // cierra, fusionado con el relevamiento y la certificación que es como
+    // realmente se vende. Sigue en la oferta; sale de la vitrina.
+    // Son SEIS a propósito: el bento es lg:grid-cols-3 y md:grid-cols-2, así que
+    // seis llenan filas exactas en los tres breakpoints. Sumar una séptima deja
+    // una fila huérfana en desktop.
     capabilities: [
-      { icon: Cable, title: "Cableado estructurado", desc: "Integración certificada de voz, datos, video, seguridad y domótica sobre una infraestructura ordenada y lista para escalar.", photo: photo(2881232) },
-      { icon: Waypoints, title: "Switching & Routing", desc: "Conmutación y ruteo Cisco / Meraki para conectar cada dispositivo con performance y baja latencia.", photo: photo(442151) },
-      { icon: Wifi, title: "Wireless corporativo", desc: "Wi-Fi de alta densidad con acceso seguro y cobertura total en toda la organización.", photo: photo(1148820) },
-      { icon: Phone, title: "Telefonía IP · VoIP", desc: "Telefonía IP integrada que unifica las comunicaciones de tu empresa en una sola plataforma.", photo: photo(8867482) },
-      { icon: ShieldCheck, title: "Seguridad de red", desc: "Protección perimetral y segmentación contra amenazas y ataques cifrados.", photo: photo(2881229) },
-      { icon: Server, title: "Contingencia & Entorno", desc: "Redundancia y recuperación ante fallos de hardware o software para máxima continuidad.", photo: photo(4508751) },
+      { icon: SatelliteDish, title: "Conectividad satelital y SD-WAN", desc: "Enlaces satelitales integrados a la red corporativa por SD-WAN, para yacimientos, plantas y sucursales donde la fibra no llega.", photo: photo(4508751) },
+      { icon: Wifi, title: "Wireless interior y exterior", desc: "Wi-Fi de alta densidad con relevamiento por mapas de calor y access points en altura, para playones, depósitos y frentes de operación.", photo: photo(1148820) },
+      { icon: Waypoints, title: "Switching & Routing", desc: "Conmutación y ruteo Cisco / Meraki para conectar cada sitio y cada dispositivo con performance y baja latencia.", photo: photo(442151) },
+      { icon: Server, title: "Contingencia y continuidad", desc: "Energía protegida, redundancia y recuperación ante fallos para que la operación no se detenga ni en el sitio más aislado.", photo: photo(4682189) },
+      { icon: ShieldCheck, title: "Seguridad de red", desc: "Protección perimetral y segmentación contra amenazas y ataques cifrados, en toda la red distribuida.", photo: photo(2881229) },
+      { icon: Cable, title: "Relevamiento, cableado y certificación", desc: "Relevamiento técnico sitio por sitio y cableado estructurado certificado de voz, datos, video y seguridad, según las normas que exige cada industria.", photo: photo(2881232) },
     ],
     cases: [
       { industry: "Logística", image: "/cases/andreani.jpg", challenge: "El líder logístico del país crecía a gran escala y necesitaba conectividad continua, segura y sin interrupciones en toda su operación nacional.", solution: "Rediseño de red integral con Cisco: wireless gestionado, switching/routing, seguridad y soporte.", result: "Red sin interrupciones para el líder logístico", metrics: [{ value: "5→<1", label: "caídas de red por mes" }, { value: "+1.260", label: "vehículos conectados" }, { value: "10", label: "plantas de operación" }], body: ["Andreani, la compañía líder en logística de la Argentina (75 años de trayectoria, +1.260 vehículos y 10 plantas de operación), atravesaba un crecimiento exponencial: +550 puntos de venta, 122 sucursales, más usuarios móviles y más aplicaciones en la nube. Eso trajo más movilidad, necesidad de robustez y mayor exposición a amenazas — y sus equipos necesitaban conectividad más allá de la red corporativa.", "Como partner de Cisco, rediseñamos la red de punta a punta en cuatro frentes: wireless gestionado (Cisco Wireless LAN Controller + DNA Center), switching y routing (Catalyst 9500/9200/4500/3850/2960 y routers ASR 1000), seguridad (Umbrella, AMP e ISE) y un esquema flexible de licenciamiento y soporte (Cisco ONE, SMARTnet Total Care).", "Hoy Andreani trabaja sin interrupciones ni retrasos, con visibilidad total de la operación y gestión de accesos centralizada en todas sus locaciones. Las caídas de red pasaron de 5 por semana a menos de 1 por mes."] },
@@ -179,9 +200,13 @@ export const SOLUTIONS: Record<string, Solution> = {
         ],
       },
     },
-    metaTitle: "Networking Empresarial: Cableado, Switching y WiFi | Accedra",
+    // El <title> arranca por los términos con volumen real de búsqueda y no por
+    // el nombre de la línea: "networking" en castellano colisiona con networking
+    // de contactos, y nadie busca la categoría de un integrador — busca el
+    // componente. El nombre posiciona en la página; el title capta la búsqueda.
+    metaTitle: "Cableado Estructurado, Redes Cisco y WiFi Corporativo | Accedra",
     metaDescription:
-      "Infraestructura de red de alta disponibilidad: cableado estructurado, switching, wireless y VoIP. Partner certificado Cisco, Aruba y más.",
+      "Infraestructura de red para empresas: cableado estructurado certificado, switching Cisco, WiFi corporativo y enlaces satelitales con SD-WAN para sitios remotos.",
   },
 
   "firma-biometrica": {

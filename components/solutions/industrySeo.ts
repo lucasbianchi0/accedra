@@ -336,6 +336,53 @@ export const INDUSTRY_SEO: Record<string, Record<string, IndustrySeo>> = {
         "conectividad cadena de locales",
       ],
     },
+    mineria: {
+      metaTitle: "Conectividad para minería y yacimientos remotos · Accedra",
+      metaDescription:
+        "Redes para yacimientos y sitios remotos: enlaces satelitales por SD-WAN, WiFi de exterior y cableado certificado. Caso Finning: 15+ sitios en cuatro provincias.",
+      h2: "Conectividad crítica para yacimientos y operaciones mineras",
+      intro: [
+        "La minería es el caso extremo de operación distribuida: el yacimiento está donde está el mineral, no donde llega la fibra, y entre la oficina de Buenos Aires y el frente de trabajo puede haber mil kilómetros y ninguna infraestructura previa. A eso se suma que la operación no para —turnos rotativos las veinticuatro horas— y que cada hora sin conectividad se traduce en camiones detenidos, partes que no se cargan y decisiones que se toman a ciegas.",
+        "Trabajamos sitio por sitio: relevamiento técnico con mapas de calor antes de instalar, racks y energía protegida, cableado estructurado certificado, y WiFi interior y exterior con puntos de acceso en altura para playones, truck shops y frentes de armado. Donde no llega la fibra sumamos enlaces satelitales integrados a la red por SD-WAN, de modo que el sitio remoto se administra bajo la misma política que la casa central. Es el esquema que desplegamos para Finning Argentina —dealer oficial de Caterpillar— en yacimientos y sucursales de Catamarca, San Juan, Santa Cruz y Jujuy, con todo el despliegue certificado según las normas de Seguridad e Higiene de la industria minera.",
+      ],
+      compliance: [
+        {
+          label: "Higiene y Seguridad minera — Decreto 249/2007",
+          detail:
+            "El trabajo en yacimiento exige que instalaciones y contratistas cumplan el reglamento específico del sector: no alcanza con la práctica habitual de una obra civil.",
+        },
+        {
+          label: "Continuidad 24/7",
+          detail:
+            "La operación minera no tiene ventana natural de mantenimiento: los cambios se planifican por sitio y con vuelta atrás preparada.",
+        },
+      ],
+      faqs: [
+        {
+          q: "¿Cómo se da conectividad a un yacimiento donde no llega la fibra?",
+          a: "Con enlaces satelitales integrados a la red corporativa por SD-WAN. El satélite entra al mismo esquema de gestión y políticas que los sitios con fibra, así que el yacimiento no queda como una isla administrada aparte. Accedra desplegó exactamente este esquema en operaciones de Finning Argentina en Catamarca, San Juan, Santa Cruz y Jujuy.",
+        },
+        {
+          q: "¿Qué diferencia hay entre instalar red en una planta y hacerlo en un yacimiento?",
+          a: "Tres cosas cambian el proyecto: el acceso al sitio, que condiciona la logística de equipamiento y las visitas; el ambiente, que obliga a equipamiento apto para polvo, vibración y temperatura, con energía protegida propia; y el régimen de seguridad, porque para trabajar en mina hay que cumplir el reglamento de Higiene y Seguridad del sector y las inducciones de cada operador. Un integrador sin ese antecedente no entra al frente de trabajo.",
+        },
+        {
+          q: "¿Se puede desplegar en varias provincias sin frenar la operación?",
+          a: "Sí, avanzando sitio por sitio en lugar de hacer un corte único. Se releva cada ubicación, se prepara el equipamiento en paralelo al existente y se conmuta en la ventana de menor actividad de ese sitio, con rollback listo. Así se ejecutó el despliegue de Finning a lo largo de cuatro provincias, cubriendo oficinas, bodegas, truck shop y frentes de armado.",
+        },
+        {
+          q: "¿Cómo se conecta el frente de trabajo y no sólo las oficinas?",
+          a: "Con WiFi de exterior y puntos de acceso montados en altura, relevados con mapas de calor para cubrir playones y zonas de armado donde la señal rebota contra estructuras metálicas y maquinaria. Es un diseño distinto al de una oficina: se planifica cobertura sobre superficie abierta y con obstáculos móviles, no sobre plantas de escritorios.",
+        },
+      ],
+      keywords: [
+        "conectividad para minería",
+        "red en yacimiento remoto",
+        "enlace satelital SD-WAN",
+        "WiFi industrial exterior",
+        "infraestructura IT minera",
+      ],
+    },
   },
 
   // ══════════════════════════════════════════════════════════════════════
@@ -654,6 +701,53 @@ export const INDUSTRY_SEO: Record<string, Record<string, IndustrySeo>> = {
         "garantía extendida digital",
       ],
     },
+    mineria: {
+      metaTitle: "Firma digital para minería: remitos y proveedores · Accedra",
+      metaDescription:
+        "Firma electrónica con validez legal para operaciones mineras: remitos de despacho, partes de turno, permisos de trabajo y alta de proveedores, sin papel en el yacimiento.",
+      h2: "Firma digital de remitos, partes y permisos en operación minera",
+      intro: [
+        "En minería el papel circula justo donde peor se conserva: en el frente de trabajo, en la balanza, en la guardia de acceso. Un remito de despacho de mineral, un parte de turno o un permiso de trabajo en caliente se firman a la intemperie, con guantes, y después tienen que viajar hasta administración para ser cargados. Entre la firma y el sistema pasan días, y cada extravío es un despacho que no se puede conciliar.",
+        "La firma electrónica y biométrica resuelve esa distancia: el documento se firma en el dispositivo, queda asociado a quien lo firmó y entra al sistema en el momento, no cuando llega la camioneta. Sumado al alta digital de contratistas y proveedores, permite que la documentación exigida a cada empresa que ingresa al sitio se valide antes de que la persona llegue al portón. Accedra integró firma biométrica en operaciones de gran escala —4.400 dispositivos de firma en 400 sucursales de Banco Provincia— y opera en el sector minero desde el despliegue de conectividad para Finning Argentina.",
+      ],
+      compliance: [
+        {
+          label: "Ley 25.506 — Firma Digital",
+          detail:
+            "Da marco de validez a la firma electrónica sobre remitos, partes y permisos, con trazabilidad de quién firmó y cuándo.",
+        },
+        {
+          label: "Registro Federal de Proveedores Mineros",
+          detail:
+            "La documentación de contratistas se gestiona de forma digital: el alta y la revalidación dejan de depender de papel enviado por correo.",
+        },
+      ],
+      faqs: [
+        {
+          q: "¿Se puede firmar un remito en el yacimiento sin señal?",
+          a: "Sí. El dispositivo captura la firma y sus datos biométricos de forma local y guarda el documento firmado; cuando el equipo recupera conectividad, sincroniza. Es el mismo principio que se usa en entregas logísticas: la validez no depende de que haya red en el instante de la firma, sino de que el documento y su firma queden asociados de manera íntegra.",
+        },
+        {
+          q: "¿Qué documentos del proceso minero conviene digitalizar primero?",
+          a: "Los de mayor volumen y menor complejidad legal: remitos de despacho, partes de turno y conformidades de servicio de contratistas. Son los que más papel generan y donde el retraso de carga se nota de inmediato en la conciliación. Los permisos de trabajo y la documentación de acceso conviene abordarlos después, porque involucran a las áreas de Seguridad e Higiene y requieren acordar el circuito con ellas.",
+        },
+        {
+          q: "¿La firma biométrica tiene validez legal en Argentina?",
+          a: "La Ley 25.506 reconoce la firma digital y la firma electrónica, con distinto valor probatorio. La firma manuscrita biométrica capturada sobre tableta certificada registra además datos del trazo —presión, velocidad, tiempos— que quedan asociados al documento, lo que refuerza la atribución de autoría frente a un desconocimiento posterior.",
+        },
+        {
+          q: "¿Cómo se maneja el alta de contratistas que entran al sitio?",
+          a: "Con un circuito digital donde la empresa contratista carga su documentación, se valida contra los requisitos del operador y queda firmada electrónicamente antes de la fecha de ingreso. Eso evita el cuello de botella clásico de resolver documentación en el portón, y deja registro auditable de qué se validó y cuándo.",
+        },
+      ],
+      keywords: [
+        "firma digital remitos minería",
+        "firma electrónica proveedores mineros",
+        "digitalización partes de turno",
+        "alta digital de contratistas",
+        "permiso de trabajo electrónico",
+      ],
+    },
   },
 
   // ══════════════════════════════════════════════════════════════════════
@@ -940,6 +1034,53 @@ export const INDUSTRY_SEO: Record<string, Record<string, IndustrySeo>> = {
         "rotación de stock",
         "margen por categoría",
         "analítica comercio",
+      ],
+    },
+    mineria: {
+      metaTitle: "Power BI y gestión documental para minería · Accedra",
+      metaDescription:
+        "Datos y documentos para minería: tableros de producción en Power BI, gestión documental de permisos ambientales y portales de contratistas sobre Microsoft 365.",
+      h2: "Datos de producción y gestión documental en minería",
+      intro: [
+        "Una operación minera genera dos flujos que rara vez conversan: los números de producción —tonelaje, leyes, disponibilidad de equipos, consumo— y los documentos que la habilitan —permisos ambientales, informes de impacto, documentación de contratistas, expedientes ante la autoridad—. El primero suele terminar en planillas que alguien consolida a mano cada mañana; el segundo, en carpetas compartidas donde nadie está seguro de cuál es la última versión.",
+        "Sobre el ecosistema Microsoft resolvemos los dos. Del lado de los datos, tableros de Power BI que se alimentan de los sistemas de origen en lugar de una planilla intermedia, para que producción, mantenimiento y costos miren el mismo número. Del lado documental, gestión sobre SharePoint con control de versiones, vencimientos y permisos por rol, de modo que un permiso ambiental próximo a vencer o la documentación incompleta de un contratista sean una alerta y no un hallazgo de auditoría.",
+      ],
+      compliance: [
+        {
+          label: "Protección ambiental minera — Ley 24.585",
+          detail:
+            "La actividad requiere presentar y actualizar informes de impacto ambiental: su documentación debe estar versionada, vigente y localizable.",
+        },
+        {
+          label: "Trazabilidad documental",
+          detail:
+            "Ante una auditoría hay que poder mostrar qué versión de un documento estaba vigente en una fecha determinada, y quién la aprobó.",
+        },
+      ],
+      faqs: [
+        {
+          q: "¿Qué gana una operación minera con Power BI que no tenga con planillas?",
+          a: "Que el número deje de depender de quién lo consolidó. Un tablero conectado a los sistemas de origen se actualiza solo y muestra lo mismo a producción, mantenimiento y administración; la planilla, en cambio, es una foto que alguien armó a mano y que ya difiere de la de al lado. El beneficio no es visual: es que se discute sobre el dato en vez de discutir cuál dato es el bueno.",
+        },
+        {
+          q: "¿Cómo se controlan los vencimientos de permisos y documentación?",
+          a: "Con gestión documental que trate la fecha de vencimiento como un dato del documento y no como algo que alguien tiene que recordar. Sobre SharePoint se configuran alertas por anticipación, responsables por tipo de documento y flujos de renovación, de modo que el vencimiento aparezca semanas antes y no el día que lo pide un inspector.",
+        },
+        {
+          q: "¿Se puede dar acceso a contratistas sin abrirles la red interna?",
+          a: "Sí, con portales externos sobre Microsoft 365 donde el contratista carga y consulta únicamente su propia documentación, con identidad propia y permisos acotados. No entra a la red corporativa ni ve documentación de otras empresas, y todo lo que sube queda registrado.",
+        },
+        {
+          q: "¿Sirve si los sistemas de producción no son Microsoft?",
+          a: "Sí. Power BI se conecta a orígenes muy diversos —bases de datos, archivos, servicios— y no exige migrar el sistema de producción. Lo habitual es dejar cada sistema donde está y construir la capa de análisis por encima; cambiar los sistemas de origen es un proyecto distinto y mucho más caro.",
+        },
+      ],
+      keywords: [
+        "Power BI minería",
+        "tablero de producción minera",
+        "gestión documental permisos ambientales",
+        "portal de contratistas",
+        "SharePoint para minería",
       ],
     },
   },
@@ -1250,6 +1391,53 @@ export const INDUSTRY_SEO: Record<string, Record<string, IndustrySeo>> = {
         "seguridad multisucursal",
       ],
     },
+    mineria: {
+      metaTitle: "Ciberseguridad para minería: IT y OT en yacimiento · Accedra",
+      metaDescription:
+        "Seguridad para operaciones mineras: segmentación IT/OT, acceso remoto controlado a sitios y arquitectura Zero Trust sobre redes distribuidas en varias provincias.",
+      h2: "Ciberseguridad para operaciones mineras distribuidas",
+      intro: [
+        "La minería tiene dos redes que históricamente vivieron separadas y hoy están conectadas: la de gestión —correo, ERP, oficinas— y la de operación, donde viven los sistemas de control de planta, balanzas, monitoreo de flota y sensores. Esa convergencia trajo eficiencia y también trajo el riesgo: un incidente que antes se quedaba en administración ahora puede llegar al proceso productivo, y una parada de planta cuesta muchísimo más que un servidor caído.",
+        "El trabajo empieza por separar lo que no debe tocarse: segmentación entre la red de gestión y la de operación, con reglas explícitas de qué puede cruzar y hacia dónde. Sobre eso, acceso remoto controlado —que es inevitable, porque el especialista que atiende un sitio en Santa Cruz rara vez está en Santa Cruz— con identidad verificada y sesión auditada, en lugar de accesos permanentes concedidos una vez y olvidados. Es la misma arquitectura Zero Trust que aplicamos en entornos corporativos exigentes, adaptada a una red que se extiende por varias provincias.",
+      ],
+      compliance: [
+        {
+          label: "Continuidad de la operación",
+          detail:
+            "Una parada de proceso por incidente informático tiene costo productivo directo: la seguridad se diseña para no ser ella misma una causa de parada.",
+        },
+        {
+          label: "Higiene y Seguridad minera — Decreto 249/2007",
+          detail:
+            "Los sistemas que asisten a la seguridad de las personas en el sitio son críticos: su disponibilidad se trata con el mismo criterio que la del proceso.",
+        },
+      ],
+      faqs: [
+        {
+          q: "¿Por qué separar la red de operación de la red de gestión?",
+          a: "Porque tienen tolerancias opuestas. La red de gestión se parchea y se reinicia; la de operación sostiene procesos que no se detienen y equipamiento que a veces no admite actualizaciones. Si comparten segmento, un incidente que entra por un correo puede alcanzar al control de proceso. La segmentación define qué tráfico puede cruzar y en qué sentido, de modo que el problema quede contenido de un lado.",
+        },
+        {
+          q: "¿Cómo se da acceso remoto a un sitio sin abrir la puerta a cualquiera?",
+          a: "Con acceso por identidad y por sesión, no por ubicación. La persona se autentica, se le concede acceso sólo al recurso que necesita y por el tiempo que lo necesita, y la sesión queda registrada. Es lo contrario del esquema tradicional de conceder acceso a la red completa una vez y no revisarlo nunca más.",
+        },
+        {
+          q: "¿Qué pasa si el enlace de un sitio remoto se cae?",
+          a: "El diseño tiene que asumir que va a pasar. Los controles locales siguen operando aunque el sitio quede aislado, y la conectividad se plantea con enlaces alternativos —satelital integrado por SD-WAN, por ejemplo— para que la caída de un vínculo no sea la caída del sitio. La seguridad no puede depender de que la conexión con la casa central esté siempre disponible.",
+        },
+        {
+          q: "¿Por dónde conviene empezar si hoy no hay nada de esto?",
+          a: "Por saber qué hay. Un relevamiento de qué equipos están conectados, qué habla con qué y qué accesos remotos existen suele revelar conexiones que nadie recordaba. Con ese mapa se prioriza: primero segmentar lo crítico, después ordenar los accesos, y recién entonces avanzar sobre detección. Empezar por la herramienta antes que por el mapa es la forma más común de gastar sin reducir riesgo.",
+        },
+      ],
+      keywords: [
+        "ciberseguridad minera",
+        "segmentación IT OT",
+        "seguridad industrial redes",
+        "acceso remoto seguro sitios",
+        "zero trust operación distribuida",
+      ],
+    },
   },
 
   // ══════════════════════════════════════════════════════════════════════
@@ -1546,6 +1734,53 @@ export const INDUSTRY_SEO: Record<string, Record<string, IndustrySeo>> = {
         "reposición automática",
         "chatbot atención al cliente",
         "software a medida comercio",
+      ],
+    },
+    mineria: {
+      metaTitle: "Software a medida e IA para operaciones mineras · Accedra",
+      metaDescription:
+        "Desarrollo a medida para minería: integración entre sistemas de operación y gestión, tableros de disponibilidad de flota y analítica aplicada al mantenimiento.",
+      h2: "Software a medida e inteligencia aplicada en minería",
+      intro: [
+        "Los sistemas de una operación minera suelen haber llegado de a uno: el de mantenimiento por un lado, el de despacho por otro, el de laboratorio por otro más, y entre ellos personas exportando archivos. Ese trabajo manual no sólo consume horas: introduce demoras y errores justo en los datos con los que se decide si un equipo sale de servicio o si un camión sigue cargando.",
+        "El desarrollo a medida acá casi nunca significa reemplazar sistemas, sino conectarlos: integraciones que llevan el dato de un sistema al otro sin intervención, y aplicaciones acotadas que resuelven lo que ningún producto de catálogo cubre. Sobre esa base, la analítica aplicada empieza a rendir —anticipar una falla a partir del historial de un equipo sirve sólo si el historial está completo y llega a tiempo—. El orden importa: primero la integración, después el modelo.",
+      ],
+      compliance: [
+        {
+          label: "Integridad del dato operativo",
+          detail:
+            "Un dato de producción que alimenta decisiones de mantenimiento o despacho tiene que ser trazable hasta su sistema de origen.",
+        },
+        {
+          label: "Continuidad de la operación",
+          detail:
+            "Las integraciones se diseñan para degradarse sin frenar el proceso: si un sistema no responde, la operación sigue y el dato se sincroniza después.",
+        },
+      ],
+      faqs: [
+        {
+          q: "¿Conviene un desarrollo a medida o un producto de catálogo?",
+          a: "Producto siempre que exista uno que cubra el proceso: es más barato de mantener y no depende de nadie en particular. El desarrollo a medida se justifica en dos casos: cuando hay que conectar sistemas que no hablan entre sí, y cuando el proceso es lo suficientemente propio como para que ningún producto lo contemple. Fuera de esos dos, desarrollar suele salir más caro de lo que parece.",
+        },
+        {
+          q: "¿Qué hace falta antes de aplicar inteligencia artificial al mantenimiento?",
+          a: "Datos completos y a tiempo. Un modelo que anticipa fallas necesita historial de intervenciones, horas de uso y mediciones con una continuidad razonable; si esos datos viven en planillas incompletas o llegan con días de retraso, el modelo va a reproducir esas fallas y no va a agregar nada. Por eso el trabajo de integración viene primero, y no es un paso previo aburrido: es el que define si lo demás va a funcionar.",
+        },
+        {
+          q: "¿Cómo se integra un sitio remoto con conectividad intermitente?",
+          a: "Asumiendo la intermitencia en el diseño. La aplicación del sitio opera de forma local y sincroniza cuando hay enlace, con resolución de conflictos definida de antemano. Es el mismo criterio que se usa para la firma de documentos en yacimiento: la operación no puede depender de que la conexión esté disponible en ese instante.",
+        },
+        {
+          q: "¿Quién queda a cargo del sistema una vez entregado?",
+          a: "Se define antes de empezar, no después. Puede quedar en el equipo interno —con documentación y traspaso— o bajo soporte de Accedra. Lo que no funciona es entregar sin acordarlo: un desarrollo a medida sin responsable de mantenimiento se degrada rápido y termina siendo un sistema que nadie se anima a tocar.",
+        },
+      ],
+      keywords: [
+        "software a medida minería",
+        "integración de sistemas mineros",
+        "mantenimiento predictivo minería",
+        "analítica de flota minera",
+        "aplicaciones para yacimiento",
       ],
     },
   },

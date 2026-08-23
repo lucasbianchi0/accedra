@@ -43,7 +43,7 @@ export function buildText(d: ContactData, meta: Meta): string {
     `Servicio: ${SERVICE_LABELS[d.service] ?? "(sin especificar)"}`,
     "",
     "Mensaje:",
-    d.message,
+    d.message || "(no dejó mensaje — el campo es opcional)",
     "",
     "—",
     `IP: ${meta.ip}`,
@@ -108,11 +108,15 @@ export function buildHtml(d: ContactData, meta: Meta): string {
           </table>
         </td></tr>
 
-        <!-- Mensaje -->
+        <!-- Mensaje. Es opcional desde que se acortó el formulario, así que
+             cuando viene vacío se dice explícitamente en vez de dejar un
+             recuadro en blanco que parece un error de envío. -->
         <tr><td style="padding:26px 32px 0;">
           <p style="margin:0 0 10px;font:600 11px/1.4 Arial,Helvetica,sans-serif;letter-spacing:1px;text-transform:uppercase;color:#8A97A8;">Mensaje</p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F7F9FC;border-left:3px solid ${BLUE};border-radius:0 8px 8px 0;">
-            <tr><td style="padding:18px 20px;font:400 15px/1.65 Arial,Helvetica,sans-serif;color:${INK};">${escMultiline(d.message)}</td></tr>
+            <tr><td style="padding:18px 20px;font:${d.message ? "400" : "400 italic"} 15px/1.65 Arial,Helvetica,sans-serif;color:${d.message ? INK : "#8A97A8"};">${
+              d.message ? escMultiline(d.message) : "No dejó mensaje. El campo es opcional: conviene llamar y preguntar."
+            }</td></tr>
           </table>
         </td></tr>
 

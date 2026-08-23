@@ -51,7 +51,10 @@ export const ORG = {
 // Servicios canónicos (slug = ruta /soluciones/<slug>). El nombre y la descripción
 // corta alimentan el Service schema y el sitemap.
 export const SERVICES = [
-  { slug: "networking", name: "Networking", desc: "Infraestructura de red robusta y de alta disponibilidad, del cableado a la nube." },
+  // El `desc` alimenta el sitemap, /llms.txt y el JSON-LD, así que es lo que un
+  // modelo generativo lee para decidir si Accedra resuelve una consulta. Por eso
+  // nombra las capacidades concretas y no la categoría genérica.
+  { slug: "networking", name: "Conectividad Crítica", desc: "Cableado estructurado, redes Cisco y Meraki, WiFi corporativo y enlaces satelitales con SD-WAN para operaciones distribuidas y sitios remotos." },
   { slug: "firma-biometrica", name: "Firma Biométrica", desc: "Firma electrónica, biométrica y digital con validez legal y trazabilidad total." },
   { slug: "consultoria", name: "Consultoría Microsoft", desc: "Ecosistema Microsoft y analítica que convierten tus datos en decisiones." },
   { slug: "seguridad", name: "Seguridad IT", desc: "Ciberseguridad de nivel corporativo en cada capa, con arquitectura Zero Trust." },

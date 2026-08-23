@@ -3,73 +3,12 @@
 import Link from "next/link";
 import { Search, PencilRuler, ServerCog, Headset, ArrowRight } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
+import { BY_SLUG, FALLBACK } from "@/components/solutions/processData";
 
 
 // Las 4 fases del método son las mismas (relevar → diseñar → implementar →
 // operar); lo que cambia por solución es el nombre y la descripción de cada una.
 const PHASE_ICONS = [Search, PencilRuler, ServerCog, Headset];
-
-type Step = { title: string; desc: string };
-
-// Pasos por solución — lenguaje corporativo, tono de metodología. Sin números ni
-// datos duros inventados: describe CÓMO se trabaja en cada disciplina.
-const BY_SLUG: Record<string, { name: string; steps: [Step, Step, Step, Step] }> = {
-  networking: {
-    name: "Networking",
-    steps: [
-      { title: "Relevamiento", desc: "Auditamos tu red, el tráfico y los puntos críticos de la operación." },
-      { title: "Arquitectura", desc: "Diseñamos topología, redundancia y capacidad dimensionada a tu demanda real." },
-      { title: "Despliegue", desc: "Implementamos con ventanas de cambio coordinadas y mínima interrupción." },
-      { title: "Operación", desc: "Monitoreo proactivo y soporte gestionado, con un único responsable." },
-    ],
-  },
-  seguridad: {
-    name: "Seguridad",
-    steps: [
-      { title: "Evaluación", desc: "Mapeamos la superficie de ataque, vulnerabilidades y brechas de cumplimiento." },
-      { title: "Arquitectura Zero Trust", desc: "Definimos políticas, segmentación y controles por capa según tu operación." },
-      { title: "Implementación", desc: "Desplegamos perímetro, endpoints y accesos con cronograma acordado." },
-      { title: "Monitoreo", desc: "Vigilancia continua y respuesta ante incidentes, de punta a punta." },
-    ],
-  },
-  "firma-biometrica": {
-    name: "Firma Biométrica",
-    steps: [
-      { title: "Relevamiento", desc: "Analizamos tus circuitos de firma y los requisitos de validez legal." },
-      { title: "Diseño", desc: "Definimos dispositivos, integración y flujo documental a medida." },
-      { title: "Integración", desc: "Implementamos e integramos con tus sistemas, con puesta en marcha guiada." },
-      { title: "Soporte", desc: "Acompañamiento y mejora continua del circuito, con un único responsable." },
-    ],
-  },
-  consultoria: {
-    name: "Consultoría",
-    steps: [
-      { title: "Diagnóstico", desc: "Relevamos tu ecosistema Microsoft, licencias y madurez de datos." },
-      { title: "Estrategia", desc: "Trazamos la hoja de ruta, el gobierno y las prioridades del negocio." },
-      { title: "Implementación", desc: "Configuramos y desplegamos con adopción guiada de tus equipos." },
-      { title: "Optimización", desc: "Mejora continua y soporte, con un único responsable de tu cuenta." },
-    ],
-  },
-  "software-ai": {
-    name: "Software & AI",
-    steps: [
-      { title: "Descubrimiento", desc: "Entendemos tu problema, tus datos y tus objetivos antes de construir." },
-      { title: "Diseño", desc: "Definimos arquitectura, modelo y alcance del producto a medida." },
-      { title: "Desarrollo", desc: "Construimos por iteraciones, con entregas frecuentes y validación continua." },
-      { title: "Evolución", desc: "Mantenimiento, monitoreo de modelos y evolución del producto." },
-    ],
-  },
-};
-
-const FALLBACK: { name: string; steps: [Step, Step, Step, Step] } = {
-  name: "",
-  steps: [
-    { title: "Diagnóstico", desc: "Relevamos infraestructura, operación y riesgos antes de proponer una solución." },
-    { title: "Diseño", desc: "Arquitectura y plan a medida, dimensionado a tu operación real y documentado." },
-    { title: "Implementación", desc: "Ejecución con cronograma acordado y ventanas de cambio coordinadas." },
-    { title: "Soporte", desc: "Monitoreo continuo, con un único responsable de tu cuenta de punta a punta." },
-  ],
-};
 
 export default function ProcessCardsRow({ slug = "" }: { slug?: string }) {
   const data = BY_SLUG[slug] ?? FALLBACK;
