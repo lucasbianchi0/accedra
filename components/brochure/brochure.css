@@ -1,0 +1,650 @@
+/**
+ * Dirección de arte del brochure impreso.
+ *
+ * Dos versiones anteriores fallaron por el mismo motivo de fondo y conviene
+ * dejarlo escrito para no volver a caer:
+ *
+ *   1ª — trasladaba la landing a un A4. El hero empuja el contenido abajo porque
+ *        vive en un viewport de 80vh; en 297 mm eso queda hundido.
+ *   2ª — corrigió la grilla pero quedó muda: correcta, densa y plana. Un
+ *        documento bien compuesto no es lo mismo que una pieza que comunica.
+ *
+ * Esta parte de otro lado: **una idea por página, en grande, sobre atmósfera.**
+ *
+ *   · POCAS PIEZAS, ENORMES. Cada página tiene un solo protagonista y lo pone en
+ *     un cuerpo que en pantalla parecería excesivo. En papel, a 210 mm de ancho y
+ *     con el brazo estirado, 40 pt es una frase que se lee de un vistazo — no un
+ *     grito. La densidad se reparte en más páginas; el papel es barato y la
+ *     atención no.
+ *
+ *   · LUZ EN EL FONDO. Las lámparas elípticas, la trama de puntos y la grilla en
+ *     perspectiva salen de `components/AmbientLight.tsx`, con sus mismos colores
+ *     y opacidades. Es lo que hace que un fondo navy deje de ser un rectángulo
+ *     oscuro y pase a tener profundidad.
+ *
+ *   · RADIAL-GRADIENT, NO `filter: blur()`. Misma decisión que toma el sitio:
+ *     desenfocar una superficie de este tamaño es carísimo, y al rasterizar el
+ *     PDF el blur deja bandas. El degradado ya nace suave.
+ *
+ * Colores, tipografías y acento por solución siguen siendo los tokens de
+ * `app/globals.css`.
+ */
+
+.bro {
+  --navy-900: #07101d;
+  --navy-800: #0a1424;
+  --navy-700: #0d1a2d;
+
+  --tinta: #ffffff;
+  --ink: #e2e9f3;
+  --ink-2: #a4b3c8;
+  --ink-3: #6d7f97;
+
+  --linea: rgba(255, 255, 255, 0.14);
+  --linea-suave: rgba(255, 255, 255, 0.08);
+
+  --accent: #2b6fd4;
+  --accent-rgb: 43, 111, 212;
+  --accent-claro: #7fb3f8;
+
+  /* Los tres azules de AmbientLight. */
+  --cyan: 90, 162, 245;
+  --indigo: 96, 110, 220;
+  --electric: 56, 189, 248;
+
+  --margen: 20mm;
+
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.bro h1,
+.bro h2,
+.bro h3,
+.bro h4 {
+  font-family: var(--font-space-grotesk), var(--font-inter), sans-serif;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: var(--tinta);
+  text-wrap: balance;
+}
+
+:where(.bro) :where(p) { margin: 0; }
+
+/* ── La hoja ──────────────────────────────────────────────────────────────── */
+
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
+.page {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  overflow: hidden;
+  background: var(--navy-800);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  page-break-after: always;
+  break-after: page;
+}
+.page:last-child { page-break-after: auto; break-after: auto; }
+
+@media screen {
+  body { background: #141b28; }
+  .bro { display: flex; flex-direction: column; align-items: center; gap: 14mm; padding: 14mm 0; }
+  .page { box-shadow: 0 16px 60px rgba(0, 0, 0, 0.6); }
+}
+
+/* ── Atmósfera ────────────────────────────────────────────────────────────── */
+
+/**
+ * La capa de luz. Va debajo de todo y no recibe eventos ni tinta directa: son
+ * elipses de color muy abiertas que levantan el navy en algunas zonas y lo dejan
+ * caer en otras. Sin esto el fondo es un rectángulo plano, que es exactamente lo
+ * que hacía que las páginas se vieran muertas.
+ */
+.amb { position: absolute; inset: 0; overflow: hidden; }
+.amb span {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+}
+
+/* Lámpara del color de la solución: es la que da identidad a la pieza. */
+.amb .l1 {
+  top: -18%;
+  right: -22%;
+  width: 210mm;
+  height: 165mm;
+  background: radial-gradient(ellipse at center, rgba(var(--accent-rgb), 0.3) 0%, rgba(var(--accent-rgb), 0.1) 42%, transparent 70%);
+}
+.amb .l2 {
+  bottom: -25%;
+  left: -25%;
+  width: 190mm;
+  height: 150mm;
+  background: radial-gradient(ellipse at center, rgba(var(--indigo), 0.2) 0%, transparent 68%);
+}
+.amb .l3 {
+  top: 38%;
+  left: 42%;
+  width: 150mm;
+  height: 120mm;
+  background: radial-gradient(ellipse at center, rgba(var(--cyan), 0.11) 0%, transparent 70%);
+}
+
+/* Grilla en perspectiva, apoyada abajo. El "piso tecnológico" del sitio. */
+.amb .piso {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 95mm;
+  border-radius: 0;
+  background-image:
+    linear-gradient(rgba(var(--electric), 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(var(--electric), 0.16) 1px, transparent 1px);
+  background-size: 11mm 11mm;
+  -webkit-mask-image: radial-gradient(ellipse 58% 74% at 50% 100%, #000 2%, transparent 74%);
+  mask-image: radial-gradient(ellipse 58% 74% at 50% 100%, #000 2%, transparent 74%);
+}
+
+/* Viñeta: cierra los bordes y empuja la mirada al centro. */
+.amb .vineta {
+  position: absolute;
+  inset: 0;
+  border-radius: 0;
+  background: radial-gradient(ellipse 78% 68% at 50% 45%, transparent 45%, rgba(4, 10, 20, 0.72) 100%);
+}
+
+/**
+ * La página clara.
+ *
+ * Los logos de fabricante vienen pensados para fondo blanco: sobre navy hay que
+ * encerrarlos en un recuadro cada uno, y nueve recuadros flotando se ven como una
+ * plancha de stickers. Invertir la hoja entera resuelve eso y además le da al
+ * documento el único respiro claro de las ocho páginas — pasar de negro a blanco
+ * a mitad de un PDF es de las cosas que más lo hacen sentir editado.
+ *
+ * Los tokens se redefinen sobre la propia página, así que todo lo que está adentro
+ * —eyebrow, filetes, folio— se adapta sin necesitar una clase propia. El azul es
+ * `--color-accent-600` del sitio, la variante que existe justamente para texto
+ * sobre blanco: el celeste de los fondos oscuros acá no contrasta.
+ */
+.page.claro {
+  background: #f2f5f9;
+
+  --tinta: #0b1727;
+  --ink: #33445e;
+  --ink-2: #5d6f89;
+  --ink-3: #93a1b5;
+  --linea: rgba(11, 23, 39, 0.16);
+  --linea-suave: rgba(11, 23, 39, 0.09);
+  --accent-claro: #2560bc;
+}
+
+/* ── Estructura de página ─────────────────────────────────────────────────── */
+
+/* El contenido, siempre por encima de la atmósfera. */
+.caja {
+  position: absolute;
+  inset: 26mm var(--margen) 24mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.caja.arriba { justify-content: flex-start; }
+
+.folio {
+  position: absolute;
+  left: var(--margen);
+  right: var(--margen);
+  bottom: 12mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 6.6pt;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.folio .num {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  color: var(--ink-2);
+}
+
+.eyebrow {
+  font-size: 7.5pt;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--accent-claro);
+}
+.eyebrow::after {
+  content: "";
+  display: block;
+  width: 16mm;
+  height: 2px;
+  background: var(--accent);
+  margin-top: 5mm;
+}
+.eyebrow.centro { text-align: center; }
+.eyebrow.centro::after { margin-left: auto; margin-right: auto; }
+
+/* ── Portada ──────────────────────────────────────────────────────────────── */
+
+.cover { background: var(--navy-900); }
+.cover-foto { position: absolute; inset: 0; }
+.cover-foto img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Velo cerrado: la foto queda como textura y el titular manda. En papel, una
+   imagen con detalle detrás del texto lo vuelve ilegible. */
+.cover-foto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(125% 85% at 10% 48%, rgba(5, 12, 24, 0.94) 20%, rgba(5, 12, 24, 0.7) 52%, rgba(5, 12, 24, 0.34) 100%),
+    linear-gradient(to bottom, rgba(5, 12, 24, 0.72) 0%, rgba(5, 12, 24, 0.26) 40%, rgba(5, 12, 24, 0.9) 100%);
+}
+
+.cover-marca { position: absolute; left: var(--margen); top: 22mm; }
+.cover-word {
+  display: block;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 300;
+  font-size: 16pt;
+  letter-spacing: 0.28em;
+  color: var(--tinta);
+  line-height: 1;
+}
+.cover-sub {
+  display: block;
+  margin-top: 2.5mm;
+  font-family: var(--font-montserrat), sans-serif;
+  font-weight: 500;
+  font-size: 6.6pt;
+  letter-spacing: 0.42em;
+  color: var(--ink-2);
+}
+
+/* El bloque del título, en el centro óptico: el 47% mide como centro porque el
+   ojo carga el peso hacia arriba. */
+.cover-bloque {
+  position: absolute;
+  left: var(--margen);
+  right: var(--margen);
+  top: 47%;
+  transform: translateY(-50%);
+}
+.cover-h1 {
+  margin-top: 9mm;
+  font-size: 50pt;
+  line-height: 1.02;
+  font-weight: 700;
+  max-width: 160mm;
+}
+.grad { color: var(--accent-claro); }
+.cover-bajada {
+  margin-top: 10mm;
+  font-size: 12pt;
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: 122mm;
+}
+
+.cover-pie {
+  position: absolute;
+  left: var(--margen);
+  right: var(--margen);
+  bottom: 18mm;
+  padding-top: 6mm;
+  border-top: 1px solid var(--linea);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 7.5pt;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* Las cuatro cifras al pie de la portada. Sin caja: filetes verticales y aire.
+   La versión con recuadro las pegaba al titular y abarrotaba la tapa. */
+.cover-cifras {
+  position: absolute;
+  left: var(--margen);
+  right: var(--margen);
+  bottom: 42mm;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+.cover-cifra { padding: 0 6mm; border-left: 1px solid var(--linea); }
+.cover-cifra:first-child { border-left: 0; padding-left: 0; }
+.cover-cifra b {
+  display: block;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 27pt;
+  font-weight: 700;
+  color: var(--tinta);
+  letter-spacing: -0.035em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.cover-cifra span {
+  display: block;
+  min-height: 8mm;
+  margin-top: 4mm;
+  font-size: 6.8pt;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+
+/* ── Índice de capacidades ────────────────────────────────────────────────── */
+
+.indice { display: grid; grid-template-columns: 1fr 1fr; gap: 17mm 16mm; margin-top: 16mm; }
+.indice-item { text-align: left; }
+.indice-item svg {
+  width: 12mm;
+  height: 12mm;
+  color: var(--accent-claro);
+  stroke-width: 1.5;
+}
+.indice-item h4 { margin-top: 8mm; font-size: 18pt; font-weight: 700; line-height: 1.2; }
+.indice-item i {
+  display: block;
+  width: 8mm;
+  height: 1.5px;
+  background: rgba(var(--accent-rgb), 0.6);
+  margin-top: 5mm;
+}
+
+/* ── Capacidad en detalle: dos por página ─────────────────────────────────── */
+
+.detalles { display: flex; flex-direction: column; gap: 22mm; }
+.detalle { position: relative; padding-left: 40mm; }
+
+/* El numeral fantasma: enorme, translúcido, detrás del texto. Es el recurso que
+   le da escala a la página sin agregar una sola palabra. */
+.detalle-n {
+  position: absolute;
+  left: 0;
+  top: -12mm;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 76pt;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  color: rgba(var(--accent-rgb), 0.38);
+  font-variant-numeric: tabular-nums;
+}
+.detalle h3 { font-size: 21pt; font-weight: 700; line-height: 1.14; }
+.detalle p {
+  margin-top: 6mm;
+  font-size: 10.8pt;
+  line-height: 1.78;
+  color: var(--ink-2);
+  max-width: 128mm;
+}
+
+/* ── Proceso ──────────────────────────────────────────────────────────────── */
+
+.pasos { display: flex; flex-direction: column; gap: 13mm; margin-top: 14mm; }
+.paso {
+  display: grid;
+  grid-template-columns: 30mm 1fr;
+  gap: 10mm;
+  align-items: baseline;
+  padding-bottom: 13mm;
+  border-bottom: 1px solid var(--linea-suave);
+}
+.paso:last-child { border-bottom: 0; padding-bottom: 0; }
+.paso-n {
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 34pt;
+  font-weight: 700;
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+  color: rgba(var(--accent-rgb), 0.55);
+  font-variant-numeric: tabular-nums;
+}
+.paso h4 { font-size: 18pt; font-weight: 700; }
+.paso p { margin-top: 4.5mm; font-size: 10.5pt; line-height: 1.72; color: var(--ink-2); max-width: 118mm; }
+
+/* ── Cards de solución (institucional) ──────────────────────────────────────
+   Las únicas cards del documento, y existen por una razón funcional: cada una es
+   un link real a su landing. En el PDF el `<a>` queda clickeable; la URL se
+   imprime igual porque en papel el link no existe.
+
+   Dos columnas: el texto a la izquierda y el botón a la derecha, centrado contra
+   el bloque. Apilado debajo del párrafo, el botón alargaba cada card y las cinco
+   no entraban en la hoja; al costado no suma altura y además queda alineado con
+   los otros cuatro, que es lo que hace que se lea como una lista de accesos y no
+   como cinco bloques sueltos. */
+
+.cards-sol { display: flex; flex-direction: column; gap: 4mm; margin-top: 9mm; }
+.card-sol {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8mm;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--linea-suave);
+  border-left: 2.5px solid var(--c);
+  border-radius: 3px;
+  padding: 5.5mm 7mm;
+  background: rgba(255, 255, 255, 0.028);
+}
+.card-sol h4 { font-size: 13.5pt; font-weight: 700; }
+.card-sol p { margin-top: 2.5mm; font-size: 8.2pt; line-height: 1.58; color: var(--ink-2); }
+
+.card-sol .ir { text-align: center; }
+.card-sol .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 2.5mm;
+  padding: 3mm 7mm;
+  border-radius: 999px;
+  background: var(--c);
+  /* Tinta oscura y no blanca: el cian y el esmeralda de las soluciones son claros
+     y blanco sobre ellos queda en 2.3:1 — ilegible impreso. El navy pasa de 5:1
+     contra los cinco colores. */
+  color: #0b1727;
+  font-size: 8.2pt;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.cards-pie {
+  margin-top: 8mm;
+  text-align: center;
+  font-size: 8.4pt;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+}
+
+/* ── Muro de marcas ──────────────────────────────────────────────────────────
+   Sin contenedor: los logos se apoyan directo sobre la hoja clara, separados por
+   filetes. El panel con sombra que hubo antes era un parche para sostenerlos
+   sobre el navy; con la página invertida, el recuadro sobra. */
+
+.muro {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin-top: 16mm;
+  border-top: 1px solid #dde4ed;
+  border-left: 1px solid #dde4ed;
+}
+.muro > div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34mm;
+  padding: 8mm 7mm;
+  border-right: 1px solid #dde4ed;
+  border-bottom: 1px solid #dde4ed;
+}
+.muro img { max-width: 100%; max-height: 17mm; object-fit: contain; }
+
+/* Cuatro columnas cuando son muchas: los 27 partners del institucional en tres
+   columnas darían nueve filas y no entran en la hoja. */
+.muro.cuatro { grid-template-columns: repeat(4, 1fr); }
+.muro.cuatro > div { height: 24mm; padding: 5mm 4mm; }
+.muro.cuatro img { max-height: 12mm; }
+
+.linea-marcas {
+  margin-top: 14mm;
+  font-size: 9.5pt;
+  line-height: 1.9;
+  color: var(--ink-2);
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+/* ── Caso de éxito: una página, centrada ─────────────────────────────────────
+   Sin métricas: los números viven en la web y en la reunión. Acá el caso tiene
+   que poder leerse de un vistazo y quedar. */
+
+.caso-pag { background: var(--navy-900); }
+.caso-foto { position: absolute; inset: 0; }
+.caso-foto img { width: 100%; height: 100%; object-fit: cover; }
+.caso-foto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(85% 62% at 50% 50%, rgba(5, 12, 24, 0.93) 30%, rgba(5, 12, 24, 0.8) 62%, rgba(5, 12, 24, 0.62) 100%),
+    linear-gradient(to bottom, rgba(5, 12, 24, 0.72) 0%, rgba(5, 12, 24, 0.5) 45%, rgba(5, 12, 24, 0.88) 100%);
+}
+.caso-bloque {
+  position: absolute;
+  inset: 34mm var(--margen) 30mm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+.caso-bloque h2 {
+  margin-top: 11mm;
+  font-size: 34pt;
+  line-height: 1.08;
+  font-weight: 700;
+  max-width: 150mm;
+  margin-left: auto;
+  margin-right: auto;
+}
+.caso-bloque .resumen {
+  margin: 13mm auto 0;
+  font-size: 12pt;
+  line-height: 1.85;
+  color: var(--ink);
+  max-width: 132mm;
+}
+.caso-bloque .resumen + .resumen { margin-top: 7mm; color: var(--ink-2); }
+.caso-cliente {
+  margin-top: 14mm;
+  padding-top: 7mm;
+  border-top: 1px solid var(--linea);
+  width: 44mm;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 7.5pt;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+/* ── La propuesta (última página) ────────────────────────────────────────────
+   Es la página que tiene que quedar abierta sobre el escritorio: el paso concreto
+   y sin riesgo, en grande, y recién debajo cómo contactarnos. */
+
+.propuesta { text-align: center; }
+.propuesta h2 {
+  margin-top: 12mm;
+  font-size: 46pt;
+  line-height: 1.04;
+  font-weight: 700;
+  max-width: 152mm;
+  margin-left: auto;
+  margin-right: auto;
+}
+.propuesta > p {
+  margin: 12mm auto 0;
+  font-size: 12.5pt;
+  line-height: 1.8;
+  color: var(--ink);
+  max-width: 130mm;
+}
+.propuesta-items {
+  margin: 16mm auto 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10mm;
+  max-width: 158mm;
+}
+.propuesta-item {
+  padding-top: 6mm;
+  border-top: 2px solid rgba(var(--accent-rgb), 0.85);
+  text-align: left;
+}
+.propuesta-item b {
+  display: block;
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-size: 12pt;
+  font-weight: 700;
+  color: var(--tinta);
+  letter-spacing: -0.02em;
+}
+.propuesta-item span {
+  display: block;
+  margin-top: 3mm;
+  font-size: 9pt;
+  line-height: 1.6;
+  color: var(--ink-2);
+}
+
+/* ── Contacto ────────────────────────────────────────────────────────────── */
+
+.contacto {
+  margin-top: 22mm;
+  padding-top: 10mm;
+  border-top: 1px solid var(--linea);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 11mm 14mm;
+  text-align: left;
+}
+.contacto span {
+  display: block;
+  font-size: 6.8pt;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin-bottom: 3mm;
+}
+.contacto b { font-size: 12pt; color: var(--tinta); font-weight: 600; line-height: 1.35; }
+
+
+
+/* ── Cierre minimalista (institucional) ───────────────────────────────────────
+   La misma página que el brochure de solución, sin la fila de condiciones. Con
+   menos elementos, lo que sostiene la hoja es el aire: por eso el contacto baja y
+   se centra en vez de repartirse en dos columnas al pie. */
+
+.propuesta.minima > p { margin-top: 14mm; }
+.propuesta.minima .contacto {
+  margin-top: 30mm;
+  grid-template-columns: repeat(2, max-content);
+  justify-content: center;
+  gap: 22mm;
+  text-align: center;
+  border-top: 0;
+  padding-top: 0;
+}
