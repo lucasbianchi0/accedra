@@ -277,5 +277,18 @@ export const en: Dict = {
       "Tell us your challenge and an Accedra expert will get in touch with you in less than 24 business hours.",
     ctaPrimary2: "Schedule a meeting",
     ctaSecondary: "View other solutions",
+    // Brochure — the hero's inline link.
+    brochureCta: "Download the brochure (PDF)",
+    brochureEmail: "you@company.com",
+    brochureSend: "Get the PDF",
+    brochureNote: "No strings attached. We never share your email.",
+    brochureReady: "Download the PDF",
+    brochureSentTo: "We also sent it to",
+    brochureError: "We couldn't send it. Please try again in a moment.",
+    brochureRate: "You requested it recently. Check your inbox or try again later.",
+    brochureEyebrow: "Brochure",
+    brochureBody: "What the solution covers, the deliverables of each stage and real implementation cases.",
+    brochureChips: ["What's included", "Deliverables", "Real cases"],
+    brochureClose: "Close",
   },
 };

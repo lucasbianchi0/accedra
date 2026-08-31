@@ -91,7 +91,9 @@ export type ValidationResult =
   | { ok: true; data: ContactData }
   | { ok: false; reason: string };
 
-const EMAIL_RE = /^[^\s@<>()[\],;:]+@[^\s@<>()[\],;:.]+(\.[^\s@<>()[\],;:.]+)+$/;
+// Exportada: /api/brochure valida el mismo mail con la misma regla. Dos
+// expresiones distintas para "esto es un mail" terminan aceptando cosas distintas.
+export const EMAIL_RE = /^[^\s@<>()[\],;:]+@[^\s@<>()[\],;:.]+(\.[^\s@<>()[\],;:.]+)+$/;
 
 /**
  * Saltos de línea y caracteres de control en campos de una sola línea son la

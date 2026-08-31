@@ -277,6 +277,19 @@ export const es = {
       "Contanos tu desafío y un experto de Accedra te contacta en menos de 24 horas hábiles.",
     ctaPrimary2: "Coordinar una reunión",
     ctaSecondary: "Ver soluciones",
+    // Brochure — el mini-link del hero.
+    brochureCta: "Descargar el brochure en PDF",
+    brochureEmail: "tu@empresa.com",
+    brochureSend: "Recibir el PDF",
+    brochureNote: "Sin compromiso. No compartimos tu mail.",
+    brochureReady: "Descargar el PDF",
+    brochureSentTo: "Te lo mandamos a",
+    brochureError: "No pudimos enviarlo. Probá de nuevo en un momento.",
+    brochureRate: "Ya lo pediste hace un rato. Revisá tu correo o probá más tarde.",
+    brochureEyebrow: "Brochure",
+    brochureBody: "Qué incluye la solución, los entregables de cada etapa y casos reales de implementación.",
+    brochureChips: ["Qué incluye", "Entregables", "Casos reales"],
+    brochureClose: "Cerrar",
   },
 };
 

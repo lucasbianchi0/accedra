@@ -5,6 +5,7 @@ import {
 } from "@/lib/contact/schema";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { checkRateLimit, isDurable } from "@/lib/contact/rateLimit";
+import { clientIp } from "@/lib/contact/clientIp";
 import { buildHtml, buildText } from "@/lib/contact/emailTemplate";
 
 // Envío de mail vía la API REST de Resend — sin SDK, así no sumamos dependencias.
@@ -14,20 +15,6 @@ export const runtime = "nodejs";
 
 function json(status: number, body: Record<string, unknown>) {
   return Response.json(body, { status });
-}
-
-/**
- * `request.ip` fue removido en Next 15, así que la IP sale del header.
- * Vercel antepone la IP real del cliente en x-forwarded-for; el resto de la
- * lista son los proxies intermedios, por eso tomamos sólo el primer elemento.
- */
-function clientIp(req: NextRequest): string {
-  const xff = req.headers.get("x-forwarded-for");
-  if (xff) {
-    const first = xff.split(",")[0]?.trim();
-    if (first) return first;
-  }
-  return req.headers.get("x-real-ip")?.trim() || "unknown";
 }
 
 export async function POST(req: NextRequest) {

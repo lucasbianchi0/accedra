@@ -841,6 +841,39 @@ a, button {
   animation: lang-pop 0.16s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Popup del brochure — entra el panel y funde el fondo.
+   Va acá y no inline porque un <dialog> con showModal() cambia `display`, y una
+   transición de React no puede engancharse a ese cambio: la animación CSS sí,
+   porque arranca sola cuando el elemento pasa a mostrarse. */
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes modal-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+dialog[data-brochure] {
+  animation: modal-pop 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+dialog[data-brochure]::backdrop {
+  background: rgba(5, 11, 20, 0.72);
+  backdrop-filter: blur(6px);
+  animation: modal-backdrop-in 0.24s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  dialog[data-brochure],
+  dialog[data-brochure]::backdrop {
+    animation: none;
+  }
+}
+
 /* Ilustraciones de soluciones: la parte azul "brilla" en secuencia
    (card 1 → 5, en orden) y repite. El delay lo fija cada card con --seq-delay. */
 @keyframes svc-accent {

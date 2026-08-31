@@ -38,6 +38,14 @@ const nextConfig: NextConfig = {
       { source: "/casos/finning", destination: "/casos/networking/1", permanent: false },
     ];
   },
+
+  // Los PDF de los brochures se leen del disco desde /api/brochure para
+  // adjuntarlos al mail. Todo lo que vive en `public/` se sube al CDN, pero NO
+  // entra al bundle de la función serverless: sin esto, en Vercel el readFile
+  // falla y el mail sale sin adjunto (con el enlace, pero sin el archivo).
+  outputFileTracingIncludes: {
+    "/api/brochure": ["./public/brochures/**"],
+  },
 };
 
 export default nextConfig;
