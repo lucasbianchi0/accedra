@@ -12,6 +12,7 @@ import CountUp from "@/components/CountUp";
 import CapabilitiesBento from "./CapabilitiesBento";
 import ProcessCardsRow from "./ProcessCardsRow";
 import CasesSection from "./CasesSection";
+import BrochureLink from "./BrochureLink";
 import IndustryContext from "./IndustryContext";
 import IndustryFaq from "./IndustryFaq";
 import { getIndustrySeo } from "./industrySeo";
@@ -204,6 +205,13 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                 {st.ctaSeeSolution}
               </a>
             </div>
+
+            {/* Brochure. Los PDF ya existían en /public/brochures pero no estaban
+                enlazados desde ninguna página. Va acá como link y no como bloque
+                aparte: un tercer botón le competiría la atención al CTA
+                principal, y una sección propia a mitad de página terminaba
+                pareciéndose a las demás cards y no la miraba nadie. */}
+            <BrochureLink slug={slug} name={data.name} accent={data.accent} t={st} />
           </div>
 
           {/* Stats — panel de vidrio (glassmorphism) dentro de la portada.

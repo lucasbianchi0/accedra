@@ -1,4 +1,10 @@
-// Rate limiting por IP para /api/contact.
+// Rate limiting de los endpoints que reciben formularios.
+//
+// Cada endpoint cuenta en su propio NAMESPACE. Antes la clave era
+// `contact:<regla>:<ip>` sin importar quién llamara, así que pedir el brochure
+// consumía el cupo del formulario de contacto y viceversa: tres interacciones
+// en diez minutos —probando la página, por ejemplo— y la siguiente consulta
+// comercial legítima se rechazaba.
 //
 // En Vercel cada request puede caer en una instancia distinta y las instancias se
 // reciclan, así que un contador en memoria NO frena a un atacante: le alcanza con
@@ -14,11 +20,47 @@ const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 export const isDurable = Boolean(URL_BASE && TOKEN);
 
+export type Rule = { suffix: string; limit: number; windowSec: number };
+
 /** Reglas acumulativas: se aplican todas, alcanza que una falle. */
-export const RULES = [
+export const RULES: readonly Rule[] = [
   { suffix: "burst", limit: 3, windowSec: 10 * 60 }, // 3 cada 10 min
   { suffix: "day", limit: 12, windowSec: 24 * 60 * 60 }, // 12 por día
-] as const;
+];
+
+/**
+ * Brochure, por IP. Más holgado que contacto en la ráfaga —bajar un PDF dos
+ * veces seguidas es normal, mandar tres consultas comerciales en diez minutos
+ * no— y más estricto en el día, porque una persona necesita el archivo una vez.
+ */
+export const BROCHURE_IP_RULES: readonly Rule[] = [
+  { suffix: "burst", limit: 5, windowSec: 10 * 60 },
+  { suffix: "day", limit: 10, windowSec: 24 * 60 * 60 },
+];
+
+/**
+ * Brochure, por dirección de mail (con la IP dando igual).
+ *
+ * Es lo que impide que el endpoint se use de relay: sin esto, alguien detrás de
+ * IPs rotativas puede hacer que le mandemos correo a cualquier casilla que
+ * elija, tantas veces como quiera. Con la IP sola no alcanza.
+ */
+export const BROCHURE_EMAIL_RULES: readonly Rule[] = [
+  { suffix: "day", limit: 3, windowSec: 24 * 60 * 60 },
+];
+
+/**
+ * Techo global del endpoint, sumando todo el tráfico.
+ *
+ * Los dos límites de arriba se evaden con suficientes IPs y suficientes
+ * casillas. Este no: es el que protege la cuota de Resend y la reputación del
+ * dominio de un ataque distribuido. Los números están MUY por encima del
+ * tráfico real del sitio, así que sólo cortan cuando algo está claramente mal.
+ */
+export const BROCHURE_GLOBAL_RULES: readonly Rule[] = [
+  { suffix: "minute", limit: 20, windowSec: 60 },
+  { suffix: "day", limit: 400, windowSec: 24 * 60 * 60 },
+];
 
 async function redisIncr(key: string, windowSec: number): Promise<number> {
   const res = await fetch(`${URL_BASE}/incr/${encodeURIComponent(key)}`, {
@@ -60,25 +102,38 @@ function memoryIncr(key: string, windowSec: number, now: number): number {
 export type RateVerdict = { allowed: boolean; rule?: string };
 
 /**
- * Devuelve `allowed: false` si la IP superó alguna regla.
+ * Consume una cuota y dice si el pedido pasa.
+ *
+ * `scope` separa endpoints y dimensiones ("contact", "brochure:ip",
+ * "brochure:email"…); `id` es el sujeto contado (una IP, un mail hasheado, o
+ * "all" para un techo global).
  *
  * Ante un error de Upstash deja pasar (fail-open) en vez de bloquear: si Redis se
  * cae, rechazar todo convertiría una caída de infra en pérdida de consultas
  * comerciales. El costo es que durante esa ventana el límite no aplica.
  */
-export async function checkRateLimit(ip: string): Promise<RateVerdict> {
+export async function consume(
+  scope: string,
+  id: string,
+  rules: readonly Rule[]
+): Promise<RateVerdict> {
   const now = Date.now();
 
-  for (const rule of RULES) {
-    const key = `contact:${rule.suffix}:${ip}`;
+  for (const rule of rules) {
+    const key = `${scope}:${rule.suffix}:${id}`;
     try {
       const count = isDurable
         ? await redisIncr(key, rule.windowSec)
         : memoryIncr(key, rule.windowSec, now);
-      if (count > rule.limit) return { allowed: false, rule: rule.suffix };
+      if (count > rule.limit) return { allowed: false, rule: `${scope}:${rule.suffix}` };
     } catch (err) {
-      console.error(`[contact] rate limit "${rule.suffix}" falló, se deja pasar:`, err);
+      console.error(`[rate] "${scope}:${rule.suffix}" falló, se deja pasar:`, err);
     }
   }
   return { allowed: true };
+}
+
+/** Cuota del formulario de contacto. Mismas claves y límites que antes. */
+export function checkRateLimit(ip: string): Promise<RateVerdict> {
+  return consume("contact", ip, RULES);
 }
