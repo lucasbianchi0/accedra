@@ -5,6 +5,7 @@ import { LangProvider } from "@/lib/i18n/LangProvider";
 import SmoothScroll from "@/components/SmoothScroll";
 import JsonLd from "@/components/seo/JsonLd";
 import Attribution from "@/components/Attribution";
+import SitePopup from "@/components/popup/SitePopup";
 import { organizationLd, websiteLd } from "@/lib/seo/jsonLd";
 import { SITE_URL, DEFAULT_TITLE, DEFAULT_DESCRIPTION, ORG } from "@/lib/seo/site";
 
@@ -126,6 +127,11 @@ export default function RootLayout({
         <SmoothScroll>
           <LangProvider>{children}</LangProvider>
         </SmoothScroll>
+        {/* El popup que se configura desde el backoffice: un evento, un aviso,
+            una novedad. Va último y fuera de SmoothScroll a propósito —es una
+            capa por encima de la página, no contenido que se scrollea— y no
+            pinta nada hasta que hay algo cargado y vigente. */}
+        <SitePopup />
       </body>
     </html>
   );

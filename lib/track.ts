@@ -28,7 +28,11 @@ const SESSION_IDLE_MS = 30 * 60 * 1000;
 type Guardado = { id: string; last: number };
 
 /** Familias de evento. `type` agrupa, `name` distingue dentro del grupo. */
-export type EventType = "pageview" | "click" | "form";
+// `popup` es su propia familia y no un `click` más: sus tres momentos —se
+// mostró, se cerró, se hizo clic— sólo sirven comparados entre sí. Mezclados
+// con los clics de WhatsApp y de las cards, la tasa de conversión del popup hay
+// que reconstruirla a mano cada vez.
+export type EventType = "pageview" | "click" | "form" | "popup";
 
 export type TrackInput = {
   type: EventType;

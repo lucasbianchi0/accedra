@@ -8,7 +8,7 @@ const MAX_BODY = 4 * 1024;
 /** Tope por campo de texto. */
 const MAX_LEN = 512;
 
-const TIPOS = new Set(["pageview", "click", "form"]);
+const TIPOS = new Set(["pageview", "click", "form", "popup"]);
 
 /**
  * Detección gruesa de bots por user agent. No pretende ser exhaustiva —
