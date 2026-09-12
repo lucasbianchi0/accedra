@@ -36,11 +36,24 @@ export default function WhatsAppButton() {
 
   // Ocultar la burbuja cuando el menú mobile está abierto (el Navbar bloquea el
   // scroll del body): si no, esta burbuja z-50 se cuela sobre el overlay del menú.
+  //
+  // Y también cuando está la barra del popup, que ocupa todo el ancho de abajo y
+  // le pasa por encima a la burbuja: quedaban superpuestas y media burbuja
+  // dejaba de poder clickearse. La barra lo avisa con `data-popup-barra` en el
+  // body, porque —a diferencia del menú— NO bloquea el scroll y por eso no se
+  // la puede detectar por `overflow`.
   useEffect(() => {
-    const sync = () => setMenuOpen(document.body.style.overflow === "hidden");
+    const sync = () =>
+      setMenuOpen(
+        document.body.style.overflow === "hidden" ||
+          document.body.dataset.popupBarra === "1"
+      );
     sync();
     const observer = new MutationObserver(sync);
-    observer.observe(document.body, { attributes: true, attributeFilter: ["style"] });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["style", "data-popup-barra"],
+    });
     return () => observer.disconnect();
   }, []);
 

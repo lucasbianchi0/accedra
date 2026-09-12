@@ -254,6 +254,28 @@ export default function SitePopup() {
     };
   }, [abierto, popup?.formato]);
 
+  /**
+   * Mientras la barra está en pantalla, la burbuja de WhatsApp se aparta.
+   *
+   * Las dos viven abajo: la barra cruza todo el ancho y la burbuja está fija en
+   * la esquina derecha, así que en escritorio se superponen y la burbuja queda a
+   * medias tapada e imposible de clickear en esa mitad. El modal no tiene el
+   * problema porque bloquea el scroll y la burbuja ya se escondía por eso.
+   *
+   * Se comunica por un atributo en el `body` y no por un contexto de React
+   * porque son dos ramas del árbol que no se conocen —una vive dentro de
+   * SmoothScroll y la otra no— y montar un provider en la raíz para esto sería
+   * cargar código en las 43 páginas por un caso que casi nunca ocurre.
+   */
+  useEffect(() => {
+    if (!abierto || popup?.formato !== "barra") return;
+
+    document.body.dataset.popupBarra = "1";
+    return () => {
+      delete document.body.dataset.popupBarra;
+    };
+  }, [abierto, popup?.formato]);
+
   if (!popup || !abierto) return null;
 
   return (
