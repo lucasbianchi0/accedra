@@ -62,6 +62,30 @@ export const BROCHURE_GLOBAL_RULES: readonly Rule[] = [
   { suffix: "day", limit: 400, windowSec: 24 * 60 * 60 },
 ];
 
+/**
+ * Inscripción a eventos, por IP. Anotarse a dos o tres eventos seguidos es
+ * normal; quince en un día desde la misma conexión, no.
+ */
+export const EVENTO_IP_RULES: readonly Rule[] = [
+  { suffix: "burst", limit: 6, windowSec: 10 * 60 },
+  { suffix: "day", limit: 15, windowSec: 24 * 60 * 60 },
+];
+
+/**
+ * Inscripción a eventos, por dirección de mail. Es la que impide usar el
+ * endpoint para mandarle confirmaciones a una casilla ajena una y otra vez: una
+ * persona se anota a pocos eventos por día.
+ */
+export const EVENTO_EMAIL_RULES: readonly Rule[] = [
+  { suffix: "day", limit: 5, windowSec: 24 * 60 * 60 },
+];
+
+/** Techo global de inscripciones: protege la cuota de Resend y el dominio. */
+export const EVENTO_GLOBAL_RULES: readonly Rule[] = [
+  { suffix: "minute", limit: 20, windowSec: 60 },
+  { suffix: "day", limit: 400, windowSec: 24 * 60 * 60 },
+];
+
 async function redisIncr(key: string, windowSec: number): Promise<number> {
   const res = await fetch(`${URL_BASE}/incr/${encodeURIComponent(key)}`, {
     headers: { Authorization: `Bearer ${TOKEN}` },

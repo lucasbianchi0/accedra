@@ -240,6 +240,62 @@ export const es = {
       "Recibimos varias consultas desde tu conexión. Esperá unos minutos o escribinos a info@accedra.com.ar.",
   },
 
+  // Eventos: la pestaña lateral de la portada y la página /eventos. El contenido
+  // de cada evento llega del backoffice tal como se cargó; acá sólo viven las
+  // etiquetas fijas.
+  events: {
+    speakers: "Oradores",
+    registerTitle: "Anotate a este evento",
+    registerSub: "Dejá tu mail y te mandamos la confirmación con la invitación para tu calendario.",
+    emailPlaceholder: "tu@empresa.com",
+    submit: "Anotarme",
+    sending: "Anotando…",
+    successTitle: "¡Listo, quedaste anotado!",
+    successMail: "Te mandamos la confirmación a",
+    successNoMail: "Guardamos tu inscripción, pero no pudimos mandarte el mail. Te escribimos antes del evento.",
+    errorFull: "El cupo de este evento está completo.",
+    errorClosed: "La inscripción a este evento ya cerró.",
+    errorRate: "Recibimos varios intentos seguidos. Probá de nuevo en unos minutos.",
+    errorEmail: "Revisá la dirección de mail: parece que falta algo.",
+    errorGeneric: "No pudimos anotarte. Probá de nuevo en un momento.",
+    privacy: "Usamos tu mail sólo para este evento. No lo compartimos con nadie.",
+    doneMessage: "Este evento ya se realizó. Mirá los próximos en la lista.",
+    all: "Todas",
+    noneInCategory: "No hay eventos de esta categoría por ahora.",
+    // Las soluciones, con los slugs de /soluciones/<slug>.
+    categories: {
+      networking: "Networking",
+      "firma-biometrica": "Firma biométrica",
+      consultoria: "Consultoría",
+      seguridad: "Ciberseguridad",
+      "software-ai": "IA & Software",
+    },
+    tab: "Eventos",
+    drawerSub: "Workshops y capacitaciones con las tecnologías que implementamos todos los días.",
+    participate: "Participar",
+    close: "Cerrar",
+    upcoming: "Próximos eventos",
+    past: "Eventos realizados",
+    featured: "Destacado",
+    live: "En curso",
+    done: "Realizado",
+    register: "Quiero inscribirme",
+    contactToRegister: "Consultar inscripción",
+    details: "Ver detalle",
+    seats: "Cupo",
+    viewAll: "Ver todos los eventos",
+    technologies: "Tecnologías",
+    types: {
+      workshop: "Workshop",
+      webinar: "Webinar",
+      capacitacion: "Capacitación",
+      charla: "Charla",
+      meetup: "Meetup",
+      lanzamiento: "Lanzamiento",
+    },
+    modes: { presencial: "Presencial", online: "Online", hibrido: "Híbrido" },
+  },
+
   footer: {
     tagline:
       "Proveedor integral de infraestructura, servicios y proyectos de tecnología para las empresas líderes de Argentina. 17 años, 400+ proyectos.",

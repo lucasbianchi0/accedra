@@ -1022,3 +1022,67 @@ dialog[data-brochure]::backdrop {
     animation-name: popup-velo-out;
   }
 }
+
+/* ── Eventos: popup de detalle ───────────────────────────────────────────────
+   El panel lateral anima con estilos inline (EventosLateral.tsx). Acá queda el
+   popup: entra subiendo apenas y sale igual de corto. Todo en transform y
+   opacity, que anima el compositor sin tocar el hilo principal. */
+
+/* Popup de detalle (EventoModal). */
+@keyframes evento-modal-in {
+  from { opacity: 0; transform: translate3d(0, 20px, 0) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes evento-modal-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.98); }
+}
+@keyframes evento-fondo-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes evento-fondo-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes evento-sube {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes evento-zoom {
+  from { transform: scale(1.12); }
+  to { transform: scale(1); }
+}
+
+/* Sin desenfoque, por lo mismo que el fondo del panel: animar su opacidad con
+   blur obliga a recalcular el blur en cada cuadro. */
+.evento-modal::backdrop {
+  background: rgba(4, 10, 20, 0.8);
+  animation: evento-fondo-in 380ms ease-out both;
+}
+.evento-modal[open] > .evento-modal-panel {
+  animation: evento-modal-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  will-change: transform, opacity;
+}
+.evento-modal[open] [data-sube] {
+  animation: evento-sube 680ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(140ms + var(--i, 0) * 60ms);
+}
+/* La foto llega con un zoom lento hacia su lugar: el detalle que se nota sin
+   que nadie sepa decir qué es. */
+.evento-modal[open] .evento-modal-portada img {
+  animation: evento-zoom 1400ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+/* Más específicos que los de entrada a propósito: con el popup todavía
+   abierto, la salida tiene que ganar. */
+.evento-modal.evento-modal--cerrando[open] > .evento-modal-panel {
+  animation: evento-modal-out 240ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+.evento-modal.evento-modal--cerrando::backdrop {
+  animation: evento-fondo-out 240ms ease both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .evento-modal::backdrop,
+  .evento-modal[open] > .evento-modal-panel,
+  .evento-modal[open] [data-sube],
+  .evento-modal[open] .evento-modal-portada img,
+  .evento-modal.evento-modal--cerrando[open] > .evento-modal-panel,
+  .evento-modal.evento-modal--cerrando::backdrop {
+    animation: none !important;
+  }
+}

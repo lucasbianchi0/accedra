@@ -1,13 +1,14 @@
 "use client";
 
 import { LazyMotion, MotionConfig, m, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ChevronLeft } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import LangSwitcher from "@/components/LangSwitcher";
 import { whatsappLink } from "@/lib/whatsapp";
 import { track } from "@/lib/track";
+import { useT } from "@/lib/i18n/useT";
 
 /* Overlay del menú mobile — el ÚNICO lugar del sitio que todavía usa
  * framer-motion, y por eso vive en su propio archivo.
@@ -53,6 +54,26 @@ export default function MobileMenu({
   // Sub-vista de soluciones. Vive acá adentro porque sólo existe mientras el
   // overlay está montado.
   const [solView, setSolView] = useState(false);
+  const t = useT();
+
+  // "Eventos" aparece en el menú sólo si hay al menos un evento próximo. Se
+  // pregunta al abrir el menú, que es cuando se va a mostrar: el endpoint está
+  // cacheado en el CDN y responde en milisegundos.
+  const [eventosProximos, setEventosProximos] = useState(0);
+  useEffect(() => {
+    if (!open) return;
+    let vivo = true;
+    const muestra = new URLSearchParams(window.location.search).has("muestra") ? "?muestra=1" : "";
+    fetch(`/api/eventos${muestra}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (vivo && d) setEventosProximos(Array.isArray(d.proximos) ? d.proximos.length : 0);
+      })
+      .catch(() => {});
+    return () => {
+      vivo = false;
+    };
+  }, [open]);
 
   return (
     <LazyMotion features={loadFeatures} strict>
@@ -123,6 +144,26 @@ export default function MobileMenu({
                           <ArrowRight size={15} className="ml-auto text-gray-700 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-200" />
                         </a>
                       ))}
+
+                      {eventosProximos > 0 && (
+                        <Link
+                          href="/eventos"
+                          onClick={() => {
+                            track({ type: "click", name: "eventos_menu", target: String(eventosProximos) });
+                            onClose();
+                          }}
+                          className="group flex items-center gap-5 py-[17px] px-3 -mx-3 rounded-2xl transition-colors duration-200 hover:bg-white/[0.03] active:bg-white/[0.05]"
+                        >
+                          <span className="text-[11px] font-bold tabular-nums w-5 flex-shrink-0" style={{ color: `rgba(${BLUE_RGB},0.45)` }}>
+                            {String(otherLinks.length + 2).padStart(2, "0")}
+                          </span>
+                          <span className="text-white text-[22px] font-bold leading-none group-hover:text-blue-300 transition-colors duration-200">{t.events.tab}</span>
+                          <span className="grid h-6 min-w-6 place-items-center rounded-full bg-[#2560BC] px-1.5 text-[12px] font-bold text-white tabular-nums">
+                            {eventosProximos}
+                          </span>
+                          <ArrowRight size={15} className="ml-auto text-gray-700 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-200" />
+                        </Link>
+                      )}
                     </m.nav>
                   ) : (
                     <m.nav

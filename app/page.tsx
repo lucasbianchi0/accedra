@@ -4,6 +4,7 @@ import ClientsBar from "@/components/ClientsBar";
 import Services from "@/components/Services";
 import WhyUs from "@/components/WhyUs";
 import Partners from "@/components/Partners";
+import EventosLateral from "@/components/EventosLateral";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import ScrollProgress from "@/components/ScrollProgress";
@@ -41,6 +42,9 @@ export default function Home() {
         <Footer />
       </div>
       <WhatsAppButton />
+      {/* Los eventos no ocupan la portada: una pestaña fija en el borde derecho
+          abre el panel con la lista. No pinta nada si no hay próximos eventos. */}
+      <EventosLateral />
     </main>
   );
 }
