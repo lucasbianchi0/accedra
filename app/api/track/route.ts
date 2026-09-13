@@ -8,7 +8,10 @@ const MAX_BODY = 4 * 1024;
 /** Tope por campo de texto. */
 const MAX_LEN = 512;
 
-const TIPOS = new Set(["pageview", "click", "form", "popup"]);
+const TIPOS = new Set(["pageview", "click", "form", "popup", "salida"]);
+
+/** Tope de permanencia que se acepta en un `salida`: seis horas. */
+const MAX_MS = 6 * 60 * 60 * 1000;
 
 /**
  * Detección gruesa de bots por user agent. No pretende ser exhaustiva —
@@ -28,6 +31,23 @@ function txt(v: unknown, max = MAX_LEN): string | null {
 }
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Normaliza el `metadata` de un `salida`.
+ *
+ * Se acota acá y no sólo en el navegador porque estos dos números se promedian
+ * y se comparan entre páginas: un solo valor absurdo —o negativo, o un string—
+ * mueve el promedio de una landing entera. El resto de las familias de evento
+ * guardan su metadata tal cual, que para un motivo de cierre o un slug alcanza.
+ */
+function permanencia(meta: unknown): { ms: number; scroll: number } {
+  const m = (meta ?? {}) as Record<string, unknown>;
+  const num = (v: unknown, max: number) => {
+    const n = typeof v === "number" ? v : Number(v);
+    return Number.isFinite(n) && n > 0 ? Math.min(Math.round(n), max) : 0;
+  };
+  return { ms: num(m.ms, MAX_MS), scroll: num(m.scroll, 100) };
+}
 
 /**
  * Recibe eventos de navegación del sitio.
@@ -69,6 +89,10 @@ export async function POST(req: NextRequest) {
     const s = body.session as Record<string, unknown> | undefined;
     if (s && typeof s === "object") {
       const device = txt(s.device, 16);
+      // Mismo trato que el id de sesión: lo genera el cliente, así que sin
+      // formato válido no entra. La columna es uuid y un valor arbitrario haría
+      // fallar el upsert entero, o sea que se perdería la sesión completa.
+      const visitor = txt(s.visitor_id, 36);
       await db.from("sessions").upsert(
         {
           id: sessionId,
@@ -83,6 +107,7 @@ export async function POST(req: NextRequest) {
           referrer: txt(s.referrer),
           landing_page: txt(s.landing_page, 255),
           device: device && ["mobile", "tablet", "desktop"].includes(device) ? device : null,
+          visitor_id: visitor && UUID_RE.test(visitor) ? visitor : null,
           // El edge de Vercel resuelve el país sin que tengamos que guardar la IP.
           country: req.headers.get("x-vercel-ip-country"),
           is_bot: esBot,
@@ -111,7 +136,12 @@ export async function POST(req: NextRequest) {
       name: txt(body.name, 64),
       target: txt(body.target, 128),
       path,
-      metadata: meta && typeof meta === "object" ? meta : {},
+      metadata:
+        type === "salida"
+          ? permanencia(meta)
+          : meta && typeof meta === "object"
+            ? meta
+            : {},
     });
   } catch {
     /* la telemetría nunca puede devolver error al navegador */

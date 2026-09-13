@@ -13,6 +13,18 @@ import { read as leerAtribucion } from "@/lib/attribution";
 
 const SESSION_KEY = "accedra:sid";
 /**
+ * El navegador, más allá de la visita. A diferencia de `SESSION_KEY` no vence
+ * nunca: es lo que permite saber que las tres visitas de esta semana son de la
+ * misma persona y no de tres personas distintas.
+ *
+ * Sigue sin ser una cookie y sin identificar a nadie —es un UUID aleatorio que
+ * no sale de este dominio—, pero es la única forma de medir recurrencia. Y en
+ * B2B la recurrencia es media película: casi nadie pide una propuesta en la
+ * primera visita, así que contar cada regreso como una persona nueva hace que
+ * el sitio parezca peor de lo que es.
+ */
+const VISITOR_KEY = "accedra:vid";
+/**
  * Marca de "esta computadora es del equipo". La setea quien entra una vez a
  * `?interno=1` y persiste hasta que entre a `?interno=0`.
  *
@@ -32,7 +44,12 @@ type Guardado = { id: string; last: number };
 // mostró, se cerró, se hizo clic— sólo sirven comparados entre sí. Mezclados
 // con los clics de WhatsApp y de las cards, la tasa de conversión del popup hay
 // que reconstruirla a mano cada vez.
-export type EventType = "pageview" | "click" | "form" | "popup";
+// `salida` cierra el pageview: lo emite Attribution cuando la página deja de
+// mirarse, con cuánto tiempo estuvo visible y hasta dónde se scrolleó. Sin él,
+// el tiempo de permanencia sólo se puede deducir restando pageviews
+// consecutivos — y la última página de cada visita queda sin medir, que con un
+// 81% de rebote significa no medir casi nada.
+export type EventType = "pageview" | "click" | "form" | "popup" | "salida";
 
 export type TrackInput = {
   type: EventType;
@@ -40,6 +57,15 @@ export type TrackInput = {
   name?: string;
   /** Objeto sobre el que ocurrió: slug de la solución, del caso, etc. */
   target?: string;
+  /**
+   * Página a la que corresponde el evento. Por defecto la actual.
+   *
+   * Lo usa `salida`, que se emite mientras se está saliendo: en una navegación
+   * del App Router la URL ya cambió a la página siguiente cuando corre la
+   * limpieza del efecto, así que leer `location.pathname` ahí le adjudicaría el
+   * tiempo de la página vieja a la nueva.
+   */
+  path?: string;
   metadata?: Record<string, unknown>;
 };
 
@@ -93,6 +119,26 @@ function uuid(): string {
 }
 
 /**
+ * Id de este navegador, creándolo la primera vez. No vence.
+ *
+ * Devuelve null si el almacenamiento está bloqueado. Null y no un id efímero a
+ * propósito: un id nuevo en cada carga inflaría el conteo de visitantes únicos
+ * y haría que la recurrencia se lea como cero. Es preferible que esas visitas
+ * queden sin visitante a que mientan.
+ */
+function visitante(): string | null {
+  try {
+    const guardado = localStorage.getItem(VISITOR_KEY);
+    if (guardado) return guardado;
+    const id = uuid();
+    localStorage.setItem(VISITOR_KEY, id);
+    return id;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Devuelve el id de sesión vigente, creando uno nuevo si no hay o si venció
  * por inactividad. `nueva` indica si hay que dar de alta la sesión en el
  * servidor: sólo entonces se manda la atribución completa.
@@ -132,12 +178,19 @@ export function track(input: TrackInput): void {
       type: input.type,
       name: input.name,
       target: input.target,
-      path: window.location.pathname,
+      path: input.path ?? window.location.pathname,
       metadata: input.metadata,
       // La atribución viaja sólo al abrir la sesión: repetirla en cada evento
       // sería mandar los mismos bytes decenas de veces por visita.
       ...(nueva
-        ? { session: { ...leerAtribucion(), device: dispositivo(), interno: esInterno() } }
+        ? {
+            session: {
+              ...leerAtribucion(),
+              device: dispositivo(),
+              interno: esInterno(),
+              visitor_id: visitante(),
+            },
+          }
         : {}),
     };
 
