@@ -317,6 +317,7 @@ export const es = {
   solution: {
     ctaPrimary: "Solicitar asesoramiento",
     ctaSeeSolution: "Ver soluciones",
+    ctaWhatsapp: "Consultar por WhatsApp",
     home: "Inicio",
     whatsapp: "WhatsApp",
     painsEyebrow: "El problema",

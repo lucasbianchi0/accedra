@@ -314,6 +314,7 @@ export const pt: Dict = {
   solution: {
     ctaPrimary: "Solicitar assessoria",
     ctaSeeSolution: "Ver soluções",
+    ctaWhatsapp: "Consultar por WhatsApp",
     home: "Início",
     whatsapp: "WhatsApp",
     painsEyebrow: "O problema",

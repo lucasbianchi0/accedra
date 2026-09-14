@@ -314,6 +314,7 @@ export const en: Dict = {
   solution: {
     ctaPrimary: "Request advice",
     ctaSeeSolution: "View solutions",
+    ctaWhatsapp: "Ask on WhatsApp",
     home: "Home",
     whatsapp: "WhatsApp",
     painsEyebrow: "The problem",
