@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { ArrowRight, CalendarDays, Check, Clock, Loader2, MapPin, Tag, Users, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight, CalendarDays, Check, Clock, Loader2, MapPin, X } from "lucide-react";
 
-import { BloqueFecha, CategoriaTags, LOCALE, Portada, fecha } from "@/components/EventosPiezas";
+import { BloqueFecha, LOCALE, Portada, fecha } from "@/components/EventosPiezas";
 import { useT } from "@/lib/i18n/useT";
 import { useLang } from "@/lib/i18n/LangProvider";
 import { terminado, type EventoSitio } from "@/lib/eventos";
@@ -15,47 +15,34 @@ type Estado = "idle" | "enviando" | "listo" | "error";
 /** Lo que dura la salida. Tiene que coincidir con `evento-modal-out` en globals.css. */
 const SALIDA_MS = 240;
 
-/** El índice de cascada de cada bloque del contenido. */
-const sube = (i: number) => ({ "--i": i }) as CSSProperties;
-
 /**
- * El popup de un evento: la información completa y el mail para anotarse.
+ * El popup de un evento: lo justo para decidir y el mail para anotarse.
  *
- * Reemplaza a la página de detalle. Quien entra a un evento viene a decidir si
- * va, y la decisión se toma mejor sin cambiar de página: lee, deja el mail y
- * sigue donde estaba.
+ * Foto con el tipo y la fecha, título, cuándo y dónde, el resumen, y abajo el
+ * formulario. Nada más: la descripción larga, los oradores, los logos, el cupo,
+ * el precio y los tags convertían el popup en una página comprimida.
  *
- * ESTRUCTURA
+ * SIN FOCO EN EL CAMPO AL ABRIR
  *
- * El contenido scrollea y el formulario queda fijo abajo: en un evento con
- * descripción larga, el campo del mail no puede quedar escondido al final.
+ * `showModal()` enfoca el primer control del diálogo, y el campo del mail
+ * aparecía marcado apenas se abría, como si ya se estuviera escribiendo. El foco
+ * va a un contenedor sin estilo de foco; el campo se marca recién cuando la
+ * persona lo toca.
  *
- * SEGURIDAD DEL LADO DEL CLIENTE (la real está en el endpoint)
- *
- *  · Honeypot: un campo invisible que las personas no ven ni completan.
- *  · Tiempo desde que se abrió el popup: un bot postea al instante.
- *  · El mail que se muestra en el mensaje de éxito lo pinta React como texto,
- *    nunca como HTML.
+ * SEGURIDAD DEL LADO DEL CLIENTE (la real está en el endpoint): honeypot,
+ * tiempo desde que se abrió el popup, y el mail del mensaje de éxito lo pinta
+ * React como texto.
  *
  * Se monta al abrir y se desmonta al cerrar (quien lo usa le pone `key`), así
- * cada evento arranca con el formulario limpio sin sincronizar estado a mano.
+ * cada evento arranca con el formulario limpio.
  */
-export default function EventoModal({
-  evento: e,
-  enfocarForm,
-  onCerrar,
-}: {
-  evento: EventoSitio;
-  /** "Participar" lo abre con el foco en el mail; "Ver detalle", arriba. */
-  enfocarForm?: boolean;
-  onCerrar: () => void;
-}) {
+export default function EventoModal({ evento: e, onCerrar }: { evento: EventoSitio; onCerrar: () => void }) {
   const t = useT();
   const { lang } = useLang();
   const locale = LOCALE[lang] ?? "es-AR";
 
   const dialogo = useRef<HTMLDialogElement>(null);
-  const inputMail = useRef<HTMLInputElement>(null);
+  const contenido = useRef<HTMLDivElement>(null);
   const abiertoEn = useRef(0);
 
   const [email, setEmail] = useState("");
@@ -66,7 +53,7 @@ export default function EventoModal({
   const [cerrando, setCerrando] = useState(false);
 
   // Cierra con la animación de salida y recién después avisa: quien lo montó lo
-  // desmonta, y desmontarlo de golpe cortaría la animación a la mitad.
+  // desmonta, y desmontarlo de golpe cortaría la animación.
   const cerrar = () => {
     if (cerrando) return;
     setCerrando(true);
@@ -78,9 +65,9 @@ export default function EventoModal({
     if (!d) return;
     abiertoEn.current = Date.now();
     if (!d.open) d.showModal();
-    if (enfocarForm) inputMail.current?.focus();
+    contenido.current?.focus({ preventScroll: true });
     track({ type: "click", name: "evento_detalle", target: e.slug });
-  }, [e.slug, enfocarForm]);
+  }, [e.slug]);
 
   const f = fecha(e.inicio, locale);
   const horaFin = e.fin ? fecha(e.fin, locale).hora : null;
@@ -137,7 +124,6 @@ export default function EventoModal({
       ref={dialogo}
       data-lenis-prevent
       aria-labelledby={`evento-titulo-${e.id}`}
-      // Esc y el clic en el fondo cierran; el cierre lo hace quien lo montó.
       onCancel={(ev) => {
         ev.preventDefault();
         cerrar();
@@ -145,7 +131,7 @@ export default function EventoModal({
       onClick={(ev) => {
         if (ev.target === dialogo.current) cerrar();
       }}
-      className={`evento-modal m-auto max-h-none w-[min(94vw,580px)] max-w-none overflow-visible bg-transparent p-0 ${cerrando ? "evento-modal--cerrando" : ""}`}
+      className={`evento-modal m-auto max-h-none w-[min(94vw,560px)] max-w-none overflow-visible bg-transparent p-0 ${cerrando ? "evento-modal--cerrando" : ""}`}
     >
       <div
         className="evento-modal-panel flex max-h-[92dvh] flex-col overflow-hidden rounded-panel border border-white/[0.12]"
@@ -155,8 +141,18 @@ export default function EventoModal({
         }}
       >
         {/* ── Información ── */}
-        <div data-lenis-prevent className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <div className="evento-modal-portada relative aspect-[16/7] overflow-hidden">
+        <div
+          ref={contenido}
+          tabIndex={-1}
+          data-lenis-prevent
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+          // Inline y no con la clase `outline-none`: la regla global de foco de
+          // globals.css (`[tabindex]:focus-visible`) no está en una capa de
+          // Tailwind y le gana a cualquier utilidad. Sin esto, al abrir se veía
+          // un borde celeste alrededor del contenido.
+          style={{ outline: "none" }}
+        >
+          <div className="relative aspect-[16/7]">
             <Portada e={e} className="absolute inset-0" />
             <span
               className="absolute left-4 top-4 rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wider"
@@ -168,7 +164,7 @@ export default function EventoModal({
               type="button"
               onClick={cerrar}
               aria-label={t.events.close}
-              className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-[#0A1220]/70 text-white/80 transition-[color,background-color,transform] duration-300 hover:rotate-90 hover:bg-[#0A1220]/90 hover:text-white"
+              className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-[#0A1220]/70 text-white/80 transition-colors hover:bg-[#0A1220]/90 hover:text-white"
             >
               <X size={18} />
             </button>
@@ -178,99 +174,35 @@ export default function EventoModal({
           </div>
 
           <div className="px-6 pb-6 pt-5">
-            <div data-sube style={sube(0)}>
-              <CategoriaTags categorias={e.categorias} tags={e.tags} />
-            </div>
-
-            <h2
-              id={`evento-titulo-${e.id}`}
-              data-sube
-              style={sube(1)}
-              className="mt-3 text-[23px] font-bold leading-tight text-white sm:text-[25px]"
-            >
+            <h2 id={`evento-titulo-${e.id}`} className="text-[23px] font-bold leading-tight text-white sm:text-[25px]">
               {e.titulo}
             </h2>
 
-            <ul data-sube style={sube(2)} className="mt-4 grid gap-x-5 gap-y-2 text-[13.5px] text-[#C9D6E8] sm:grid-cols-2">
-              <li className="flex items-center gap-2">
+            <ul className="mt-4 space-y-2 text-[14px] text-[#C9D6E8]">
+              <li className="flex items-center gap-2.5">
                 <CalendarDays size={15} className="flex-shrink-0 text-[#7FB3F8]" />
                 {f.larga}
               </li>
-              <li className="flex items-center gap-2">
+              <li className="flex items-center gap-2.5">
                 <Clock size={15} className="flex-shrink-0 text-[#7FB3F8]" />
                 {f.hora}
                 {horaFin ? ` – ${horaFin}` : ""} h
               </li>
               {e.lugar && (
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-2.5">
                   <MapPin size={15} className="flex-shrink-0 text-[#7FB3F8]" />
                   {e.lugar}
                 </li>
               )}
-              {e.cupo && (
-                <li className="flex items-center gap-2">
-                  <Users size={15} className="flex-shrink-0 text-[#7FB3F8]" />
-                  {t.events.seats}: {e.cupo}
-                </li>
-              )}
-              {e.precio && (
-                <li className="flex items-center gap-2">
-                  <Tag size={15} className="flex-shrink-0 text-[#7FB3F8]" />
-                  {e.precio}
-                </li>
-              )}
             </ul>
 
-            {e.resumen && (
-              <p data-sube style={sube(3)} className="mt-5 text-[15px] leading-relaxed text-white/85">
-                {e.resumen}
-              </p>
-            )}
-            {e.descripcion && (
-              <p className="mt-3 whitespace-pre-line text-[14px] leading-relaxed text-[#9FB0C7]">{e.descripcion}</p>
-            )}
-
-            {e.oradores.length > 0 && (
-              <div className="mt-6">
-                <h3 className="text-[11.5px] font-semibold uppercase tracking-[0.18em] text-[#7FB3F8]">{t.events.speakers}</h3>
-                <ul className="mt-2.5 space-y-2">
-                  {e.oradores.map((o) => (
-                    <li key={o.nombre} className="flex items-center gap-3">
-                      <span
-                        className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-full font-display text-[12.5px] font-bold text-white"
-                        style={{ background: "linear-gradient(135deg,#1640A0,#2F79E0)" }}
-                      >
-                        {o.nombre
-                          .split(" ")
-                          .map((p) => p[0])
-                          .slice(0, 2)
-                          .join("")}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-[14px] font-semibold text-white">{o.nombre}</span>
-                        <span className="block text-[12.5px] text-[#9FB0C7]">{[o.cargo, o.empresa].filter(Boolean).join(" · ")}</span>
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {e.marcas.length > 0 && (
-              <div className="mt-6 flex flex-wrap gap-2">
-                {e.marcas.map((m) => (
-                  <div key={m.id} title={m.nombre} className="grid h-10 min-w-14 place-items-center rounded-xl bg-white px-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={m.logoUrl} alt={m.nombre} className="max-h-5 max-w-[84px] object-contain" />
-                  </div>
-                ))}
-              </div>
-            )}
+            {e.resumen && <p className="mt-5 text-[15px] leading-relaxed text-white/85">{e.resumen}</p>}
           </div>
         </div>
 
-        {/* ── Inscripción ── */}
-        <div data-sube style={sube(4)} className="relative border-t border-white/10 bg-[#0A1424]/85 px-6 py-5">
+        {/* ── Inscripción ── Sin línea ni fondo propio: sigue al contenido sin
+            cortar el popup en dos. */}
+        <div className="relative px-6 pb-6 pt-1">
           {paso ? (
             <p className="text-[14px] text-[#9FB0C7]">{t.events.doneMessage}</p>
           ) : estado === "listo" ? (
@@ -300,7 +232,6 @@ export default function EventoModal({
 
               <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                 <input
-                  ref={inputMail}
                   id={`evento-mail-${e.id}`}
                   type="email"
                   name="email"
@@ -312,12 +243,16 @@ export default function EventoModal({
                   onChange={(ev) => setEmail(ev.target.value)}
                   placeholder={t.events.emailPlaceholder}
                   aria-invalid={estado === "error"}
-                  className="h-12 min-w-0 flex-1 rounded-full border border-white/15 bg-white/[0.06] px-5 text-[15px] text-white outline-none transition-colors placeholder:text-white/35 focus:border-[#7FB3F8]"
+                  // Sin el contorno de foco global del sitio (inline por lo mismo
+                  // que el contenedor de arriba): en un campo redondeado se
+                  // dibujaba como un recuadro. El foco se nota en el borde.
+                  className="h-12 min-w-0 flex-1 rounded-full border border-white/15 bg-white/[0.06] px-5 text-[15px] text-white transition-colors placeholder:text-white/35 focus:border-[#7FB3F8]"
+                  style={{ outline: "none" }}
                 />
                 <button
                   type="submit"
                   disabled={estado === "enviando"}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-[14.5px] font-semibold text-white transition-transform hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-70"
+                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full px-6 text-[14.5px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-70"
                   style={{ background: "#2560BC", boxShadow: "0 10px 28px rgba(43,111,212,0.4)" }}
                 >
                   {estado === "enviando" ? <Loader2 size={16} className="animate-spin" /> : null}
@@ -326,8 +261,7 @@ export default function EventoModal({
                 </button>
               </div>
 
-              {/* Honeypot: fuera de pantalla, sin tabulación y sin autocompletar.
-                  Una persona nunca lo completa; un bot que llena todo, sí. */}
+              {/* Honeypot: fuera de pantalla, sin tabulación y sin autocompletar. */}
               <div aria-hidden="true" className="absolute -left-[9999px] top-0 h-px w-px overflow-hidden">
                 <label>
                   Website

@@ -20,7 +20,7 @@ type AbrirDetalle = (e: EventoSitio, conFormulario: boolean) => void;
  *
  * Los eventos no tienen página propia: "Ver detalle" y "Participar" abren el
  * popup del evento (EventoModal), que muestra la información completa y el mail
- * para anotarse. "Participar" lo abre con el campo del mail ya enfocado.
+ * para anotarse.
  *
  * `eventoInicial` es el slug de `?evento=`: los links compartidos —y la vieja
  * dirección /eventos/<slug>, que redirige acá— abren directo ese popup.
@@ -91,7 +91,7 @@ export function EventosVista({
       {/* Se monta al abrir y se desmonta al cerrar: el `key` hace que cada evento
           arranque con el formulario limpio. */}
       {detalle && (
-        <EventoModal key={detalle.e.id} evento={detalle.e} enfocarForm={detalle.form} onCerrar={() => setDetalle(null)} />
+        <EventoModal key={detalle.e.id} evento={detalle.e} onCerrar={() => setDetalle(null)} />
       )}
     </div>
   );

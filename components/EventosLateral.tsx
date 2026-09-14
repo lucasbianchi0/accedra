@@ -5,41 +5,51 @@ import Link from "next/link";
 import { ArrowRight, CalendarDays, Clock, MapPin, X } from "lucide-react";
 
 import EventoModal from "@/components/EventoModal";
-import { BloqueFecha, CategoriaTags, FiltroCategorias, LOCALE, Portada, categoriasPresentes, fecha } from "@/components/EventosPiezas";
+import { BloqueFecha, FiltroCategorias, LOCALE, Portada, categoriasPresentes, fecha } from "@/components/EventosPiezas";
 import { useT } from "@/lib/i18n/useT";
 import { useLang } from "@/lib/i18n/LangProvider";
 import { enCurso, type Categoria, type EventoSitio } from "@/lib/eventos";
 import { track } from "@/lib/track";
 
-/**
- * La entrada y la salida del panel: el mismo deslizamiento, en los dos sentidos.
+/*
+ * LA ANIMACION DEL PANEL
  *
- * Una sola curva y una sola duración a propósito. Se probó una entrada con
- * cascada de contenido, línea de luz y desenfoque, y el resultado fue ruidoso:
- * lo que se busca es que el panel aparezca desde el costado sin llamar la
- * atención sobre sí mismo, y que se vaya de la misma forma.
+ * Un deslizamiento desde el costado, nada más: entra desacelerando y sale
+ * acelerando, con el fondo oscureciéndose al mismo ritmo.
  *
- * La curva es simétrica (ease-in-out cúbica): arranca despacio, toma velocidad
- * a mitad de camino y llega frenando. Se probó una curva de hoja de iOS, que
- * sale disparada y se asienta de a poco: al hacer clic se sentía brusca y con
- * un rebote al final. Esta no tiene ni una cosa ni la otra.
+ * POR QUE NO ES UN <dialog>
+ *
+ * Con `showModal()` Chrome vuelve inerte todo el resto del documento y
+ * recalcula los estilos de la página entera en ese mismo cuadro. En la portada
+ * —video, luces, marquesinas— eso se comía los primeros cuadros de la
+ * animación: el panel se veía cortado, llegaba de golpe y parecía rebotar.
+ * Además un <dialog> cerrado es display:none, así que la transición no tenía
+ * un punto de partida estable.
+ *
+ * Acá el panel está siempre montado, cerrado y fuera de pantalla. Abrir cambia
+ * dos propiedades que resuelve la GPU sin tocar el layout —el transform del
+ * panel y la opacidad del fondo— y nada más en la página se entera.
  */
-const DURACION_MS = 600;
-const CURVA = "cubic-bezier(0.65, 0, 0.35, 1)";
+const ENTRADA_MS = 600;
+const SALIDA_MS = 450;
+/** Ease-out cúbica: llega frenando, sin pasarse ni rebotar. */
+const CURVA_ENTRADA = "cubic-bezier(0.33, 1, 0.68, 1)";
+/** Ease-in cúbica: el espejo de la entrada, se va acelerando. */
+const CURVA_SALIDA = "cubic-bezier(0.32, 0, 0.67, 0)";
 
 /**
  * Los eventos en la portada, sin ocupar la portada.
  *
  * Una pestaña vertical pegada al borde derecho —"EVENTOS" y cuántos hay— que al
- * tocarla abre un panel lateral con la lista y el botón para participar. La
- * página no cambia: quien no busca eventos no los ve, y quien los busca los
- * tiene a un clic desde cualquier altura del scroll.
+ * tocarla abre un panel lateral con la lista y el botón para participar. Sólo
+ * existe si hay eventos próximos.
  *
- * La animación va en estilos inline y no en globals.css: son dos propiedades
- * (transform del panel, opacidad del fondo) que dependen de un estado, y así no
- * hay forma de que el CSS global y el componente queden desfasados.
+ * Accesibilidad sin <dialog>: `role="dialog"` con `aria-modal`, el foco va al
+ * botón de cerrar al abrir y vuelve a la pestaña al cerrar, Esc cierra, y el
+ * panel cerrado es `inert` para que no se pueda llegar con Tab.
  *
- * z-30 y no más: el overlay del menú mobile es z-40 y tiene que taparla.
+ * z-30 la pestaña (el overlay del menú mobile es z-40 y tiene que taparla) y
+ * z-[70] el panel (por encima del navbar y la barra de progreso).
  *
  * `?muestra=1` en desarrollo muestra eventos de ejemplo (lib/eventos-muestra.ts).
  */
@@ -48,16 +58,18 @@ export default function EventosLateral() {
   const { lang } = useLang();
   const locale = LOCALE[lang] ?? "es-AR";
 
-  const dialogo = useRef<HTMLDialogElement>(null);
-  const cierre = useRef<number | undefined>(undefined);
+  const pestana = useRef<HTMLButtonElement>(null);
+  const botonCerrar = useRef<HTMLButtonElement>(null);
+  const lista = useRef<HTMLDivElement>(null);
+
   const [eventos, setEventos] = useState<EventoSitio[]>([]);
-  /** La pestaña entra deslizándose apenas llegan los datos. */
   const [pestanaVisible, setPestanaVisible] = useState(false);
-  /** El estado visual. El <dialog> se abre antes y se cierra después de animar. */
   const [abierto, setAbierto] = useState(false);
   const [categoria, setCategoria] = useState<Categoria | null>(null);
   /** El evento abierto en el popup de detalle, encima del panel. */
   const [detalle, setDetalle] = useState<{ e: EventoSitio; form: boolean } | null>(null);
+
+  /* ── Datos ─────────────────────────────────────────────────────────────── */
 
   useEffect(() => {
     let vivo = true;
@@ -69,16 +81,15 @@ export default function EventosLateral() {
           if (!vivo || !d) return;
           const proximos: EventoSitio[] = d.proximos ?? [];
           setEventos(proximos);
-          // Las portadas se bajan y se decodifican ahora, en reposo. Si se
-          // cargaran recién al abrir, la decodificación caería en medio del
-          // deslizamiento.
+          // Las portadas se bajan y decodifican ahora, en reposo, y no en medio
+          // del deslizamiento.
           for (const e of proximos) {
             if (!e.portadaUrl) continue;
             const img = new Image();
             img.src = e.portadaUrl;
             img.decode?.().catch(() => {});
           }
-          if (proximos.length > 0) requestAnimationFrame(() => setPestanaVisible(true));
+          if (proximos.length > 0) window.setTimeout(() => vivo && setPestanaVisible(true), 60);
         })
         .catch(() => {});
 
@@ -100,82 +111,69 @@ export default function EventosLateral() {
     };
   }, []);
 
-  // La página de fondo no scrollea con el panel abierto. No se toca el overflow
-  // del documento: eso recalcula el layout de toda la página y, con el scroll
-  // suave de Lenis, el fondo daba un saltito justo cuando el panel empezaba a
-  // entrar. En cambio se frenan la rueda y el arrastre táctil mientras el panel
-  // está abierto, salvo dentro de la lista, que sí scrollea.
-  const lista = useRef<HTMLDivElement>(null);
-  const frenoScroll = useRef<((ev: Event) => void) | null>(null);
-  const bloquearScroll = () => {
-    if (frenoScroll.current) return;
-    const freno = (ev: Event) => {
-      if (lista.current?.contains(ev.target as Node)) return;
-      ev.preventDefault();
-    };
-    frenoScroll.current = freno;
-    window.addEventListener("wheel", freno, { passive: false });
-    window.addEventListener("touchmove", freno, { passive: false });
-  };
-  const liberarScroll = useCallback(() => {
-    const freno = frenoScroll.current;
-    if (!freno) return;
-    window.removeEventListener("wheel", freno);
-    window.removeEventListener("touchmove", freno);
-    frenoScroll.current = null;
-  }, []);
-  useEffect(() => liberarScroll, [liberarScroll]);
+  /* ── Abrir y cerrar ────────────────────────────────────────────────────── */
 
   const abrir = () => {
-    const d = dialogo.current;
-    if (!d) return;
-    window.clearTimeout(cierre.current);
-    bloquearScroll();
-    if (!d.open) {
-      d.showModal();
-      // Un <dialog> cerrado es display:none, así que su posición de partida
-      // (fuera de pantalla) nunca se calculó. Leer una medida obliga a
-      // calcularla ahora; sin esto, partida y llegada caen en el mismo cuadro y
-      // el panel aparece sin deslizarse.
-      void d.offsetWidth;
-    }
     setAbierto(true);
     track({ type: "click", name: "eventos_lateral_abrir", target: String(eventos.length) });
   };
 
   const cerrar = useCallback(() => {
     setAbierto(false);
-    window.clearTimeout(cierre.current);
-    cierre.current = window.setTimeout(() => {
-      dialogo.current?.close();
-      liberarScroll();
-    }, DURACION_MS);
-  }, [liberarScroll]);
+  }, []);
+
+  // Con el panel abierto: la página de fondo no scrollea (se frenan la rueda y
+  // el arrastre táctil fuera de la lista, sin tocar el layout de la página), Esc
+  // cierra y el foco entra al panel. Al cerrar, el foco vuelve a la pestaña.
+  useEffect(() => {
+    if (!abierto) return;
+
+    const freno = (ev: Event) => {
+      if (lista.current?.contains(ev.target as Node)) return;
+      ev.preventDefault();
+    };
+    const tecla = (ev: KeyboardEvent) => {
+      // Con el popup de detalle abierto, Esc es de él.
+      if (ev.key === "Escape" && !document.querySelector("dialog.evento-modal[open]")) cerrar();
+    };
+
+    window.addEventListener("wheel", freno, { passive: false });
+    window.addEventListener("touchmove", freno, { passive: false });
+    window.addEventListener("keydown", tecla);
+    botonCerrar.current?.focus({ preventScroll: true });
+
+    const volverFoco = pestana.current;
+    return () => {
+      window.removeEventListener("wheel", freno);
+      window.removeEventListener("touchmove", freno);
+      window.removeEventListener("keydown", tecla);
+      volverFoco?.focus({ preventScroll: true });
+    };
+  }, [abierto, cerrar]);
 
   if (eventos.length === 0) return null;
 
   const hayEnCurso = eventos.some((e) => enCurso(e));
   const disponibles = categoriasPresentes(eventos);
   const visibles = categoria ? eventos.filter((e) => e.categorias.includes(categoria)) : eventos;
-  // Con "Reducir movimiento" activado en el sistema, el panel aparece sin deslizarse.
-  const duracion = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : DURACION_MS;
+  const sinMovimiento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const duracion = sinMovimiento ? 0 : abierto ? ENTRADA_MS : SALIDA_MS;
+  const curva = abierto ? CURVA_ENTRADA : CURVA_SALIDA;
 
   return (
     <>
       {/* ── La pestaña ─────────────────────────────────────────────────────── */}
       <button
+        ref={pestana}
         type="button"
         onClick={abrir}
         aria-haspopup="dialog"
         aria-expanded={abierto}
         aria-label={`${t.events.tab} (${eventos.length})`}
-        className="group fixed right-0 top-1/2 z-30 flex flex-col items-center gap-3 rounded-l-2xl border border-r-0 border-white/20 px-2.5 py-4 text-white sm:px-3 sm:py-5"
+        className="fixed right-0 top-1/2 z-30 flex flex-col items-center gap-3 rounded-l-2xl border border-r-0 border-white/20 px-2.5 py-4 text-white sm:px-3 sm:py-5"
         style={{
           transform: pestanaVisible ? "translate3d(0, -50%, 0)" : "translate3d(115%, -50%, 0)",
-          // Sin efecto de ensanche al pasar el mouse: al abrir el panel el mouse
-          // deja de estar encima, la pestaña se achicaba mientras el panel
-          // entraba y se leía como un rebote en el borde.
-          transition: `transform ${DURACION_MS}ms ${CURVA}`,
+          transition: `transform ${ENTRADA_MS}ms ${CURVA_ENTRADA}`,
           background: "linear-gradient(180deg, #2F79E0 0%, #1E57BD 55%, #16409A 100%)",
           boxShadow: "-12px 18px 40px rgba(0,0,0,0.45), inset 1px 1px 0 rgba(255,255,255,0.2)",
         }}
@@ -199,63 +197,55 @@ export default function EventosLateral() {
       </button>
 
       {/* ── El panel ───────────────────────────────────────────────────────── */}
-      <dialog
-        ref={dialogo}
-        data-lenis-prevent
-        aria-labelledby="eventos-lateral-titulo"
-        // Esc: se intercepta para cerrar deslizando en vez de de golpe.
-        onCancel={(e) => {
-          e.preventDefault();
-          cerrar();
-        }}
-        // Ocupa toda la pantalla: adentro van el fondo y el panel, cada uno con
-        // su transición. El ::backdrop nativo no se deja animar así.
+      {/* Siempre montado. Cerrado: fuera de pantalla, sin clics y sin foco.
+          `visibility` se apaga recién cuando terminó de salir. */}
+      <div
+        className="fixed inset-0 z-[70]"
+        inert={!abierto}
+        aria-hidden={!abierto}
         style={{
-          position: "fixed",
-          inset: 0,
-          width: "100vw",
-          height: "100dvh",
-          maxWidth: "none",
-          maxHeight: "none",
-          margin: 0,
-          padding: 0,
-          border: 0,
-          background: "transparent",
-          overflow: "hidden",
+          visibility: abierto ? "visible" : "hidden",
+          pointerEvents: abierto ? "auto" : "none",
+          transition: `visibility 0s linear ${abierto ? 0 : duracion}ms`,
         }}
       >
         <div
           aria-hidden="true"
           onClick={cerrar}
+          className="absolute inset-0"
           style={{
-            position: "absolute",
-            inset: 0,
             background: "rgba(4, 10, 20, 0.6)",
             opacity: abierto ? 1 : 0,
-            transition: `opacity ${duracion}ms ${CURVA}`,
+            transition: `opacity ${duracion}ms ease`,
           }}
         />
 
         <div
-          className="absolute inset-y-0 right-0 flex w-[min(100vw,440px)] flex-col border-l border-white/[0.12]"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="eventos-lateral-titulo"
+          data-lenis-prevent
+          className="absolute inset-y-0 right-0 flex w-[min(100vw,540px)] flex-col border-l border-white/[0.12]"
           style={{
             background: "linear-gradient(180deg, #16263F 0%, #0F1C30 45%, #0A1424 100%)",
             boxShadow: "-24px 0 60px rgba(0,0,0,0.45)",
             transform: abierto ? "translate3d(0, 0, 0)" : "translate3d(100%, 0, 0)",
-            transition: `transform ${duracion}ms ${CURVA}`,
+            transition: `transform ${duracion}ms ${curva}`,
             willChange: "transform",
+            backfaceVisibility: "hidden",
           }}
         >
           {/* Cabecera */}
-          <div className="relative border-b border-white/10 px-6 pb-5 pt-6">
+          <div className="relative border-b border-white/10 px-7 pb-6 pt-7">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 id="eventos-lateral-titulo" className="text-[24px] font-bold leading-tight text-white">
+                <h2 id="eventos-lateral-titulo" className="text-[27px] font-bold leading-tight text-white">
                   {t.events.upcoming}
                 </h2>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-[#9FB0C7]">{t.events.drawerSub}</p>
+                <p className="mt-2 max-w-md text-[14.5px] leading-relaxed text-[#9FB0C7]">{t.events.drawerSub}</p>
               </div>
               <button
+                ref={botonCerrar}
                 type="button"
                 onClick={cerrar}
                 aria-label={t.events.close}
@@ -265,14 +255,14 @@ export default function EventosLateral() {
               </button>
             </div>
             {disponibles.length > 1 && (
-              <div className="mt-4">
+              <div className="mt-5">
                 <FiltroCategorias disponibles={disponibles} activa={categoria} onChange={setCategoria} />
               </div>
             )}
           </div>
 
           {/* Lista */}
-          <div ref={lista} data-lenis-prevent className="flex-1 space-y-4 overflow-y-auto overscroll-contain px-5 py-5">
+          <div ref={lista} data-lenis-prevent className="flex-1 space-y-5 overflow-y-auto overscroll-contain px-6 py-6">
             {visibles.map((e) => (
               <ItemEvento key={e.id} e={e} locale={locale} onAbrir={(ev, form) => setDetalle({ e: ev, form })} />
             ))}
@@ -284,7 +274,7 @@ export default function EventosLateral() {
           </div>
 
           {/* Pie */}
-          <div className="border-t border-white/10 px-6 py-4">
+          <div className="border-t border-white/10 px-7 py-5">
             <Link
               href="/eventos"
               onClick={cerrar}
@@ -295,16 +285,26 @@ export default function EventosLateral() {
             </Link>
           </div>
         </div>
-      </dialog>
+      </div>
 
-      {/* El detalle se abre como otro <dialog> modal, encima del panel. */}
+      {/* El detalle se abre como <dialog> modal, encima del panel. */}
       {detalle && (
-        <EventoModal key={detalle.e.id} evento={detalle.e} enfocarForm={detalle.form} onCerrar={() => setDetalle(null)} />
+        <EventoModal key={detalle.e.id} evento={detalle.e} onCerrar={() => setDetalle(null)} />
       )}
     </>
   );
 }
 
+/**
+ * Un evento en el panel: card horizontal con la foto cuadrada a la izquierda
+ * —con la fecha encima— y al lado el tipo, el título, cuándo y dónde, y los dos
+ * botones. Sin tags: se ven en el popup de detalle y en /eventos, y el filtro de
+ * arriba ya agrupa por categoría.
+ *
+ * La foto va cuadrada y dentro del padding de la card, con sus propias esquinas
+ * redondeadas: así la card no se estira de alto con la foto, y el texto tiene
+ * todo el ancho que le queda.
+ */
 function ItemEvento({
   e,
   locale,
@@ -320,66 +320,73 @@ function ItemEvento({
 
   return (
     <article
-      className="group overflow-hidden rounded-card border border-white/[0.12] transition-[border-color,transform,box-shadow] duration-500 ease-out hover:-translate-y-0.5 hover:border-white/[0.22] hover:shadow-[0_24px_50px_rgba(0,0,0,0.45)]"
+      className="flex gap-4 rounded-card border border-white/[0.12] p-4 transition-colors duration-300 hover:border-white/[0.22] sm:gap-5"
       style={{
-        background: "linear-gradient(180deg, #1B2D49 0%, #13223A 100%)",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), 0 16px 40px rgba(0,0,0,0.35)",
+        background: "linear-gradient(120deg, #1B2D49 0%, #13223A 100%)",
+        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), 0 16px 40px rgba(0,0,0,0.32)",
       }}
     >
+      {/* Foto cuadrada con la fecha */}
       <button
         type="button"
         onClick={() => onAbrir(e, false)}
         aria-label={`${t.events.details}: ${e.titulo}`}
-        className="relative block aspect-[16/8] w-full overflow-hidden"
+        className="relative aspect-square w-[112px] flex-shrink-0 self-start overflow-hidden rounded-xl sm:w-[150px]"
       >
         <Portada e={e} className="absolute inset-0" />
-        <span
-          className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider"
-          style={{ background: "rgba(10,18,32,0.72)", color: "#DCE9FB", border: "1px solid rgba(255,255,255,0.12)" }}
-        >
-          {vivo && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
-          {vivo ? t.events.live : `${t.events.types[e.tipo]} · ${t.events.modes[e.modalidad]}`}
-        </span>
-        <span className="absolute bottom-3 left-3">
+        <span className="absolute bottom-2 left-2">
           <BloqueFecha iso={e.inicio} locale={locale} />
         </span>
       </button>
 
-      <div className="p-4">
-        {e.categorias.length + e.tags.length > 0 && (
-          <div className="mb-2">
-            <CategoriaTags categorias={e.categorias} tags={e.tags} />
-          </div>
-        )}
-        <h3 className="text-[16.5px] font-bold leading-snug text-white">{e.titulo}</h3>
-        <p className="mt-2 flex items-center gap-1.5 text-[12.5px] text-[#C9D6E8]">
-          <Clock size={13} className="flex-shrink-0 text-[#7FB3F8]" />
-          {f.larga} · {f.hora} h
+      {/* Qué, cuándo, dónde y los botones */}
+      <div className="flex min-w-0 flex-1 flex-col">
+        <p className="flex flex-wrap items-center gap-2 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#7FB3F8]">
+          <span>
+            {t.events.types[e.tipo]} · {t.events.modes[e.modalidad]}
+          </span>
+          {vivo && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/15 px-2 py-0.5 text-emerald-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              {t.events.live}
+            </span>
+          )}
         </p>
-        {e.lugar && (
-          <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-[#C9D6E8]">
-            <MapPin size={13} className="flex-shrink-0 text-[#7FB3F8]" />
-            <span className="truncate">{e.lugar}</span>
-          </p>
-        )}
 
-        <div className="mt-4 flex items-center gap-2">
+        <h3 className="mt-1.5 line-clamp-2 text-[16.5px] font-bold leading-snug text-white">{e.titulo}</h3>
+
+        <div className="mt-2 space-y-1 text-[12.5px] text-[#C9D6E8]">
+          <p className="flex items-center gap-1.5">
+            <Clock size={13} className="flex-shrink-0 text-[#7FB3F8]" />
+            <span className="truncate">
+              {f.larga} · {f.hora} h
+            </span>
+          </p>
+          {e.lugar && (
+            <p className="flex items-center gap-1.5">
+              <MapPin size={13} className="flex-shrink-0 text-[#7FB3F8]" />
+              <span className="truncate">{e.lugar}</span>
+            </p>
+          )}
+        </div>
+
+        <div className="mt-auto flex flex-wrap items-center gap-2 pt-3.5">
           <button
             type="button"
             onClick={() => {
               track({ type: "click", name: "evento_participar", target: e.slug });
               onAbrir(e, true);
             }}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2.5 text-[13.5px] font-semibold text-white transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(43,111,212,0.55)]"
-            style={{ background: "#2560BC", boxShadow: "0 8px 24px rgba(43,111,212,0.4)" }}
+            className="inline-flex items-center justify-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold text-white transition-opacity duration-200 hover:opacity-90"
+            style={{ background: "#2560BC", boxShadow: "0 8px 22px rgba(43,111,212,0.4)" }}
           >
             {t.events.participate}
-            <ArrowRight size={15} />
+            <ArrowRight size={14} />
           </button>
           <button
             type="button"
             onClick={() => onAbrir(e, false)}
-            className="inline-flex items-center rounded-full border border-white/15 px-4 py-2.5 text-[13px] font-medium text-white/85 transition-colors duration-300 hover:border-white/30 hover:text-white"
+            className="inline-flex items-center rounded-full border border-white/15 px-4 py-2 text-[13px] font-medium text-white/85 transition-colors duration-300 hover:border-white/30 hover:text-white"
           >
             {t.events.details}
           </button>
