@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { capture } from "@/lib/attribution";
-import { track } from "@/lib/track";
+import { marcarInteraccion, track } from "@/lib/track";
 
 /**
  * Registra el origen de la visita, emite el pageview en cada navegación y mide
@@ -117,6 +117,18 @@ export default function Attribution() {
     window.addEventListener("pagehide", enviar);
     document.addEventListener("visibilitychange", alCambiarVisibilidad);
 
+    /* ── Gesto humano ──────────────────────────────────────────────────── */
+
+    // Separa a las personas de los navegadores automatizados que cargan la
+    // página con un user agent de Chrome común. `scroll` no cuenta: un
+    // `scrollTo` desde un script también lo dispara. Mouse, tecla, rueda y
+    // toque sólo llegan con `isTrusted` si los produjo un dispositivo real.
+    const GESTOS = ["pointermove", "pointerdown", "keydown", "wheel", "touchstart"] as const;
+    const alGesto = (e: Event) => {
+      if (e.isTrusted) marcarInteraccion();
+    };
+    for (const g of GESTOS) window.addEventListener(g, alGesto, { passive: true });
+
     return () => {
       enviar();
       cancelAnimationFrame(inicial);
@@ -124,6 +136,7 @@ export default function Attribution() {
       window.removeEventListener("scroll", alScrollear);
       window.removeEventListener("pagehide", enviar);
       document.removeEventListener("visibilitychange", alCambiarVisibilidad);
+      for (const g of GESTOS) window.removeEventListener(g, alGesto);
     };
   }, [pathname]);
 

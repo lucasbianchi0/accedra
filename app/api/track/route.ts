@@ -8,7 +8,7 @@ const MAX_BODY = 4 * 1024;
 /** Tope por campo de texto. */
 const MAX_LEN = 512;
 
-const TIPOS = new Set(["pageview", "click", "form", "popup", "salida"]);
+const TIPOS = new Set(["pageview", "click", "form", "popup", "salida", "interaccion"]);
 
 /** Tope de permanencia que se acepta en un `salida`: seis horas. */
 const MAX_MS = 6 * 60 * 60 * 1000;
@@ -19,6 +19,9 @@ const MAX_MS = 6 * 60 * 60 * 1000;
  *
  * Los bots se MARCAN, no se rechazan: en campañas de Ads el volumen de tráfico
  * automatizado es la evidencia para reclamar clic fraudulento a Google.
+ *
+ * Los que se hacen pasar por un Chrome común no caen acá: para esos está
+ * `sessions.interactuo` (ver el evento `interaccion` más abajo).
  */
 const BOT_RE =
   /bot|crawler|spider|crawling|slurp|bingpreview|headless|lighthouse|pagespeed|gtmetrix|pingdom|curl|wget|python-requests|axios|node-fetch|monitor|preview|facebookexternalhit|whatsapp|telegram/i;
@@ -82,6 +85,18 @@ export async function POST(req: NextRequest) {
     const db = getSupabaseAdmin();
     if (!db) return nada;
 
+    // Primer gesto humano de la visita. No es un evento de navegación: no se
+    // guarda en `events`, sólo marca la sesión.
+    //
+    // `update` y no `upsert` a propósito: este beacon puede llegar antes que el
+    // pageview que abre la sesión, y un upsert crearía la fila sin atribución —
+    // después el alta con `ignoreDuplicates` no la completaría nunca. Perder
+    // la marca en esa carrera es mucho menos grave que perder el gclid.
+    if (type === "interaccion") {
+      await db.from("sessions").update({ interactuo: true }).eq("id", sessionId);
+      return nada;
+    }
+
     const ua = req.headers.get("user-agent") ?? "";
     const esBot = !ua || BOT_RE.test(ua);
 
@@ -110,7 +125,13 @@ export async function POST(req: NextRequest) {
           visitor_id: visitor && UUID_RE.test(visitor) ? visitor : null,
           // El edge de Vercel resuelve el país sin que tengamos que guardar la IP.
           country: req.headers.get("x-vercel-ip-country"),
-          is_bot: esBot,
+          // `navigator.webdriver` es true en Puppeteer, Playwright y Selenium
+          // salvo que el bot se tome el trabajo de ocultarlo. Lo declara el
+          // cliente, así que sólo sirve para marcar, nunca para desmarcar.
+          is_bot: esBot || s.webdriver === true,
+          // Hasta que llegue un `interaccion`. Se escribe acá y no como default
+          // de la columna: ver la migración 20260913_006.
+          interactuo: false,
           // Tráfico del propio equipo. Se marca igual que los bots y por el
           // mismo motivo: descartarlo perdería el dato, y las consultas de
           // analítica ya filtran por el índice de sesiones humanas.
@@ -123,10 +144,15 @@ export async function POST(req: NextRequest) {
       );
     } else {
       // Sesión ya abierta: se crea si no existe (por si se perdió el primer
-      // evento) y se refresca la última actividad.
+      // evento) y se refresca la última actividad. `is_bot` sólo se escribe
+      // cuando es true: mandarlo en false borraría la marca que puso el alta
+      // (por webdriver) con el primer evento que no la repite.
       await db
         .from("sessions")
-        .upsert({ id: sessionId, is_bot: esBot, last_seen_at: new Date().toISOString() }, { onConflict: "id" });
+        .upsert(
+          { id: sessionId, ...(esBot ? { is_bot: true } : {}), last_seen_at: new Date().toISOString() },
+          { onConflict: "id" }
+        );
     }
 
     const meta = body.metadata;

@@ -49,7 +49,9 @@ type Guardado = { id: string; last: number };
 // el tiempo de permanencia sólo se puede deducir restando pageviews
 // consecutivos — y la última página de cada visita queda sin medir, que con un
 // 81% de rebote significa no medir casi nada.
-export type EventType = "pageview" | "click" | "form" | "popup" | "salida";
+// `interaccion` no se guarda como evento: marca la sesión con el primer gesto
+// humano. Ver `marcarInteraccion`.
+export type EventType = "pageview" | "click" | "form" | "popup" | "salida" | "interaccion";
 
 export type TrackInput = {
   type: EventType;
@@ -189,6 +191,9 @@ export function track(input: TrackInput): void {
               device: dispositivo(),
               interno: esInterno(),
               visitor_id: visitante(),
+              // Puppeteer, Playwright y Selenium lo dejan en true salvo que el
+              // bot lo oculte. El servidor sólo lo usa para marcar como bot.
+              webdriver: navigator.webdriver === true,
             },
           }
         : {}),
@@ -211,6 +216,46 @@ export function track(input: TrackInput): void {
     }).catch(() => {});
   } catch {
     /* el tracking nunca puede romper la página */
+  }
+}
+
+/** Sesión cuyo gesto humano ya se informó. */
+const INTERACCION_KEY = "accedra:interaccion";
+/**
+ * Momento del último chequeo, para no tocar localStorage en cada pointermove.
+ *
+ * Arranca en la carga y no en 0: así el primer `interaccion` sale al menos un
+ * segundo después del pageview que abre la sesión. Si llegara antes, el servidor
+ * no encontraría la fila para marcar, y la marca local ya no lo reintentaría.
+ */
+let ultimoGesto = Date.now();
+
+/**
+ * Informa el primer gesto humano de la visita: mouse, tecla, rueda o toque.
+ *
+ * Es lo que separa a una persona de un navegador automatizado que carga la
+ * página con un user agent común y se va — scanners y herramientas de SEO que
+ * corren en datacenters y que por user agent no se distinguen de nadie.
+ *
+ * Una vez por sesión y no una vez por carga: si la visita vence por inactividad
+ * y la persona vuelve a mover el mouse, la sesión nueva también tiene que
+ * quedar marcada. El chequeo se espacia un segundo porque `pointermove` dispara
+ * decenas de veces por segundo.
+ */
+export function marcarInteraccion(): void {
+  if (typeof window === "undefined") return;
+  const ahora = Date.now();
+  if (ahora - ultimoGesto < 1000) return;
+  ultimoGesto = ahora;
+  try {
+    const id = currentSessionId();
+    // Sin sesión vigente todavía no hay a quién marcar: el pageview la abre y
+    // el próximo gesto la marca.
+    if (!id || localStorage.getItem(INTERACCION_KEY) === id) return;
+    localStorage.setItem(INTERACCION_KEY, id);
+    track({ type: "interaccion" });
+  } catch {
+    /* sin almacenamiento no se marca: la sesión queda como sin interacción */
   }
 }
 
