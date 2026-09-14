@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "upload.wikimedia.org" },
       { protocol: "https", hostname: "images.pexels.com" },
       { protocol: "https", hostname: "logo.clearbit.com" },
+      // Portadas de eventos subidas desde el backoffice. Van por el optimizador
+      // para la miniatura del panel lateral: el original pesa ~280 KB y se ve
+      // a 150 px.
+      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
     ],
   },
   async redirects() {

@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import CountUp from "@/components/CountUp";
@@ -16,7 +17,8 @@ const ENTER = {
   // 0,2s de LCP, no 1,3s — Chrome sella la métrica al primer frame con opacidad
   // > 0, no al final del fade. Por eso la animación se conserva y sólo se quitó
   // la demora inicial, que era gratis.
-  title: enter("40px", "1.3s", "0s", "12px"),
+  // `--enter-from` lo deja en 0.01 y no en 0: ver el keyframe en globals.css.
+  title: { ...enter("40px", "1.3s", "0s", "12px"), "--enter-from": "0.01" } as CSSProperties,
   subtitle: enter("16px", "1.1s", "0.42s"),
   ctas: enter("16px", "1.1s", "0.66s"),
   stats: enter("30px", "1.2s", "0.9s"),

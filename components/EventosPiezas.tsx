@@ -125,7 +125,25 @@ export function BloqueFecha({ iso, locale, grande }: { iso: string; locale: stri
   );
 }
 
-export function Portada({ e, className }: { e: EventoSitio; className?: string }) {
+/**
+ * La portada achicada por el optimizador de Next, para donde se ve chica (la
+ * card del panel lateral, 150 px). 384 es el mayor de los `imageSizes` por
+ * defecto: cubre esos 150 px en pantallas 2x–2,5x y pesa una fracción del
+ * original que sube el backoffice.
+ */
+export const portadaMiniatura = (url: string) =>
+  `/_next/image?url=${encodeURIComponent(url)}&w=384&q=75`;
+
+export function Portada({
+  e,
+  className,
+  miniatura = false,
+}: {
+  e: EventoSitio;
+  className?: string;
+  /** Servir la versión achicada: sólo donde la portada se ve chica. */
+  miniatura?: boolean;
+}) {
   return (
     <div
       // Sin className la portada fluye en su contenedor; con className (siempre
@@ -137,7 +155,7 @@ export function Portada({ e, className }: { e: EventoSitio; className?: string }
       {e.portadaUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={e.portadaUrl}
+          src={miniatura ? portadaMiniatura(e.portadaUrl) : e.portadaUrl}
           alt=""
           loading="lazy"
           decoding="async"

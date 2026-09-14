@@ -30,6 +30,8 @@ const inter = Inter({
 // que esta fuente está en el camino del primer pintado aunque el texto sea
 // chiquito. Queda precargada. Si alguien vuelve a intentar quitarla, medir FCP
 // antes y después — la intuición acá miente.
+// (Re-medido con el logo del navbar ya en SVG: sin preload el FCP simulado pasa
+// de 1,2 s a 1,4 s. Sigue sin convenir.)
 // Sin `weight` toma la variante variable: un archivo en lugar de dos.
 const montserrat = Montserrat({
   subsets: ["latin"],

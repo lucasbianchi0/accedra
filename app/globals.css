@@ -414,7 +414,13 @@ h1, h2, h3, h4, .section-title, .gradient-text {
    el delay, que es lo que hacía `initial` en framer. */
 @keyframes hero-enter {
   from {
-    opacity: 0;
+    /* `--enter-from` existe por el <h1>: Chrome no toma como candidato a LCP
+       un elemento en opacity 0 EXACTO, y lo sella recién cuando la opacidad
+       sube. Medido sin throttling: FCP a 42 ms y LCP a 217 ms, porque el primer
+       frame con opacidad > 0 llegaba después de parsear y ejecutar el JS. La
+       simulación mobile de Lighthouse estira ese hueco a ~3,7 s. Arrancando en
+       0.01 —invisible a ojo— el título cuenta desde el primer pintado. */
+    opacity: var(--enter-from, 0);
     transform: translateY(var(--enter-y, 16px));
     filter: blur(var(--enter-blur, 0px));
   }

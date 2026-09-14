@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarDays, Clock, MapPin, X } from "lucide-react";
 
 import EventoModal from "@/components/EventoModal";
-import { BloqueFecha, FiltroCategorias, LOCALE, Portada, categoriasPresentes, fecha } from "@/components/EventosPiezas";
+import { BloqueFecha, FiltroCategorias, LOCALE, Portada, categoriasPresentes, fecha, portadaMiniatura } from "@/components/EventosPiezas";
 import { useT } from "@/lib/i18n/useT";
 import { useLang } from "@/lib/i18n/LangProvider";
 import { enCurso, type Categoria, type EventoSitio } from "@/lib/eventos";
@@ -86,7 +86,9 @@ export default function EventosLateral() {
           for (const e of proximos) {
             if (!e.portadaUrl) continue;
             const img = new Image();
-            img.src = e.portadaUrl;
+            // La misma URL que pinta la card: si no, se precarga un archivo y se
+            // pinta otro.
+            img.src = portadaMiniatura(e.portadaUrl);
             img.decode?.().catch(() => {});
           }
           if (proximos.length > 0) window.setTimeout(() => vivo && setPestanaVisible(true), 60);
@@ -333,7 +335,7 @@ function ItemEvento({
         aria-label={`${t.events.details}: ${e.titulo}`}
         className="relative aspect-square w-[112px] flex-shrink-0 self-start overflow-hidden rounded-xl sm:w-[150px]"
       >
-        <Portada e={e} className="absolute inset-0" />
+        <Portada e={e} miniatura className="absolute inset-0" />
         <span className="absolute bottom-2 left-2">
           <BloqueFecha iso={e.inicio} locale={locale} />
         </span>
