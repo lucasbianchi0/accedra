@@ -173,6 +173,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
           {/* Entrada por CSS (.hero-enter), no por framer: el <h1> de acá es el
               elemento LCP y con framer no se pintaba hasta después de hidratar.
               Mismos valores que tenía la versión con motion. */}
+          <div className="lg:flex lg:items-center lg:justify-between lg:gap-10">
           <div className="hero-enter max-w-2xl" style={ENTER.block}>
             {industry && (
               <div className="inline-flex items-center gap-2 mb-5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] text-white/90"
@@ -248,6 +249,63 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                 principal, y una sección propia a mitad de página terminaba
                 pareciéndose a las demás cards y no la miraba nadie. */}
             <BrochureLink slug={slug} name={data.name} accent={data.accent} t={st} />
+          </div>
+
+            {/* ── Cobertura nacional (sólo Conectividad) ──
+                Es la única línea donde el alcance geográfico ES la propuesta: los
+                casos son redes distribuidas por el país (Andreani, Finning en
+                cuatro provincias). El mapa lo dice antes de que se lea una palabra.
+                Va como <img> de un SVG estático con las animaciones adentro: cero
+                JS y fuera del DOM hidratado. Sólo desktop (`hidden lg:block`), y
+                con loading="lazy" el navegador no lo baja mientras está oculto,
+                así que en celular no le cuesta nada al LCP. */}
+            {slug === "networking" && (
+              <div className="hero-enter hidden lg:block relative flex-shrink-0 w-[330px] xl:w-[380px] mr-4 xl:mr-10" style={ENTER.stats}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/maps/argentina-cobertura.svg"
+                  alt={st.coverageTitle}
+                  loading="lazy"
+                  fetchPriority="low"
+                  width={560}
+                  height={1196}
+                  className="h-[500px] xl:h-[540px] w-auto"
+                />
+                {/* Placa en el hueco a la derecha de la Patagonia. Mismo lenguaje
+                    de vidrio que el panel de stats (capa translúcida + sheen, sin
+                    backdrop-filter) para que se lea como parte de la portada. */}
+                <div
+                  className="absolute left-[40%] bottom-[24%] w-[262px] rounded-2xl border overflow-hidden px-4 py-3.5"
+                  style={{
+                    borderColor: "rgba(255,255,255,0.16)",
+                    background: "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%), rgba(14,26,46,0.72)",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.22), 0 18px 44px rgba(0,0,0,0.45)",
+                  }}>
+                  {/* Filete superior con las franjas de la bandera */}
+                  <div aria-hidden className="absolute inset-x-0 top-0 h-[3px]"
+                    style={{ background: "linear-gradient(90deg, #74ACDF 0 33.3%, #fff 33.3% 66.6%, #74ACDF 66.6% 100%)" }} />
+                  <div className="flex items-center gap-3">
+                    {/* Mini bandera con el sol: identifica el alcance sin texto extra */}
+                    <span aria-hidden className="relative flex-shrink-0 w-9 h-6 rounded-[5px] overflow-hidden ring-1 ring-white/20 shadow-[0_4px_12px_rgba(0,0,0,0.35)]">
+                      <span className="absolute inset-x-0 top-0 h-1/3 bg-[#74ACDF]" />
+                      <span className="absolute inset-x-0 top-1/3 h-1/3 bg-white" />
+                      <span className="absolute inset-x-0 bottom-0 h-1/3 bg-[#74ACDF]" />
+                      <span className="absolute left-1/2 top-1/2 w-[7px] h-[7px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#F6B40E]" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="flex items-center gap-1.5 text-[14px] font-semibold text-white leading-tight">
+                        {st.coverageTitle}
+                        <span className="relative flex h-1.5 w-1.5">
+                          <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 animate-ping" />
+                          <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                        </span>
+                      </p>
+                      <p className="text-[12px] leading-snug text-gray-300 mt-0.5">{st.coverageBody}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Stats — panel de vidrio (glassmorphism) dentro de la portada.

@@ -315,6 +315,8 @@ export const en: Dict = {
     ctaPrimary: "Request advice",
     ctaSeeSolution: "View solutions",
     ctaWhatsapp: "Ask on WhatsApp",
+    coverageTitle: "Nationwide coverage",
+    coverageBody: "On-site installation and support across Argentina.",
     home: "Home",
     whatsapp: "WhatsApp",
     painsEyebrow: "The problem",

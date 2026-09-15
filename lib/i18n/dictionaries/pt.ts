@@ -315,6 +315,8 @@ export const pt: Dict = {
     ctaPrimary: "Solicitar assessoria",
     ctaSeeSolution: "Ver soluções",
     ctaWhatsapp: "Consultar por WhatsApp",
+    coverageTitle: "Cobertura nacional",
+    coverageBody: "Instalação e suporte on-site em toda a Argentina.",
     home: "Início",
     whatsapp: "WhatsApp",
     painsEyebrow: "O problema",

@@ -318,6 +318,8 @@ export const es = {
     ctaPrimary: "Solicitar asesoramiento",
     ctaSeeSolution: "Ver soluciones",
     ctaWhatsapp: "Consultar por WhatsApp",
+    coverageTitle: "Cobertura nacional",
+    coverageBody: "Instalación y soporte on-site en todo el país.",
     home: "Inicio",
     whatsapp: "WhatsApp",
     painsEyebrow: "El problema",
