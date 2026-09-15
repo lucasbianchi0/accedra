@@ -545,21 +545,33 @@ export const SOLUTIONS: Record<string, Solution> = {
     icon: Sparkles,
     accent: "#B45CF2", accentRgb: "180,92,242", // púrpura/fucsia
     eyebrow: "Soluciones IT",
-    title: "Software a medida e",
-    highlight: "inteligencia artificial.",
+    // El encabezado dice el diferencial, no el catálogo.
+    //
+    // Antes era "Software a medida e inteligencia artificial", que es cierto y
+    // podría firmarlo cualquier agencia. El dato de mercado da un ángulo que
+    // ninguna puede copiar sin mentir: en Argentina el 68% de las empresas ya
+    // adoptó IA y menos del 25% la llevó a producción, y la causa declarada es
+    // falta de quien sepa integrarla. Eso no es un problema de desarrollo — es
+    // un problema de integración, que es lo que Accedra hace hace 17 años.
+    //
+    // Los dos términos que compra la campaña ("inteligencia artificial" y
+    // "software a medida") siguen en el H1 y en la bajada: sacarlos para ganar
+    // en elegancia costaría nivel de calidad y posición en la subasta.
+    title: "Inteligencia artificial que llega a",
+    highlight: "producción.",
     subtitle:
-      "Desarrollamos el software que tu operación necesita e integramos inteligencia artificial en tus procesos — de la idea al producto en producción, con un partner que se involucra.",
+      "El 68% de las empresas argentinas ya usa IA. Menos del 25% la puso a funcionar de verdad. Somos integradores hace 17 años: conectamos la IA y el software a medida a los sistemas que ya tenés, no a una demo.",
     heroImage: photo(546819),
     heroVideo: video(3252919),
-    introTitle: "Del proceso manual al producto inteligente.",
+    introTitle: "El problema no es adoptar IA. Es ponerla a funcionar.",
     intro:
-      "Diseñamos, desarrollamos y mantenemos software a medida, y aplicamos IA sobre tus propios datos y procesos. Desde una integración puntual hasta un producto completo: te acompañamos de la estrategia a la puesta en producción, con estándares de calidad enterprise.",
+      "Entre una prueba que anda y un sistema que la empresa usa todos los días hay integración: datos dispersos, permisos, procesos reales y los sistemas que ya están funcionando y no se pueden romper. Eso es exactamente lo que hacemos desde 2008 en infraestructura crítica — con Finning y con Grupo Logístico Andreani — y es lo que aplicamos a los proyectos de software e inteligencia artificial.",
     painsTitle: "¿Te suena alguna de estas situaciones?",
     pains: [
+      "Probaron IA, funcionó en la demo y ahí quedó.",
       "Tu operación depende de planillas y procesos manuales que no escalan.",
-      "El software que usás no se adapta a cómo trabaja realmente tu empresa.",
-      "Tenés datos por todos lados pero no los estás aprovechando con IA.",
-      "Querés incorporar inteligencia artificial y no sabés por dónde empezar.",
+      "Tenés los datos, pero repartidos en sistemas que no se hablan entre sí.",
+      "Cada proveedor resuelve su parte y nadie se hace cargo del conjunto.",
     ],
     capabilities: [
       { icon: Code2, title: "Desarrollo a medida", desc: "Aplicaciones web y móviles hechas a la medida de tu operación, con arquitectura escalable y código mantenible.", photo: photo(1181263) },
