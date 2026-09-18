@@ -4,10 +4,20 @@ import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { INDUSTRY_SLUGS } from "@/components/solutions/industriesData";
 import { getIndustrySeo } from "@/components/solutions/industrySeo";
 import { HOME_CASES } from "@/components/homeCases";
+import { leerNotasParaIndice } from "@/lib/notas-server";
+import { BASE_RECURSOS } from "@/lib/notas";
 
 // Sitemap de las rutas INDEXABLES. Se excluye a propósito:
 //  · /preview-mapa (interna)
-export default function sitemap(): MetadataRoute.Sitemap {
+//  · /recursos?solucion= (la misma lista filtrada: va con noindex)
+//
+// Las rutas fijas salen del código; las notas, de la base. Por eso el sitemap
+// es async y se revalida cada hora: publicar una nota en el backoffice la mete
+// en el sitemap sin un deploy, que es la misma promesa que el resto del
+// contenido editable del sitio.
+export const revalidate = 3600;
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const home: MetadataRoute.Sitemap = [
@@ -50,5 +60,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   });
 
-  return [...home, ...solutions, ...industries, ...cases];
+  // Notas de /recursos. `lastModified` es la fecha de revisión y no la de
+  // publicación: es lo que le dice a Google si vale la pena volver a pasar.
+  const notas = await leerNotasParaIndice();
+  const recursos: MetadataRoute.Sitemap = notas.length
+    ? [
+        { url: `${SITE_URL}${BASE_RECURSOS}`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
+        ...notas.map((n) => ({
+          url: `${SITE_URL}${BASE_RECURSOS}/${n.slug}`,
+          lastModified: new Date(n.revisadoEn || n.publicadoEn || now),
+          changeFrequency: "monthly" as const,
+          priority: 0.7,
+        })),
+      ]
+    : [];
+
+  return [...home, ...solutions, ...industries, ...cases, ...recursos];
 }

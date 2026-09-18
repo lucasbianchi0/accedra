@@ -2,14 +2,20 @@ import { SITE_URL, ORG, SERVICES, DEFAULT_DESCRIPTION } from "@/lib/seo/site";
 import { INDUSTRIES, INDUSTRY_SLUGS } from "@/components/solutions/industriesData";
 import { getIndustrySeo } from "@/components/solutions/industrySeo";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
+import { leerNotasParaIndice } from "@/lib/notas-server";
+import { BASE_RECURSOS } from "@/lib/notas";
 
 // /llms.txt — GEO (Generative Engine Optimization). Un resumen en texto plano,
 // legible por LLMs (ChatGPT, Perplexity, Claude, etc.), con lo esencial de la
 // empresa y links a las páginas clave. Convención emergente (llmstxt.org).
 // Sale de la MISMA fuente que el resto del SEO, así nunca queda desactualizado.
-export const dynamic = "force-static";
+//
+// Ya no es estático: las notas de /recursos viven en la base y son justamente
+// lo que un modelo busca acá —una respuesta concreta a una pregunta concreta—,
+// así que el archivo se revalida cada hora como el sitemap.
+export const revalidate = 3600;
 
-export function GET() {
+export async function GET() {
   const services = SERVICES.map(
     (s) => `- [${s.name}](${SITE_URL}/soluciones/${s.slug}): ${s.desc}`,
   ).join("\n");
@@ -42,6 +48,16 @@ export function GET() {
     )
     .join("\n");
 
+  // Las notas publicadas, de la más nueva a la más vieja. Van con el resumen y
+  // no sólo con el título: es lo que le permite a un modelo decidir si esta
+  // página responde la consulta antes de ir a buscarla.
+  const publicadas = await leerNotasParaIndice();
+  const notas = publicadas.length
+    ? publicadas
+        .map((n) => `- [${n.titulo}](${SITE_URL}${BASE_RECURSOS}/${n.slug}): ${n.resumen}`)
+        .join("\n")
+    : "Todavía no hay notas publicadas.";
+
   const body = `# ${ORG.name}
 
 > ${DEFAULT_DESCRIPTION}
@@ -71,6 +87,13 @@ ${industryLinks}
 Proyectos ejecutados, con el cliente, la industria y las métricas del resultado.
 
 ${casos}
+
+## Recursos
+Guías y notas que responden preguntas concretas sobre estos temas en Argentina.
+Cada una está escrita para responder la pregunta de su título en las primeras
+líneas; el resto desarrolla, cita las fuentes y cierra con preguntas frecuentes.
+
+${notas}
 
 ## Enlaces
 - [Contacto](${SITE_URL}/#contacto)

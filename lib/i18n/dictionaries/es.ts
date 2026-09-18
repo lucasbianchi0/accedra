@@ -308,7 +308,7 @@ export const es = {
       "Software & AI",
     ],
     companyTitle: "Empresa",
-    companyItems: ["Sobre Accedra", "Partners", "Clientes", "Contacto"],
+    companyItems: ["Sobre Accedra", "Partners", "Clientes", "Recursos", "Contacto"],
     rights: "Todos los derechos reservados.",
     madeIn: "Hecho por Accedra en Buenos Aires, Argentina.",
   },

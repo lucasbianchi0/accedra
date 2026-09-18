@@ -13,6 +13,17 @@ repo sólo aporta las tablas del sitio público.
 | `sessions` | Una fila por visita, con la atribución (gclid, UTMs, referente) que no se repite en cada evento. |
 | `events` | Pageviews y clics. Es la tabla que más crece. |
 
+## Tablas que el sitio LEE pero no crea
+
+Las escribe el backoffice y el sitio sólo las consulta. Su migración vive en
+`stockAdmin/supabase/migrations/`:
+
+| Tabla | Para qué | Se ve en |
+|---|---|---|
+| `popups` | El popup configurable del sitio. | Todo el sitio |
+| `eventos`, `evento_asistentes`, `marcas` | Workshops y webinars, y los certificados de asistencia. | `/eventos`, `/certificados/<codigo>` |
+| `notas` | Las guías y notas del hub de contenido, en markdown, con su respuesta directa, sus FAQs y sus fuentes. | `/recursos`, `/recursos/<slug>` |
+
 `leads.session_id` es lo que cierra el circuito: permite ir del contrato
 firmado hasta el anuncio que lo originó, que es lo que necesita Google Ads
 para optimizar en un negocio con ciclo de venta largo.

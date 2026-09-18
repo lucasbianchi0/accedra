@@ -305,7 +305,7 @@ export const pt: Dict = {
       "Software & AI",
     ],
     companyTitle: "Empresa",
-    companyItems: ["Sobre a Accedra", "Partners", "Clientes", "Contato"],
+    companyItems: ["Sobre a Accedra", "Partners", "Clientes", "Recursos", "Contato"],
     rights: "Todos os direitos reservados.",
     madeIn: "Feito com precisão em Buenos Aires, Argentina.",
   },

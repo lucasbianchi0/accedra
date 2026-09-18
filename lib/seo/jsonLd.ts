@@ -151,6 +151,78 @@ export function breadcrumbLd(items: { name: string; path: string }[]) {
   };
 }
 
+// Article — se emite en cada nota de /recursos.
+//
+// Tres campos hacen casi todo el trabajo y por eso están arriba de todo:
+// `headline` (lo que se cita), `author` (una PERSONA cuando la nota está
+// firmada: Google y las IAs tratan distinto lo que firma alguien de lo que
+// publica una marca) y `dateModified`, que es la señal de si el contenido sigue
+// vigente — de ahí que el backoffice tenga una fecha de revisión aparte de la
+// de publicación.
+export function articleLd(n: {
+  titulo: string;
+  tituloSeo: string;
+  resumen: string;
+  respuesta: string;
+  autor: string;
+  autorCargo: string;
+  publicadoEn: string;
+  revisadoEn: string;
+  portadaUrl: string | null;
+  categoria: string | null;
+  tags: string[];
+  url: string;
+}) {
+  const svc = n.categoria ? SERVICES.find((s) => s.slug === n.categoria) : undefined;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    // Google recorta `headline` a 110 caracteres y descarta el schema si es más
+    // largo, así que se corta acá y no se confía en que el título sea corto.
+    headline: (n.tituloSeo || n.titulo).slice(0, 110),
+    description: n.resumen,
+    // La respuesta directa es literalmente el resumen citable de la nota: va en
+    // `abstract`, que es el campo que schema.org define para exactamente eso.
+    ...(n.respuesta ? { abstract: n.respuesta } : {}),
+    url: n.url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": n.url },
+    datePublished: n.publicadoEn || undefined,
+    dateModified: n.revisadoEn || n.publicadoEn || undefined,
+    author: n.autor
+      ? {
+          "@type": "Person",
+          name: n.autor,
+          ...(n.autorCargo ? { jobTitle: n.autorCargo } : {}),
+          worksFor: { "@id": ORG_ID },
+        }
+      : { "@id": ORG_ID },
+    publisher: { "@id": ORG_ID },
+    ...(n.portadaUrl ? { image: n.portadaUrl } : {}),
+    inLanguage: "es-AR",
+    isPartOf: { "@id": WEBSITE_ID },
+    ...(svc ? { about: { "@type": "Service", name: svc.name, url: abs(`/soluciones/${svc.slug}`) } } : {}),
+    ...(n.tags.length ? { keywords: n.tags.join(", ") } : {}),
+  };
+}
+
+// ItemList del hub: la lista de notas publicadas, en orden. Le dice al buscador
+// que /recursos es un índice y no una página de contenido propio, y le da los
+// links de las notas antes de haber rastreado ninguna.
+export function listaDeNotasLd(notas: { titulo: string; url: string }[]) {
+  if (!notas.length) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    itemListElement: notas.map((n, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: n.titulo,
+      url: n.url,
+    })),
+  };
+}
+
 /** Serializa uno o varios objetos JSON-LD para inyectar en el HTML. */
 export function jsonLdString(...objects: unknown[]): string {
   const payload = objects.length === 1 ? objects[0] : objects;
