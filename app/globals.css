@@ -1165,3 +1165,51 @@ dialog[data-brochure]::backdrop {
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
   vertical-align: top;
 }
+
+/* ── Esqueletos de carga ──────────────────────────────────────────────
+   La forma gris que ocupa el lugar de un dato mientras el servidor lo trae
+   (ver app/recursos/loading.tsx y app/recursos/[slug]/loading.tsx).
+
+   UN BARRIDO Y NO UN PARPADEO
+   Un `opacity` que sube y baja hace latir la pantalla entera y se lee como un
+   error. El barrido de luz cruza una vez cada 1,6 s y da la misma señal —esto
+   está por llegar— sin pedir atención. Es el mismo recurso que `badge-shimmer`,
+   más lento y mucho más apagado.
+
+   La animación va en un ::after con `transform`, que el compositor resuelve sin
+   repintar: una grilla de nueve esqueletos no le cuesta nada al hilo principal.
+
+   `overflow: hidden` y `isolation` son parte del contrato: sin ellos el barrido
+   se escapa del borde redondeado de la pieza. */
+.esqueleto {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  /* Sobre #04070d esto es apenas un tono más claro que la card que lo contiene
+     (bg-white/[0.02]) — suficiente para que se lea la forma sin que la página
+     parezca un tablero de bloques grises. */
+  background: rgba(255, 255, 255, 0.062);
+}
+.esqueleto::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.07) 45%,
+    rgba(127, 179, 248, 0.09) 55%,
+    transparent 100%
+  );
+  animation: esqueleto-barrido 1.6s ease-in-out infinite;
+}
+@keyframes esqueleto-barrido {
+  100% { transform: translateX(100%); }
+}
+
+/* Sin movimiento, el esqueleto sigue siendo una forma gris en el lugar
+   correcto: se entiende igual, sólo que quieto. */
+@media (prefers-reduced-motion: reduce) {
+  .esqueleto::after { animation: none; }
+}
