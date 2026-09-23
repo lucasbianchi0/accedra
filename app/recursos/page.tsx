@@ -1,14 +1,12 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import AmbientLight from "@/components/AmbientLight";
 import JsonLd from "@/components/seo/JsonLd";
-import NotaCard from "@/components/recursos/NotaCard";
+import HubNotas from "@/components/recursos/HubNotas";
 import { leerNotasPublicadas } from "@/lib/notas-server";
-import { CATEGORIAS, CATEGORIA_COLOR, CATEGORIA_LABEL } from "@/lib/notas";
 import { breadcrumbLd, listaDeNotasLd } from "@/lib/seo/jsonLd";
 import { ORG, abs } from "@/lib/seo/site";
 
@@ -19,17 +17,37 @@ import { ORG, abs } from "@/lib/seo/site";
  * minutos: publicar una nota no necesita un deploy, y el hub se sigue sirviendo
  * desde el CDN.
  *
+ * ES MÁS OSCURO QUE EL RESTO DEL SITIO, A PROPÓSITO
+ *
+ * Las otras páginas venden: el fondo lleva las lámparas azules de
+ * `AmbientLight` y el contenido flota sobre esa luz. Acá el contenido son
+ * portadas de colores distintos —una por solución— y cada una compite con el
+ * fondo. Sobre casi negro las cinco conviven; sobre el navy iluminado, la
+ * violeta y la cian se ensucian. Es la misma razón por la que una galería se
+ * pinta de gris oscuro y no de azul.
+ *
  * SIN NOTAS, LA SECCIÓN NO EXISTE
  *
  * Igual que con los eventos: esta dirección redirige a la portada en vez de
  * mostrar una página vacía. Un hub vacío indexado es peor que no tenerlo.
  *
- * EL FILTRO POR SOLUCIÓN NO SE INDEXA
+ * LA PÁGINA ES ESTÁTICA Y EL FILTRO NO
  *
- * `?solucion=` es comodidad para quien está navegando, pero como página es la
- * misma lista recortada: contenido duplicado y flaco. Por eso las vistas
- * filtradas van con `noindex` y canonical a /recursos — la que compite es una
- * sola.
+ * Acá se leía `searchParams` para resolver `?solucion=` en el servidor, y eso
+ * volvía dinámica la página entera: no se prerenderizaba, y cada visita se
+ * renderizaba de nuevo contra Supabase (250 ms de TTFB medidos en el build de
+ * producción, contra 2 ms de una página estática del mismo sitio). El
+ * `revalidate` no alcanzaba: cachea lo que se prerenderiza, y esto no se
+ * prerenderizaba.
+ *
+ * Ahora la página no mira la query —la mira `HubNotas`, del lado del cliente—
+ * y vuelve a ser estática con ISR de cinco minutos. El HTML que se sirve y el
+ * que indexa Google es el del hub completo, sin filtrar; `?solucion=` recorta
+ * al hidratar.
+ *
+ * Por eso tampoco hace falta el `noindex` que llevaban las vistas filtradas:
+ * `?solucion=x` ya no es otra página flaca, es la misma página con un canonical
+ * a /recursos.
  */
 
 export const revalidate = 300;
@@ -37,47 +55,45 @@ export const revalidate = 300;
 const DESCRIPCION =
   "Guías y notas sobre firma biométrica, infraestructura y ciberseguridad en Argentina: qué dice la ley, qué conviene y qué mirar antes de decidir.";
 
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const { solucion } = await searchParams;
-  const filtrada = CATEGORIAS.find((c) => c === solucion);
-
-  return {
-    title: filtrada ? `Recursos sobre ${CATEGORIA_LABEL[filtrada]}` : "Recursos",
+export const metadata: Metadata = {
+  title: "Recursos",
+  description: DESCRIPCION,
+  alternates: { canonical: "/recursos" },
+  openGraph: {
+    type: "website",
+    url: "/recursos",
+    title: `Recursos · ${ORG.shortName}`,
     description: DESCRIPCION,
-    alternates: { canonical: "/recursos" },
-    ...(filtrada ? { robots: { index: false, follow: true } } : {}),
-    openGraph: {
-      type: "website",
-      url: "/recursos",
-      title: `Recursos · ${ORG.shortName}`,
-      description: DESCRIPCION,
-    },
-  };
-}
+  },
+};
 
-type Props = { searchParams: Promise<{ solucion?: string }> };
-
-export default async function RecursosPage({ searchParams }: Props) {
-  const { solucion } = await searchParams;
-  const filtro = CATEGORIAS.find((c) => c === solucion) ?? null;
-
+export default async function RecursosPage() {
   const todas = await leerNotasPublicadas();
   if (todas.length === 0) redirect("/");
 
-  const notas = filtro ? todas.filter((n) => n.categoria === filtro) : todas;
-  // La destacada sólo encabeza la lista completa: dentro de un filtro, la card
-  // grande sería la nota destacada de otra solución o ninguna, y la grilla
-  // quedaría descalzada.
-  const destacada = !filtro ? notas.find((n) => n.destacada) ?? null : null;
-  const resto = destacada ? notas.filter((n) => n.id !== destacada.id) : notas;
-
-  // Sólo las soluciones que tienen al menos una nota: un filtro que devuelve
-  // una lista vacía es una promesa incumplida.
-  const conNotas = CATEGORIAS.filter((c) => todas.some((n) => n.categoria === c));
-
   return (
-    <main className="relative min-h-screen bg-navy-800">
-      <AmbientLight />
+    <main className="relative min-h-screen bg-[#04070d]">
+      {/* El clima de la página, en dos capas y nada más: un amanecer azul
+          detrás del título y la trama de puntos de marca. No se usa
+          `AmbientLight` acá — sus siete lámparas están calibradas para una
+          página de venta larga y acá levantarían el fondo justo lo que esta
+          página necesita bajar. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-0 h-[620px] overflow-hidden" aria-hidden="true">
+        <div
+          className="absolute -top-[420px] left-1/2 h-[820px] w-[1400px] -translate-x-1/2"
+          style={{ background: "radial-gradient(ellipse at center, rgba(43,111,212,0.20) 0%, transparent 68%)" }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: "radial-gradient(rgba(255,255,255,0.045) 1px, transparent 1px)",
+            backgroundSize: "34px 34px",
+            maskImage: "radial-gradient(ellipse 65% 60% at 50% 22%, #000 5%, transparent 78%)",
+            WebkitMaskImage: "radial-gradient(ellipse 65% 60% at 50% 22%, #000 5%, transparent 78%)",
+          }}
+        />
+      </div>
+
       <Navbar />
 
       <JsonLd
@@ -91,89 +107,49 @@ export default async function RecursosPage({ searchParams }: Props) {
       />
 
       <div className="relative z-10">
-        <header className="relative overflow-hidden pb-10 pt-32 lg:pb-12 lg:pt-40">
-          <div
-            className="absolute inset-0 opacity-60"
-            style={{ background: "radial-gradient(60% 80% at 80% 0%, rgba(43,111,212,0.35), transparent 70%)" }}
-          />
-          <div className="container-x relative text-center">
-            <h1 className="section-title mx-auto mt-0 max-w-3xl">
-              Lo que preguntan <span className="gradient-text">antes de decidir</span>
-            </h1>
-            <p className="section-sub mx-auto max-w-2xl">
-              Qué dice la ley, qué conviene y qué mirar antes de firmar. Escrito por el equipo que después lo implementa.
+        {/* NO ES UNA PORTADA, ES UN ENCABEZADO
+            El hub no es una landing: quien entra ya sabe a qué vino y lo que
+            busca son las notas, así que media pantalla de título antes de la
+            primera card es una aduana. Pero un h1 suelto arriba de los filtros
+            tampoco: sin jerarquía ni aire, la página empieza como una tabla.
+            Queda un encabezado editorial —filete, volanta, título en la
+            display y una regla que cierra— que ocupa un cuarto de pantalla y
+            deja las primeras cards sobre el pliegue. */}
+        <header className="container-x pb-9 pt-32 lg:pb-11 lg:pt-40">
+          <div className="flex items-center gap-3">
+            <span className="h-px w-9 bg-gradient-to-r from-accent-300 to-accent-300/10" />
+            <p className="text-[10.5px] font-semibold uppercase tracking-[0.3em] text-accent-300">
+              Biblioteca técnica
             </p>
           </div>
+          <h1 className="mt-5 font-display text-[46px] font-bold leading-[0.95] tracking-[-0.035em] text-white lg:text-[58px]">
+            Recursos
+          </h1>
+          {/* La bajada va DEBAJO del título, no al costado. En una columna
+              aparte compite con el título por la primera mirada y deja el
+              encabezado partido en dos bloques que no se leen en orden; abajo
+              es lo que es: la segunda línea de una misma idea. */}
+          <p className="mt-5 max-w-[560px] text-[15px] leading-[1.7] text-gray-400">
+            Qué dice la ley, qué conviene y qué mirar antes de firmar. Escrito por el equipo que
+            después lo implementa.
+          </p>
+          {/* La regla se apaga hacia la derecha en vez de cortar en seco: es el
+              mismo recurso que la máscara del fondo, a escala de un filete. */}
+          <div className="mt-9 h-px bg-gradient-to-r from-white/[0.14] via-white/[0.05] to-transparent" />
         </header>
 
         <section className="container-x pb-24">
-          {conNotas.length > 1 && (
-            <nav className="mb-10 flex flex-wrap items-center justify-center gap-2">
-              <Filtro href="/recursos" activo={!filtro} label="Todo" />
-              {conNotas.map((c) => (
-                <Filtro
-                  key={c}
-                  href={`/recursos?solucion=${c}`}
-                  activo={filtro === c}
-                  label={CATEGORIA_LABEL[c]}
-                  color={CATEGORIA_COLOR[c]}
-                />
-              ))}
-            </nav>
-          )}
-
-          {notas.length === 0 ? (
-            <p className="py-16 text-center text-[15px] text-gray-400">
-              Todavía no hay notas de esta solución.{" "}
-              <Link href="/recursos" className="text-accent-300 underline underline-offset-4">
-                Ver todas
-              </Link>
-              .
-            </p>
-          ) : (
-            <div className="space-y-8">
-              {destacada && <NotaCard nota={destacada} grande />}
-              {resto.length > 0 && (
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                  {resto.map((n) => (
-                    <NotaCard key={n.id} nota={n} />
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+          {/* `useSearchParams` (el filtro) necesita un límite de Suspense para
+              que el resto de la página se pueda prerenderizar. El fallback no
+              dibuja nada: lo de adentro se renderiza en el servidor igual, sin
+              filtro, que es exactamente el hub completo. */}
+          <Suspense>
+            <HubNotas todas={todas} />
+          </Suspense>
         </section>
 
         <Footer />
       </div>
     </main>
-  );
-}
-
-function Filtro({
-  href,
-  label,
-  activo,
-  color,
-}: {
-  href: string;
-  label: string;
-  activo: boolean;
-  color?: string;
-}) {
-  return (
-    <Link
-      href={href}
-      // Los filtros son links y no botones a propósito: se pueden abrir en otra
-      // pestaña, se comparten, y la página funciona sin JavaScript.
-      className={`inline-flex h-9 items-center gap-2 rounded-full border px-4 text-[13px] font-medium transition-colors ${
-        activo
-          ? "border-white/25 bg-white/10 text-white"
-          : "border-white/10 bg-white/[0.02] text-gray-400 hover:border-white/20 hover:text-gray-200"
-      }`}
-    >
-      {color && <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />}
-      {label}
-    </Link>
   );
 }

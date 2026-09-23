@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, ChevronRight } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import AmbientLight from "@/components/AmbientLight";
+import FondoRecursos, { rgbDe } from "@/components/recursos/FondoRecursos";
 import JsonLd from "@/components/seo/JsonLd";
-import NotaCard from "@/components/recursos/NotaCard";
+import NotaMini from "@/components/recursos/NotaMini";
+import PortadaGenerada from "@/components/recursos/PortadaGenerada";
 import { leerNotaPorSlug, leerNotasParaIndice, leerNotasPublicadas } from "@/lib/notas-server";
 import {
   CATEGORIA_COLOR,
@@ -92,21 +94,29 @@ export default async function NotaPage({ params }: Props) {
   const secciones = indice.filter((h) => h.nivel === 2);
   const url = abs(urlDeNota(nota.slug));
 
-  // Otras notas de la misma solución. Se piden cuatro y se muestran tres: si
-  // una de las cuatro es ésta, igual quedan tres.
-  const relacionadas = (
-    await leerNotasPublicadas({
-      categoria: nota.categoria ?? undefined,
-      excepto: nota.id,
-      limite: 4,
-    })
-  ).slice(0, 3);
+  // Lo que va en la columna de la derecha. Se piden de la misma solución
+  // primero; si la solución tiene pocas notas, se completa con las últimas del
+  // hub — una columna con un solo ítem no es una columna.
+  const mismaSolucion = await leerNotasPublicadas({
+    categoria: nota.categoria ?? undefined,
+    excepto: nota.id,
+    limite: 4,
+  });
+  const relacionadas =
+    mismaSolucion.length >= 4
+      ? mismaSolucion
+      : [
+          ...mismaSolucion,
+          ...(await leerNotasPublicadas({ excepto: nota.id, limite: 8 })).filter(
+            (n) => !mismaSolucion.some((m) => m.id === n.id)
+          ),
+        ].slice(0, 4);
 
   const color = nota.categoria ? CATEGORIA_COLOR[nota.categoria] : "#2b6fd4";
 
   return (
-    <main className="relative min-h-screen bg-navy-800">
-      <AmbientLight variant="solution" />
+    <main className="relative min-h-screen bg-[#04070d]">
+      <FondoRecursos color={rgbDe(color)} />
       <Navbar />
 
       <JsonLd
@@ -135,8 +145,24 @@ export default async function NotaPage({ params }: Props) {
       />
 
       <div className="relative z-10">
-        <article className="container-x pb-20 pt-28 lg:pb-28 lg:pt-36">
-          <div className="mx-auto max-w-[760px]">
+        {/* Dos columnas en desktop: la nota a la izquierda con el ancho de
+            lectura de siempre, y a la derecha una columna que acompaña el
+            scroll con lo que se puede leer después. En mobile la columna se
+            apila debajo, que es donde sirve — arriba sería un desvío antes de
+            empezar a leer. */}
+        <div className="container-x pb-20 pt-28 lg:pb-28 lg:pt-36">
+          {/* El margen derecho negativo saca la grilla del ancho común del
+              sitio (1320 px) sólo hacia la derecha: el título sigue alineado
+              con el logo del navbar —que es lo que el ojo usa de referencia al
+              entrar— y la columna se apoya a un padding del borde en vez de
+              flotar a 135 px de él. `max(0px, …)` lo apaga por debajo de 1320,
+              donde no hay margen que recuperar y el negativo produciría scroll
+              horizontal. */}
+          <div
+            className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_420px] lg:gap-12"
+            style={{ marginRight: "calc(-1 * max(0px, (100vw - 1320px) / 2))" }}
+          >
+            <article className="min-w-0 max-w-[760px]">
             {/* Migas: las mismas que el BreadcrumbList del schema. Que coincidan
                 lo que ve una persona y lo que declara el marcado es la mitad de
                 para qué sirve el marcado. */}
@@ -187,14 +213,35 @@ export default async function NotaPage({ params }: Props) {
               </p>
             )}
 
-            {nota.portadaUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={nota.portadaUrl}
-                alt=""
-                className="mt-9 aspect-[16/9] w-full rounded-card border border-white/10 object-cover"
-              />
-            )}
+            {/* La portada va siempre: la foto si el backoffice la cargó, y si
+                no el dibujo de marca. Es la misma imagen que la persona vio en
+                la card del hub, y sin ella la nota arranca con un muro de
+                texto donde la card prometía una pieza. */}
+            <div
+              className="relative mt-9 aspect-[16/9] w-full overflow-hidden rounded-card border border-white/[0.07]"
+              style={{ background: `linear-gradient(135deg, ${color}2e 0%, #0a1424 55%, #05090f 100%)` }}
+            >
+              {nota.portadaUrl ? (
+                // Iba sin optimizador: el `<img>` apuntaba al original del
+                // bucket, que el backoffice sube a 1600 px y pesa cientos de
+                // kilobytes, para verse a 760. Y es el LCP de la nota, así que
+                // se pagaba entero antes de que la página se considerara
+                // pintada. Ahora viaja por `next/image` —AVIF, el ancho que
+                // corresponde a la pantalla— y con `eager`, porque está arriba
+                // del pliegue y no tiene sentido esperar al scroll.
+                <Image
+                  src={nota.portadaUrl}
+                  alt=""
+                  fill
+                  sizes="(min-width: 1024px) 760px, 100vw"
+                  loading="eager"
+                  fetchPriority="high"
+                  className="object-cover"
+                />
+              ) : (
+                <PortadaGenerada nota={nota} color={color} />
+              )}
+            </div>
 
             {nota.respuesta && (
               <div
@@ -271,21 +318,36 @@ export default async function NotaPage({ params }: Props) {
             )}
 
             <Cierre nota={nota} />
-          </div>
-        </article>
+            </article>
 
-        {relacionadas.length > 0 && (
-          <section className="container-x pb-24">
-            <div className="mx-auto max-w-[1100px]">
-              <h2 className="mb-6 text-[22px] font-bold text-white">Seguir leyendo</h2>
-              <div className="grid gap-6 md:grid-cols-3">
-                {relacionadas.map((n) => (
-                  <NotaCard key={n.id} nota={n} />
-                ))}
-              </div>
-            </div>
-          </section>
-        )}
+            {relacionadas.length > 0 && (
+              <aside className="min-w-0">
+                {/* `sticky` con el alto del navbar más aire: la columna
+                    acompaña la lectura en vez de quedarse arriba mientras el
+                    cuerpo de la nota sigue veinte pantallas hacia abajo. */}
+                <div className="lg:sticky lg:top-[100px]">
+                  <div className="rounded-card border border-white/[0.07] bg-white/[0.02] p-6">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                      Seguir leyendo
+                    </p>
+                    <div className="mt-1 divide-y divide-white/[0.06]">
+                      {relacionadas.map((n) => (
+                        <NotaMini key={n.id} nota={n} />
+                      ))}
+                    </div>
+                    <Link
+                      href="/recursos"
+                      className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent-300 transition-colors hover:text-white"
+                    >
+                      Ver todos los recursos
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </div>
+              </aside>
+            )}
+          </div>
+        </div>
 
         <Footer />
       </div>

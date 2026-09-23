@@ -14,6 +14,18 @@ const LEGACY_REDIRECTS: [string, string][] = [
 
 const nextConfig: NextConfig = {
   images: {
+    // NO AGREGAR AVIF ACÁ. Está medido, no supuesto.
+    //
+    // Las portadas que sube el backoffice ya son WebP, y volver a comprimir un
+    // WebP a AVIF con q=75 da un archivo MÁS GRANDE: sobre una portada real de
+    // /recursos, 24,5 KB contra 19,6 KB a 384 px y 47,8 contra 40,8 a 640. El
+    // AVIF gana cuando el original es JPEG (19,4 contra 21,4 a 640 sobre una
+    // foto de /public), pero ése no es el caso de las dos secciones que viven
+    // de portadas. Con `formats: ["image/avif","image/webp"]` el navegador que
+    // soporta AVIF —o sea, casi todos— se llevaría la versión peor.
+    //
+    // Si algún día el backoffice pasa a guardar los originales en JPEG o PNG,
+    // vale volver a medirlo.
     remotePatterns: [
       { protocol: "https", hostname: "upload.wikimedia.org" },
       { protocol: "https", hostname: "images.pexels.com" },
