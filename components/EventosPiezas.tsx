@@ -10,6 +10,8 @@
  * de la lista, lista y popup quedarían en un import circular.
  */
 
+import Image from "next/image";
+
 import { useT } from "@/lib/i18n/useT";
 import { CATEGORIAS, CATEGORIA_COLOR, ZONA, type Categoria, type EventoSitio } from "@/lib/eventos";
 
@@ -126,23 +128,33 @@ export function BloqueFecha({ iso, locale, grande }: { iso: string; locale: stri
 }
 
 /**
- * La portada achicada por el optimizador de Next, para donde se ve chica (la
- * card del panel lateral, 150 px). 384 es el mayor de los `imageSizes` por
- * defecto: cubre esos 150 px en pantallas 2x–2,5x y pesa una fracción del
- * original que sube el backoffice.
+ * La portada de un evento donde todavía se usa la foto tal como la subió el
+ * backoffice: el popup y la pestaña de la portada.
+ *
+ * `sizes` NO ES OPCIONAL DE VERDAD
+ *
+ * Es cuánto mide la imagen en pantalla, y es lo único que le permite al
+ * navegador elegir del `srcset`. Sin el dato asume que ocupa el ancho de la
+ * ventana y se baja la versión más grande que exista: en la pestaña lateral,
+ * donde la portada mide 150 px, eso era bajarse un archivo diez veces más
+ * grande que el que se ve.
+ *
+ * Antes acá había una URL de `/_next/image` escrita a mano con un ancho fijo.
+ * Funcionaba, pero servía el mismo archivo a un teléfono y a un monitor 4K, y
+ * el ancho tenía que ser uno de los declarados en next.config: cualquier otro
+ * devuelve 400 y deja la portada en negro.
  */
-export const portadaMiniatura = (url: string) =>
-  `/_next/image?url=${encodeURIComponent(url)}&w=384&q=75`;
-
 export function Portada({
   e,
   className,
-  miniatura = false,
+  sizes = "100vw",
+  /** Arriba del pliegue: se baja con la página, sin esperar al scroll. */
+  yaMismo = false,
 }: {
   e: EventoSitio;
   className?: string;
-  /** Servir la versión achicada: sólo donde la portada se ve chica. */
-  miniatura?: boolean;
+  sizes?: string;
+  yaMismo?: boolean;
 }) {
   return (
     <div
@@ -153,13 +165,13 @@ export function Portada({
       style={{ background: "linear-gradient(128deg, #0B2466 0%, #1640A0 45%, #2F79E0 100%)" }}
     >
       {e.portadaUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={miniatura ? portadaMiniatura(e.portadaUrl) : e.portadaUrl}
+        <Image
+          src={e.portadaUrl}
           alt=""
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
+          fill
+          sizes={sizes}
+          loading={yaMismo ? "eager" : "lazy"}
+          className="object-cover transition-transform duration-700 group-hover:scale-[1.05]"
         />
       ) : (
         // Sin portada, la trama de marca: puntos que se disuelven y los logos del

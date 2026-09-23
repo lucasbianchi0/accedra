@@ -291,6 +291,18 @@ export const en: Dict = {
       lanzamiento: "Launch",
     },
     modes: { presencial: "In person", online: "Online", hibrido: "Hybrid" },
+    agenda: {
+      kicker: "Accedra agenda",
+      title: "Events",
+      lead: "Workshops, webinars and training sessions run by the team that implements afterwards. Small groups, laptops open.",
+      upcomingOne: "upcoming",
+      upcomingMany: "upcoming",
+      doneMany: "past",
+      nextOne: "The next one",
+      today: "is today",
+      tomorrow: "is tomorrow",
+      inDays: "in {n} days",
+    },
   },
 
   footer: {

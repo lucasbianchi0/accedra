@@ -291,6 +291,18 @@ export const pt: Dict = {
       lanzamiento: "Lançamento",
     },
     modes: { presencial: "Presencial", online: "Online", hibrido: "Híbrido" },
+    agenda: {
+      kicker: "Agenda Accedra",
+      title: "Eventos",
+      lead: "Workshops, webinars e capacitações com a equipe que depois implementa. Turmas pequenas, computador aberto.",
+      upcomingOne: "próximo",
+      upcomingMany: "próximos",
+      doneMany: "realizados",
+      nextOne: "O próximo",
+      today: "é hoje",
+      tomorrow: "é amanhã",
+      inDays: "em {n} dias",
+    },
   },
 
   footer: {

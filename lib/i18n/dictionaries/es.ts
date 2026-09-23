@@ -294,6 +294,20 @@ export const es = {
       lanzamiento: "Lanzamiento",
     },
     modes: { presencial: "Presencial", online: "Online", hibrido: "Híbrido" },
+    // El encabezado de /eventos. `inDays` lleva {n} porque el número lo pone
+    // el componente: partir la frase en dos textos la rompe en inglés.
+    agenda: {
+      kicker: "Agenda Accedra",
+      title: "Eventos",
+      lead: "Workshops, webinars y capacitaciones dictados por el equipo que después implementa. Cupos chicos, computadora abierta.",
+      upcomingOne: "próximo",
+      upcomingMany: "próximos",
+      doneMany: "realizados",
+      nextOne: "El próximo",
+      today: "es hoy",
+      tomorrow: "es mañana",
+      inDays: "en {n} días",
+    },
   },
 
   footer: {

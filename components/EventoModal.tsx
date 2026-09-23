@@ -153,7 +153,7 @@ export default function EventoModal({ evento: e, onCerrar }: { evento: EventoSit
           style={{ outline: "none" }}
         >
           <div className="relative aspect-[16/7]">
-            <Portada e={e} className="absolute inset-0" />
+            <Portada e={e} sizes="(min-width: 640px) 560px, 100vw" yaMismo className="absolute inset-0" />
             <span
               className="absolute left-4 top-4 rounded-full px-2.5 py-1 text-[10.5px] font-semibold uppercase tracking-wider"
               style={{ background: "rgba(10,18,32,0.72)", color: "#DCE9FB", border: "1px solid rgba(255,255,255,0.12)" }}

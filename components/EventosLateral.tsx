@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarDays, Clock, MapPin, X } from "lucide-react";
 
 import EventoModal from "@/components/EventoModal";
-import { BloqueFecha, FiltroCategorias, LOCALE, Portada, categoriasPresentes, fecha, portadaMiniatura } from "@/components/EventosPiezas";
+import { BloqueFecha, FiltroCategorias, LOCALE, Portada, categoriasPresentes, fecha } from "@/components/EventosPiezas";
 import { useT } from "@/lib/i18n/useT";
 import { useLang } from "@/lib/i18n/LangProvider";
 import { enCurso, type Categoria, type EventoSitio } from "@/lib/eventos";
@@ -81,16 +81,14 @@ export default function EventosLateral() {
           if (!vivo || !d) return;
           const proximos: EventoSitio[] = d.proximos ?? [];
           setEventos(proximos);
-          // Las portadas se bajan y decodifican ahora, en reposo, y no en medio
-          // del deslizamiento.
-          for (const e of proximos) {
-            if (!e.portadaUrl) continue;
-            const img = new Image();
-            // La misma URL que pinta la card: si no, se precarga un archivo y se
-            // pinta otro.
-            img.src = portadaMiniatura(e.portadaUrl);
-            img.decode?.().catch(() => {});
-          }
+          // Acá había una precarga a mano (`new Image()` con la URL que pintaba
+          // la card) para que las portadas no se bajaran en medio del
+          // deslizamiento. Se fue junto con la URL escrita a mano: ahora la
+          // portada viaja por `next/image` con un `srcset`, y cuál de esos
+          // archivos se baja lo decide el navegador según la pantalla — una
+          // precarga que adivine mal baja un archivo que después no se usa. Las
+          // cards van con `yaMismo`, que es la misma intención dicha en el
+          // lugar correcto: se bajan al montarse, no al abrirse el panel.
           if (proximos.length > 0) window.setTimeout(() => vivo && setPestanaVisible(true), 60);
         })
         .catch(() => {});
@@ -335,7 +333,7 @@ function ItemEvento({
         aria-label={`${t.events.details}: ${e.titulo}`}
         className="relative aspect-square w-[112px] flex-shrink-0 self-start overflow-hidden rounded-xl sm:w-[150px]"
       >
-        <Portada e={e} miniatura className="absolute inset-0" />
+        <Portada e={e} sizes="150px" yaMismo className="absolute inset-0" />
         <span className="absolute bottom-2 left-2">
           <BloqueFecha iso={e.inicio} locale={locale} />
         </span>
