@@ -5,6 +5,7 @@ import { useT } from "@/lib/i18n/useT";
 import Link from "next/link";
 import { track } from "@/lib/track";
 import Image from "next/image";
+import { useState } from "react";
 import { HOME_CASES } from "./homeCases";
 import { Reveal } from "@/components/Reveal";
 import Testimonials from "@/components/Testimonials";
@@ -16,11 +17,15 @@ const INDUSTRY_ICONS: Record<string, LucideIcon> = {
   "Logística": Package, "Minería": Mountain, "Banca": Landmark,
 };
 
-// Casos de éxito: header centrado + cards con chip de industria, descripción y
-// 3 métricas duras + banner de cierre. Debajo, testimonios.
+// Casos de éxito: header centrado + paneles de foto que se abren en hover, con
+// la métrica principal como titular + banner de cierre. Debajo, testimonios.
 export default function WhyUs() {
   const t = useT();
   const cases = HOME_CASES;
+  // Panel abierto en desktop; null = los tres parejos.
+  const [active, setActive] = useState<number | null>(null);
+  // Card visible en el carrusel mobile (para los puntos).
+  const [slide, setSlide] = useState(0);
 
   return (
     <section id="nosotros" className="section relative">
@@ -36,71 +41,97 @@ export default function WhyUs() {
               style={{ background: `linear-gradient(90deg, transparent, rgba(${BLUE_RGB},0.7), transparent)` }} />
           </Reveal>
 
-          {/* ── Cards de casos ── */}
+          {/* ── Casos: paneles de foto a sangre. En desktop se reparten el ancho y
+              el que tiene hover/foco se estira y despliega el detalle; sin hover
+              quedan parejos. En mobile es un carrusel con snap: cada card ocupa
+              ~78% del ancho y la siguiente asoma (aun con la pestaña del blog encima);
+              todas abiertas, con puntos que marcan en cuál estás. ── */}
           {cases.length > 0 && (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5 lg:gap-6">
-              {cases.map((c, i) => {
-                const TagIcon = INDUSTRY_ICONS[c.tag] ?? Building2;
-                return (
-                  <Reveal key={c.title} preset="item" className="group h-full">
-                    <Link href={`/casos/home/${i}`} aria-label={`Ver caso: ${c.title}`}
+            <Reveal preset="item">
+              <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory scroll-px-5 sm:scroll-px-8 -mx-5 px-5 sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0 lg:gap-[3px] lg:h-[480px] lg:rounded-panel lg:overflow-hidden"
+                onMouseLeave={() => setActive(null)}
+                onScroll={(e) => {
+                  // Solo el carrusel mobile scrollea: la card más cerca del borde es la actual
+                  const el = e.currentTarget;
+                  const card = el.firstElementChild as HTMLElement | null;
+                  if (!card) return;
+                  setSlide(Math.round(el.scrollLeft / (card.offsetWidth + 12)));
+                }}>
+                {cases.map((c, i) => {
+                  const TagIcon = INDUSTRY_ICONS[c.tag] ?? Building2;
+                  const lead = c.stats[0];
+                  const open = active === i;
+                  return (
+                    <Link key={c.title} href={`/casos/home/${i}`} aria-label={`Ver caso: ${c.title}`}
+                      data-open={open}
+                      onMouseEnter={() => setActive(i)}
+                      onFocus={() => setActive(i)}
                       onClick={() => track({ type: "click", name: "caso_card", target: `home/${i}` })}
-                      className="relative flex h-full flex-col rounded-panel overflow-hidden border border-white/[0.12] focus-visible:outline-none transition-all duration-500 hover:-translate-y-2"
-                      style={{
-                        // Superficie navy definida (no casi-transparente) → la card se
-                        // separa del fondo y flota. Top más claro = profundidad.
-                        background: "linear-gradient(180deg, #1B2D49 0%, #13223A 50%, #0C1826 100%)",
-                        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14), 0 26px 66px rgba(0,0,0,0.55)",
-                      }}>
-                      {/* Ring azul en hover/foco */}
-                      <div className="absolute inset-0 z-[4] rounded-[inherit] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-300 pointer-events-none"
-                        style={{ boxShadow: `inset 0 0 0 1px rgba(${BLUE_RGB},0.55), 0 0 40px rgba(${BLUE_RGB},0.2)` }} />
+                      className="group relative flex h-[400px] w-[78vw] max-w-[360px] shrink-0 snap-start lg:w-auto lg:max-w-none lg:h-auto lg:flex-[1_1_0%] lg:data-[open=true]:grow-[2.1] lg:transition-[flex-grow] lg:duration-700 lg:ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none min-w-0 overflow-hidden rounded-panel lg:rounded-none focus-visible:outline-none">
+                      <Image
+                        src={c.image}
+                        alt={c.title}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 760px"
+                        className="object-cover transition-transform duration-[900ms] ease-out group-data-[open=true]:scale-[1.04]"
+                        draggable={false}
+                      />
+                      {/* Lectura: oscurece de abajo hacia arriba; el abierto se aclara un poco */}
+                      <div className="absolute inset-0 transition-opacity duration-500"
+                        style={{ background: "linear-gradient(180deg, rgba(8,14,26,0.35) 0%, rgba(8,14,26,0.15) 30%, rgba(8,14,26,0.72) 62%, rgba(8,14,26,0.95) 100%)" }} />
+                      <div className="absolute inset-0 bg-navy-900/40 transition-opacity duration-500 group-data-[open=true]:opacity-60" />
+                      {/* Sombra detrás del texto: pesa abajo-izquierda, donde vive el
+                          bloque, y deja respirar la foto arriba-derecha. En mobile el
+                          detalle está siempre abierto, así que ahí va siempre. */}
+                      <div className="absolute inset-0 transition-opacity duration-500 lg:opacity-0 group-data-[open=true]:opacity-100"
+                        style={{ background: "radial-gradient(120% 85% at 0% 100%, rgba(6,12,22,0.95) 0%, rgba(6,12,22,0.82) 40%, rgba(6,12,22,0.45) 72%, transparent 100%)" }} />
+                      {/* Ring azul en foco de teclado */}
+                      <div className="absolute inset-0 z-[3] rounded-[inherit] opacity-0 group-focus-visible:opacity-100 pointer-events-none"
+                        style={{ boxShadow: `inset 0 0 0 2px rgba(${BLUE_RGB},0.7)` }} />
 
-                      {/* Imagen + chip de industria */}
-                      <div className="relative h-48 overflow-hidden">
-                        <Image
-                          src={c.image}
-                          alt={c.title}
-                          fill
-                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 420px"
-                          className="object-cover transition-transform duration-700 group-hover:scale-[1.06]"
-                          draggable={false}
-                        />
-                        <span className="absolute top-4 left-4 inline-flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"
-                          style={{ background: "rgba(10,18,32,0.72)", color: "#DCE9FB", border: "1px solid rgba(255,255,255,0.12)", backdropFilter: "blur(6px)" }}>
-                          <TagIcon size={12} className="text-blue-300" />
-                          {c.tag}
-                        </span>
-                      </div>
+                      <span className="absolute top-5 left-5 z-[2] inline-flex items-center gap-1.5 text-[10.5px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full"
+                        style={{ background: "rgba(10,18,32,0.6)", color: "#DCE9FB", border: "1px solid rgba(255,255,255,0.14)", backdropFilter: "blur(6px)" }}>
+                        <TagIcon size={12} className="text-blue-300" />
+                        {c.tag}
+                      </span>
+                      <ArrowUpRight size={22} className="absolute top-5 right-5 z-[2] text-white/50 transition-all duration-300 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
 
-                      {/* Cuerpo */}
-                      <div className="relative z-[2] flex flex-1 flex-col p-6">
-                        <div className="flex items-start justify-between gap-3 mb-3">
-                          <h3 className="text-white text-[19px] sm:text-[17px] font-bold leading-snug group-hover:text-blue-100 transition-colors">{c.title}</h3>
-                          <ArrowUpRight size={18} className="flex-shrink-0 mt-1 text-gray-500 transition-all duration-300 group-hover:text-blue-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      <div className="relative z-[2] mt-auto w-full p-6 sm:p-8 [text-shadow:0_1px_12px_rgba(0,0,0,0.45)]">
+                        {/* La métrica principal hace de titular, como un número de cartel */}
+                        <div className="font-display font-bold text-white leading-none tracking-tight whitespace-nowrap text-[44px] sm:text-[52px]">
+                          {lead.value}
                         </div>
+                        <div className="mt-2 text-[12px] font-semibold uppercase tracking-[0.14em]" style={{ color: "#8DBBF5" }}>{lead.label}</div>
+                        <h3 className="mt-4 text-white/90 text-[17px] font-semibold leading-snug max-w-[34ch] line-clamp-2">{c.title}</h3>
 
-                        {/* Descripción: una línea de contexto del caso */}
-                        <p className="text-gray-400 text-[15px] sm:text-[13.5px] leading-relaxed mb-6 line-clamp-3">{c.desc}</p>
-
-                        {/* Divisor con acento azul */}
-                        <div className="mt-auto h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(43,111,212,0.4) 18%, rgba(255,255,255,0.10) 50%, rgba(43,111,212,0.4) 82%, transparent)" }} />
-
-                        {/* Métricas */}
-                        <div className="grid grid-cols-3 gap-3 pt-5">
-                          {c.stats.map((s) => (
-                            <div key={s.label}>
-                              <div className="font-bold text-[17px] sm:text-[16px] leading-none whitespace-nowrap" style={{ color: "#5AA2F5", textShadow: "0 0 18px rgba(90,162,245,0.45)" }}>{s.value}</div>
-                              <div className="text-gray-400 text-[12px] sm:text-[11px] mt-1.5 leading-tight">{s.label}</div>
+                        {/* Detalle: se despliega en el abierto (siempre visible en mobile) */}
+                        <div className="grid grid-rows-[1fr] lg:grid-rows-[0fr] lg:opacity-0 group-data-[open=true]:grid-rows-[1fr] group-data-[open=true]:opacity-100 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none">
+                          <div className="min-h-0 overflow-hidden">
+                            {/* Ancho fijo en desktop: el texto no se reacomoda mientras el panel se estira */}
+                            <div className="max-w-[40ch] lg:w-[40ch] lg:max-w-none pt-2">
+                              <p className="text-white/75 text-[13.5px] leading-relaxed line-clamp-2">{c.desc}</p>
+                              {/* CTA: pastilla blanca como el botón del banner de cierre */}
+                              <span className="mt-5 inline-flex items-center gap-2 pl-5 pr-1.5 py-1.5 rounded-full text-[14px] font-semibold [text-shadow:none] transition-all group-hover:gap-3"
+                                style={{ background: "#ffffff", color: "#1E4C97", boxShadow: "0 10px 30px rgba(0,0,0,0.35)" }}>
+                                Ver caso
+                                <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "rgba(30,76,151,0.12)" }}>
+                                  <ArrowRight size={14} />
+                                </span>
+                              </span>
                             </div>
-                          ))}
+                          </div>
                         </div>
                       </div>
                     </Link>
-                  </Reveal>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+              <div className="mt-4 flex justify-center gap-1.5 lg:hidden" aria-hidden>
+                {cases.map((c, i) => (
+                  <span key={c.title} className={`h-1.5 rounded-full transition-all duration-300 ${i === slide ? "w-5 bg-blue-400" : "w-1.5 bg-white/25"}`} />
+                ))}
+              </div>
+            </Reveal>
           )}
 
           {/* ── Banner de cierre — banda de marca con gradiente animado (cta-ocean),
