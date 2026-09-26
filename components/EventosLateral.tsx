@@ -111,6 +111,18 @@ export default function EventosLateral() {
     };
   }, []);
 
+  // El borde derecho lo comparten dos pestañas. Esta manda —se queda en el
+  // centro— y lo publica en el body para que la del blog se corra abajo. Es el
+  // mismo recurso que usa la barra del popup con `data-popup-barra`: ninguna de
+  // las dos necesita importar a la otra.
+  useEffect(() => {
+    if (!pestanaVisible) return;
+    document.body.dataset.eventosPestana = "1";
+    return () => {
+      delete document.body.dataset.eventosPestana;
+    };
+  }, [pestanaVisible]);
+
   /* ── Abrir y cerrar ────────────────────────────────────────────────────── */
 
   const abrir = () => {

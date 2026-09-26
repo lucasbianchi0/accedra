@@ -9,6 +9,7 @@ import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import ScrollProgress from "@/components/ScrollProgress";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import BlogLateral from "@/components/BlogLateral";
 import AmbientLight from "@/components/AmbientLight";
 import type { Metadata } from "next";
 
@@ -45,6 +46,10 @@ export default function Home() {
       {/* Los eventos no ocupan la portada: una pestaña fija en el borde derecho
           abre el panel con la lista. No pinta nada si no hay próximos eventos. */}
       <EventosLateral />
+      {/* Y debajo, la misma idea para el blog: la pestaña sólo aparece si hay
+          notas publicadas, y se corre sola si la de eventos está ocupando el
+          centro del borde. */}
+      <BlogLateral />
     </main>
   );
 }
