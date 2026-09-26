@@ -10,6 +10,7 @@ import WhatsAppButton from "@/components/WhatsAppButton";
 import FaroBlog, { rgbDe } from "@/components/blog/FaroBlog";
 import JsonLd from "@/components/seo/JsonLd";
 import NotaMini from "@/components/blog/NotaMini";
+import ListaDesvanecida from "@/components/blog/ListaDesvanecida";
 import PortadaGenerada from "@/components/blog/PortadaGenerada";
 import { leerNotaPorSlug, leerNotasParaIndice, leerNotasPublicadas } from "@/lib/notas-server";
 import {
@@ -19,13 +20,13 @@ import {
   fechaLarga,
   minutosDe,
   urlDeNota,
-  type NotaSitio,
 } from "@/lib/notas";
 import { renderizarMarkdown } from "@/lib/notas-markdown";
+import { partirCuerpo } from "@/lib/notas-cuerpo";
+import Faqs from "@/components/blog/Faqs";
+import { CtaCierre, CtaMedio } from "@/components/blog/CtaNota";
 import { articleLd, breadcrumbLd, faqLd } from "@/lib/seo/jsonLd";
-import { ORG, abs } from "@/lib/seo/site";
-import { INDUSTRIES } from "@/components/solutions/industriesData";
-import { getIndustrySeo } from "@/components/solutions/industrySeo";
+import { abs } from "@/lib/seo/site";
 
 /**
  * Una nota: accedra.com.ar/blog/<slug>.
@@ -92,6 +93,9 @@ export default async function NotaPage({ params }: Props) {
   if (!nota) notFound();
 
   const { html, indice } = renderizarMarkdown(nota.cuerpo);
+  // El cuerpo va en dos tramos con un llamado a la acción en la juntura; en
+  // una nota corta `despues` viene vacío y se dibuja de una sola pieza.
+  const [cuerpoAntes, cuerpoDespues] = partirCuerpo(html);
   const secciones = indice.filter((h) => h.nivel === 2);
   const url = abs(urlDeNota(nota.slug));
 
@@ -269,21 +273,15 @@ export default async function NotaPage({ params }: Props) {
               </nav>
             )}
 
-            <div className="prosa mt-10" dangerouslySetInnerHTML={{ __html: html }} />
-
-            {nota.faqs.length > 0 && (
-              <section className="mt-14 border-t border-white/10 pt-10">
-                <h2 className="text-[24px] font-bold text-white">Preguntas frecuentes</h2>
-                <div className="mt-6 space-y-6">
-                  {nota.faqs.map((f, i) => (
-                    <div key={i}>
-                      <h3 className="text-[17px] font-semibold leading-snug text-white">{f.q}</h3>
-                      <p className="mt-2 text-[15.5px] leading-[1.75] text-gray-400">{f.a}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
+            <div className="prosa mt-10" dangerouslySetInnerHTML={{ __html: cuerpoAntes }} />
+            {cuerpoDespues && (
+              <>
+                <CtaMedio nota={nota} />
+                <div className="prosa" dangerouslySetInnerHTML={{ __html: cuerpoDespues }} />
+              </>
             )}
+
+            <Faqs faqs={nota.faqs} color={color} />
 
             {nota.fuentes.length > 0 && (
               <section className="mt-12 border-t border-white/10 pt-8">
@@ -318,7 +316,7 @@ export default async function NotaPage({ params }: Props) {
               </div>
             )}
 
-            <Cierre nota={nota} />
+            <CtaCierre nota={nota} />
             </article>
 
             {relacionadas.length > 0 && (
@@ -326,19 +324,27 @@ export default async function NotaPage({ params }: Props) {
                 {/* `sticky` con el alto del navbar más aire: la columna
                     acompaña la lectura en vez de quedarse arriba mientras el
                     cuerpo de la nota sigue veinte pantallas hacia abajo. */}
-                <div className="lg:sticky lg:top-[100px]">
-                  <div className="rounded-card border border-white/[0.07] bg-white/[0.02] p-6">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500">
+                {/* El panel se limita al alto de la ventana y la LISTA es lo
+                    que scrollea. Sin eso, en un portátil el panel pegajoso
+                    termina más abajo del borde inferior y la última nota queda
+                    cortada a filo, sin forma de llegar a ella: lo pegajoso no
+                    se puede scrollear. El encabezado y el link de abajo quedan
+                    fuera del scroll para que no se vayan de la vista. */}
+                <div className="flex flex-col lg:sticky lg:top-[100px] lg:max-h-[calc(100dvh-124px)]">
+                  <div className="flex min-h-0 flex-col rounded-card border border-white/[0.07] bg-white/[0.02] p-6">
+                    <p className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.2em] text-gray-500">
                       Seguir leyendo
                     </p>
-                    <div className="mt-1 divide-y divide-white/[0.06]">
+                    {/* `-mr-2 pr-2` corre la barra de scroll al borde de la
+                        card en vez de dejarla encima del texto. */}
+                    <ListaDesvanecida className="-mr-2 mt-1 min-h-0 flex-1 divide-y divide-white/[0.06] pr-2">
                       {relacionadas.map((n) => (
                         <NotaMini key={n.id} nota={n} />
                       ))}
-                    </div>
+                    </ListaDesvanecida>
                     <Link
                       href="/blog"
-                      className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent-300 transition-colors hover:text-white"
+                      className="mt-4 inline-flex shrink-0 items-center gap-1.5 text-[13px] font-medium text-accent-300 transition-colors hover:text-white"
                     >
                       Ver todo el blog
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -354,55 +360,5 @@ export default async function NotaPage({ params }: Props) {
       </div>
       <WhatsAppButton />
     </main>
-  );
-}
-
-/**
- * El cierre comercial de la nota.
- *
- * Es un link y no un formulario porque quien llega leyendo una nota todavía no
- * está pidiendo una cotización. Lleva a la página de la solución —y a la landing
- * de la industria si la nota habla de un vertical—, que es donde están el
- * teléfono y el WhatsApp, que es como esta gente prefiere hablar.
- */
-function Cierre({ nota }: { nota: NotaSitio }) {
-  if (!nota.categoria) return null;
-  const color = CATEGORIA_COLOR[nota.categoria];
-
-  const landings = nota.industrias
-    .filter((ind) => getIndustrySeo(nota.categoria!, ind))
-    .map((ind) => ({
-      href: `/soluciones/${nota.categoria}/${ind}`,
-      label: INDUSTRIES[ind]?.name ?? ind,
-    }));
-
-  return (
-    <aside className="mt-12 rounded-card border border-white/10 bg-white/[0.03] p-7">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.2em]" style={{ color }}>
-        {CATEGORIA_LABEL[nota.categoria]}
-      </p>
-      <p className="mt-3 text-[17px] leading-relaxed text-gray-300">
-        Esto es parte de lo que hacemos en {ORG.shortName} todos los días. Si te queda una duda concreta sobre tu caso,
-        la respondemos sin vueltas.
-      </p>
-      <div className="mt-5 flex flex-wrap gap-3">
-        <Link
-          href={`/soluciones/${nota.categoria}`}
-          className="inline-flex items-center gap-2 rounded-control bg-accent px-5 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-accent-600"
-        >
-          Ver {CATEGORIA_LABEL[nota.categoria]}
-          <ArrowRight className="h-4 w-4" />
-        </Link>
-        {landings.map((l) => (
-          <Link
-            key={l.href}
-            href={l.href}
-            className="inline-flex items-center gap-2 rounded-control border border-white/15 px-5 py-2.5 text-[14px] font-medium text-gray-300 transition-colors hover:border-white/30 hover:text-white"
-          >
-            Para {l.label}
-          </Link>
-        ))}
-      </div>
-    </aside>
   );
 }

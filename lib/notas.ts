@@ -154,6 +154,20 @@ export function aNotaSitio(fila: Record<string, unknown>, urlPublica: (ruta: str
 
 /* ── Lectura ──────────────────────────────────────────────────────────────── */
 
+/**
+ * Cuánto tiene que durar una nota. Gemelo de `PALABRAS` en el backoffice
+ * (stockAdmin/src/lib/marketing/notas.ts), que es donde se valida al escribir;
+ * acá vive para que el sitio pueda decir por qué una nota se lee en dos
+ * minutos y no en seis.
+ *
+ * El cuerpo es corto porque no es donde se juega la nota: la respuesta directa
+ * y las FAQs son los bloques que cita un modelo generativo, y el lector que
+ * llega de una búsqueda vino a decidir si nos llama, no a estudiar. El detalle
+ * fino vive en las preguntas frecuentes, que van plegadas y no cuestan
+ * pantalla.
+ */
+export const PALABRAS = { minimo: 250, objetivo: 350, maximo: 450 } as const;
+
 /** Palabras del cuerpo, ya sin la marcación. Misma cuenta que el backoffice. */
 export function palabrasDe(cuerpo: string): number {
   const limpio = cuerpo

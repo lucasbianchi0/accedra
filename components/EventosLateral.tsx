@@ -69,6 +69,35 @@ export default function EventosLateral() {
   /** El evento abierto en el popup de detalle, encima del panel. */
   const [detalle, setDetalle] = useState<{ e: EventoSitio; form: boolean } | null>(null);
 
+  /* ── Desvanecido del borde inferior de la lista ────────────────────────── */
+
+  // Mismo criterio que components/blog/ListaDesvanecida.tsx: el degradado de
+  // abajo se enciende sólo mientras quede algo por ver. Acá va inline y no con
+  // ese componente porque el panel ya tiene su propio ref sobre la lista —lo
+  // usa para volver al tope al cambiar de categoría—.
+  useEffect(() => {
+    const el = lista.current;
+    if (!el) return;
+
+    const medir = () => {
+      const restante = el.scrollHeight - el.clientHeight - el.scrollTop;
+      el.dataset.desborda = restante > 2 ? "si" : "no";
+    };
+
+    medir();
+    el.addEventListener("scroll", medir, { passive: true });
+    const ro = new ResizeObserver(medir);
+    ro.observe(el);
+    for (const hijo of Array.from(el.children)) ro.observe(hijo);
+
+    return () => {
+      el.removeEventListener("scroll", medir);
+      ro.disconnect();
+    };
+    // Los eventos llegan por fetch: al cambiar la lista hay que volver a medir
+    // porque el alto del contenido es otro.
+  }, [eventos, categoria, abierto]);
+
   /* ── Datos ─────────────────────────────────────────────────────────────── */
 
   useEffect(() => {
@@ -274,7 +303,14 @@ export default function EventosLateral() {
           </div>
 
           {/* Lista */}
-          <div ref={lista} data-lenis-prevent className="flex-1 space-y-5 overflow-y-auto overscroll-contain px-6 py-6">
+          <div
+            ref={lista}
+            data-lenis-prevent
+            // `lista-desvanecida` trae el overflow, el overscroll y el
+            // desvanecido de abajo, que se apaga solo al llegar al final.
+            data-desborda="no"
+            className="lista-desvanecida flex-1 space-y-5 px-6 py-6"
+          >
             {visibles.map((e) => (
               <ItemEvento key={e.id} e={e} locale={locale} onAbrir={(ev, form) => setDetalle({ e: ev, form })} />
             ))}

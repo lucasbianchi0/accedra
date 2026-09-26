@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { ArrowUpRight, Search, SearchX, X } from "lucide-react";
 
 import NotaCard from "@/components/blog/NotaCard";
+import CardPromo from "@/components/blog/CardPromo";
 import { Reveal } from "@/components/Reveal";
 import { CATEGORIAS, CATEGORIA_COLOR, CATEGORIA_LABEL, urlDeNota, type NotaSitio } from "@/lib/notas";
 import { track } from "@/lib/track";
@@ -185,6 +186,22 @@ export default function HubNotas({ todas }: { todas: NotaSitio[] }) {
   // Sólo las soluciones que tienen al menos una nota: un filtro que devuelve
   // una lista vacía es una promesa incumplida.
   const conNotas = CATEGORIAS.filter((c) => todas.some((n) => n.categoria === c));
+
+  // La grilla con el llamado a la acción intercalado.
+  //
+  // Va en la cuarta posición: primera celda de la segunda fila en escritorio,
+  // que es donde el ojo vuelve al margen izquierdo después de leer la fila de
+  // arriba. Más arriba interrumpe antes de que la persona haya visto lo que
+  // vino a ver; al final no lo ve nadie.
+  //
+  // Dos casos donde no aparece: con menos de cuatro notas sería una de cada
+  // cuatro celdas, y durante una búsqueda, porque quien escribió algo puntual
+  // está buscando eso y no una oferta.
+  const conPromos: ({ tipo: "nota"; nota: NotaSitio } | { tipo: "promo" })[] = notas.map((nota) => ({
+    tipo: "nota" as const,
+    nota,
+  }));
+  if (!texto && notas.length >= 4) conPromos.splice(3, 0, { tipo: "promo" });
 
   return (
     <>
@@ -459,18 +476,24 @@ export default function HubNotas({ todas }: { todas: NotaSitio[] }) {
         // pareja se lee mejor que una jerarquía que sólo se nota porque algo
         // está deformado.
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {notas.map((n, i) => (
-            // `Reveal` por card y no por grilla: si el contenedor es más alto
-            // que la pantalla, con un grupo las de abajo ya terminaron de
-            // animar cuando llegás a ellas. El retraso escalonado es sólo para
-            // la primera fila —la que entra con la página—; de ahí en adelante
-            // cada card anima cuando aparece.
-            <Reveal key={n.id} preset="item" delay={i < 3 ? 0.92 + i * 0.14 : 0}>
-              {/* Las tres primeras cargan la portada sin esperar al scroll: son
-                  la primera fila en escritorio. */}
-              <NotaCard nota={n} arriba={i < 3} />
-            </Reveal>
-          ))}
+          {conPromos.map((item, i) =>
+            item.tipo === "promo" ? (
+              <Reveal key="promo" preset="item" delay={0}>
+                <CardPromo categoria={filtro} />
+              </Reveal>
+            ) : (
+              // `Reveal` por card y no por grilla: si el contenedor es más alto
+              // que la pantalla, con un grupo las de abajo ya terminaron de
+              // animar cuando llegás a ellas. El retraso escalonado es sólo para
+              // la primera fila —la que entra con la página—; de ahí en adelante
+              // cada card anima cuando aparece.
+              <Reveal key={item.nota.id} preset="item" delay={i < 3 ? 0.92 + i * 0.14 : 0}>
+                {/* Las tres primeras cargan la portada sin esperar al scroll: son
+                    la primera fila en escritorio. */}
+                <NotaCard nota={item.nota} arriba={i < 3} />
+              </Reveal>
+            )
+          )}
         </div>
       )}
 

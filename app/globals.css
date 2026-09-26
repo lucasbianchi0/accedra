@@ -1307,3 +1307,79 @@ dialog[data-brochure]::backdrop {
   .faro-foco { transform: none; }
   .faro-origen { transform: translateX(-50%); }
 }
+
+/* ── FAQ plegable (components/blog/Faqs.tsx) ──────────────────────────
+   El `<details>` es nativo a propósito (el porqué está en el componente).
+   Acá va lo único que el elemento no trae de fábrica: sacarle el triangulito
+   y animar la apertura.
+
+   `interpolate-size: allow-keywords` es lo que habilita transicionar HACIA
+   `auto`: sin eso no hay forma de animar la altura de un panel cuyo contenido
+   mide distinto en cada pregunta, y el truco de siempre —animar `max-height`
+   contra un valor grande inventado— da una apertura que se frena y después
+   salta. Donde no exista, el panel abre de golpe y el contenido está igual. */
+:root {
+  interpolate-size: allow-keywords;
+}
+
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::marker { content: ""; }
+
+.faq::details-content {
+  block-size: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    block-size 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+    content-visibility 0.34s allow-discrete,
+    opacity 0.24s ease;
+}
+.faq[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+}
+
+/* El teclado tiene que ver dónde está parado: el `summary` es el control. */
+.faq summary:focus-visible {
+  outline: 2px solid rgba(127, 179, 248, 0.6);
+  outline-offset: -2px;
+  border-radius: var(--radius-card);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faq::details-content { transition: none; }
+}
+
+/* ── Lista que se desvanece hacia abajo ───────────────────────────────
+   Para una columna con scroll propio (las notas de "Seguir leyendo", la lista
+   del panel de eventos): el último ítem visible se apaga contra el borde en
+   vez de cortarse a filo, que es lo que le dice al ojo que abajo hay más.
+
+   `data-desborda` lo escribe components/blog/ListaDesvanecida.tsx, que mide si
+   queda contenido por debajo. Mientras diga "no" —lista corta, o scroll al
+   final— no hay máscara y el último ítem se ve entero. Ahí está el porqué de
+   no haberlo hecho con `animation-timeline`. */
+.lista-desvanecida {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transition: mask-image 0.25s ease;
+}
+
+.lista-desvanecida[data-desborda="si"] {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 52px), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lista-desvanecida { transition: none; }
+}
+
+/* La barra de scroll del panel, fina y sin fondo: una barra gris de sistema
+   dentro de una card oscura se ve como un error de maquetado. */
+.lista-desvanecida { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.16) transparent; }
+.lista-desvanecida::-webkit-scrollbar { width: 6px; }
+.lista-desvanecida::-webkit-scrollbar-track { background: transparent; }
+.lista-desvanecida::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+}
+.lista-desvanecida:hover::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.24); }
