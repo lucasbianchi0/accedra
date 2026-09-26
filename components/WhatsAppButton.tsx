@@ -21,18 +21,19 @@ import { track } from "@/lib/track";
  * cubic-bezier); a 0,42s la diferencia con el spring real no se percibe.
  */
 
+/**
+ * LA BURBUJA ESTÁ DESDE EL PRIMER PÍXEL.
+ *
+ * Antes aparecía recién pasados 560 px de scroll, "para no chocar con el botón
+ * de WhatsApp de la portada". Ese botón ya no existe en el hero de la home —el
+ * único que lo tiene es `SolutionPage`, y ahí abajo no se pisan porque uno es
+ * contenido y la otra es fija—, así que el retraso escondía el canal de
+ * contacto más usado justo en la pantalla donde se decide si alguien escribe.
+ *
+ * De paso se fue un listener de scroll que corría durante toda la visita.
+ */
 export default function WhatsAppButton() {
-  const [visible, setVisible] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    // Aparece recién al scrollear más allá del hero, para no chocar con el
-    // botón de WhatsApp de la portada.
-    const onScroll = () => setVisible(window.scrollY > 560);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const [tapada, setTapada] = useState(false);
 
   // Ocultar la burbuja cuando el menú mobile está abierto (el Navbar bloquea el
   // scroll del body): si no, esta burbuja z-50 se cuela sobre el overlay del menú.
@@ -44,7 +45,7 @@ export default function WhatsAppButton() {
   // la puede detectar por `overflow`.
   useEffect(() => {
     const sync = () =>
-      setMenuOpen(
+      setTapada(
         document.body.style.overflow === "hidden" ||
           document.body.dataset.popupBarra === "1"
       );
@@ -57,7 +58,7 @@ export default function WhatsAppButton() {
     return () => observer.disconnect();
   }, []);
 
-  const shown = visible && !menuOpen;
+  const shown = !tapada;
 
   return (
     <div className="wa-bubble fixed bottom-6 right-5 z-50" data-shown={shown ? "true" : "false"}>

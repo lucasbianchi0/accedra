@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import WhatsAppButton from "@/components/WhatsAppButton";
 import JsonLd from "@/components/seo/JsonLd";
 import FondoEventos from "@/components/eventos/FondoEventos";
 import CabeceraEventos from "@/components/eventos/CabeceraEventos";
@@ -24,7 +25,7 @@ import { ORG } from "@/lib/seo/site";
  *
  * ES MÁS OSCURA QUE EL RESTO DEL SITIO, A PROPÓSITO
  *
- * Misma razón que /recursos: el contenido son portadas de fotos distintas más
+ * Misma razón que /blog: el contenido son portadas de fotos distintas más
  * los colores de las cinco soluciones, y cada uno compite con el fondo. Sobre
  * el navy iluminado de `AmbientLight` las portadas se ensucian y las pastillas
  * violeta y cian pierden el color; sobre casi negro conviven todas. Es la misma
@@ -94,6 +95,7 @@ export default async function EventosPage() {
 
         <Footer />
       </div>
+      <WhatsAppButton />
     </main>
   );
 }
