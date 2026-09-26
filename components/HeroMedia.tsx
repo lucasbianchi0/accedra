@@ -193,8 +193,13 @@ export default function HeroMedia() {
           (navy-800 #0a1424), no a navy-700: así el hero se derrite en el fondo
           único en vez de cerrar un tono más claro y marcar una costura contra
           la barra de clientes. */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0D1A2D]/95 via-[#0D1A2D]/80 to-[#0D1A2D]/60" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1424] via-transparent to-[#0D1A2D]/30" />
+      {/* El velo baja al casi negro del resto de la portada. Con el navy, la
+          foto del rack quedaba más clara que todo lo que venía abajo y el hero
+          se leía como una pieza pegada encima; ahora la imagen nace del mismo
+          fondo y el degradé inferior la funde con la banda de clientes sin una
+          costura. La izquierda va más cerrada porque es donde vive el texto. */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#04070d]/96 via-[#04070d]/86 to-[#04070d]/62" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#04070d] via-[#04070d]/25 to-[#04070d]/45" />
     </div>
   );
 }

@@ -40,15 +40,25 @@ export default function WhyUs() {
             <div className="mx-auto mt-6 h-px w-28"
               style={{ background: `linear-gradient(90deg, transparent, rgba(${BLUE_RGB},0.7), transparent)` }} />
           </Reveal>
+        </div>
 
           {/* ── Casos: paneles de foto a sangre. En desktop se reparten el ancho y
               el que tiene hover/foco se estira y despliega el detalle; sin hover
               quedan parejos. En mobile es un carrusel con snap: cada card ocupa
               ~78% del ancho y la siguiente asoma (aun con la pestaña del blog encima);
               todas abiertas, con puntos que marcan en cuál estás. ── */}
-          {cases.length > 0 && (
-            <Reveal preset="item">
-              <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory scroll-px-5 sm:scroll-px-8 -mx-5 px-5 sm:-mx-8 sm:px-8 lg:mx-0 lg:px-0 lg:gap-[3px] lg:h-[480px] lg:rounded-panel lg:overflow-hidden"
+        {/* LA BANDA VA DE PUNTA A PUNTA.
+            Estaba dentro de `container-x`, o sea con el mismo margen que el
+            texto: tres fotos grandes encajonadas entre dos franjas de fondo.
+            Afuera del contenedor tocan los dos bordes de la pantalla y la
+            sección pasa a leerse como una pieza y no como tres tarjetas.
+
+            Los filetes arriba y abajo son lo que la convierte en banda: sin
+            ellos, a sangre y sobre casi negro, las fotos flotaban sin decir
+            dónde empieza y dónde termina el bloque. */}
+        {cases.length > 0 && (
+          <Reveal preset="item" className="relative z-10 lg:border-y lg:border-white/[0.09]">
+              <div className="flex gap-3 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x snap-mandatory scroll-px-5 sm:scroll-px-8 px-5 sm:px-8 lg:gap-px lg:h-[540px] lg:px-0 lg:overflow-hidden"
                 onMouseLeave={() => setActive(null)}
                 onScroll={(e) => {
                   // Solo el carrusel mobile scrollea: la card más cerca del borde es la actual
@@ -126,14 +136,15 @@ export default function WhyUs() {
                   );
                 })}
               </div>
-              <div className="mt-4 flex justify-center gap-1.5 lg:hidden" aria-hidden>
+              <div className="mt-4 flex justify-center gap-1.5 px-5 lg:hidden" aria-hidden>
                 {cases.map((c, i) => (
                   <span key={c.title} className={`h-1.5 rounded-full transition-all duration-300 ${i === slide ? "w-5 bg-blue-400" : "w-1.5 bg-white/25"}`} />
                 ))}
               </div>
-            </Reveal>
-          )}
+          </Reveal>
+        )}
 
+        <div className="container-x relative z-10">
           {/* ── Banner de cierre — banda de marca con gradiente animado (cta-ocean),
               reflejos que derivan y botón blanco invertido, igual que el CTA de
               soluciones para que la página cierre coherente. ── */}

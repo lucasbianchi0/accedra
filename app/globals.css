@@ -1243,6 +1243,44 @@ body:has(.canvas-oscuro) {
   background: #04070d;
 }
 
+/* ── La tipografía de la portada ───────────────────────────────────────────
+   La portada usa un grotesco neutro —Inter— en vez de Space Grotesk.
+
+   POR QUÉ CAMBIA SÓLO ACÁ
+   Space Grotesk tiene personalidad: la "g", la "a" y los números tienen forma
+   propia y eso está bien para una biblioteca técnica. Para la primera pantalla
+   de una consultora, esa personalidad compite con el mensaje. Un grotesco
+   neutro, apretado y sin gestos hace que el ojo lea la frase y no la letra, que
+   es exactamente el registro de las consultoras grandes.
+
+   POR QUÉ NO SE CARGA NADA NUEVO
+   Inter ya viaja en el sitio: es la fuente del cuerpo. Sumar una cuarta familia
+   habría metido otro archivo en el camino del LCP para una sola página. Acá
+   sólo se redefine la variable, y como los `h1..h6` y `.font-display` leen esa
+   variable, toda la portada cambia con una regla.
+
+   El `letter-spacing` es la otra mitad del efecto: Inter a tamaño de titular y
+   con el tracking por defecto se ve suelta; cerrada un 3,5% toma el aire
+   compacto de la referencia. */
+.canvas-oscuro {
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+.canvas-oscuro h1,
+.canvas-oscuro h2,
+.canvas-oscuro h3,
+.canvas-oscuro .font-display,
+.canvas-oscuro .section-title {
+  letter-spacing: -0.025em;
+  font-weight: 700;
+}
+
+/* Los titulares grandes cierran un poco más que el resto, pero no tanto como
+   para que las letras se toquen: a -0,045em "Infraestructura" se empastaba. */
+.canvas-oscuro h1 {
+  letter-spacing: -0.03em;
+}
+
 /* ── El faro del blog ──────────────────────────────────────────────────────
    La luz que se abre hacia abajo sobre el encabezado de /blog. Qué es cada
    capa y por qué, en components/blog/FaroBlog.tsx.

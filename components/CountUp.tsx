@@ -28,7 +28,14 @@ export default function CountUp({ value, className }: { value: string; className
           const dur = 1400;
           const start = performance.now();
           const tick = (now: number) => {
-            const p = Math.min((now - start) / dur, 1);
+            // El progreso se acota por ABAJO además de por arriba. El
+            // timestamp que recibe `requestAnimationFrame` es el del comienzo
+            // del cuadro, y puede ser anterior al `performance.now()` que se
+            // leyó al disparar: ahí `p` da negativo, la curva `1-(1-p)^3`
+            // devuelve un valor negativo y la cuenta arranca mostrando "-11+".
+            // Dura un cuadro, pero cae justo en la franja de credibilidad del
+            // hero.
+            const p = Math.min(Math.max((now - start) / dur, 0), 1);
             const eased = 1 - Math.pow(1 - p, 3);
             setN(Math.round(target * eased));
             if (p < 1) requestAnimationFrame(tick);
