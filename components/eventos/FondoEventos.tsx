@@ -3,13 +3,13 @@
  *
  * POR QUÉ NO SIRVE `AmbientLight` ACÁ
  *
- * Es el mismo problema que llevó a /recursos a su propio fondo: las siete
+ * Es el mismo problema que llevó a /blog a su propio fondo: las siete
  * lámparas están calibradas para una página de venta larga, y acá el contenido
  * son portadas de fotos distintas más los colores de las cinco soluciones. Sobre
  * el navy iluminado las portadas se ensucian y las pastillas violeta y cian
  * pierden el color. Sobre casi negro conviven todas.
  *
- * POR QUÉ TAMPOCO ES EL DE /recursos
+ * POR QUÉ TAMPOCO ES EL DE /blog
  *
  * Recursos es una biblioteca: quieta, sin tiempo, el fondo se corre del medio.
  * Eventos es una cartelera: hay una fecha, hay una sala y hay algo que empieza.
@@ -61,7 +61,7 @@ export default function FondoEventos({ variante = "haz", alto = 900 }: { variant
  * Dos haces caen desde arriba en ángulos distintos y mueren antes de llegar al
  * contenido, y una línea de luz marca el borde del escenario justo debajo del
  * encabezado. Es la metáfora más directa de lo que se vende en esta página —un
- * auditorio— y la que más se distingue del amanecer plano de /recursos.
+ * auditorio— y la que más se distingue del amanecer plano de /blog.
  *
  * Los haces son rectángulos rotados con el degradé en el eje largo: un cono de
  * luz de verdad necesitaría `clip-path` y bordes duros, y lo que hace que esto
@@ -71,7 +71,7 @@ function Haz() {
   return (
     <>
       {/* El cielo detrás de todo: el mismo amanecer de marca, más alto y más
-          angosto que en /recursos para que el haz tenga de dónde salir. */}
+          angosto que en /blog para que el haz tenga de dónde salir. */}
       <div
         className="absolute -top-[460px] left-1/2 h-[900px] w-[1300px] -translate-x-1/2"
         style={{ background: `radial-gradient(ellipse at center, rgba(${AZUL},0.22) 0%, transparent 66%)` }}
@@ -131,7 +131,7 @@ function Rayo({ left, ancho, angulo, rgb, alpha }: { left: string; ancho: number
  * AURORA EN BANDA — una cinta de color que cruza el encabezado en diagonal.
  *
  * Es el más neutro de los tres y el único que serviría igual de bien en
- * /recursos: no dice "evento", dice "acá arriba pasa algo". A cambio es el que
+ * /blog: no dice "evento", dice "acá arriba pasa algo". A cambio es el que
  * mejor sostiene cualquier color de portada, porque la banda pasa por el azul,
  * el índigo y el cian de marca sin instalar ninguno.
  *

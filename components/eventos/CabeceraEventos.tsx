@@ -8,7 +8,7 @@ import { useT } from "@/lib/i18n/useT";
  *
  * NO ES UNA PORTADA, ES UN ENCABEZADO
  *
- * Mismo criterio que /recursos: quien entra ya sabe a qué vino y lo que busca
+ * Mismo criterio que /blog: quien entra ya sabe a qué vino y lo que busca
  * es la agenda, así que media pantalla de título centrado antes del primer
  * evento es una aduana. El encabezado anterior —«Aprendé con quienes lo
  * implementan», centrado, con `section-title`— era el de una landing de venta y

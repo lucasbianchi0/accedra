@@ -38,6 +38,12 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // La biblioteca pasó de /recursos a /blog. Las notas ya estaban indexadas
+      // y con enlaces apuntando a la dirección vieja: un 308 le transfiere esa
+      // señal a la nueva en vez de tirarla a un 404.
+      { source: "/recursos", destination: "/blog", permanent: true },
+      { source: "/recursos/:slug", destination: "/blog/:slug", permanent: true },
+
       // El sitio viejo indexaba tanto /seccion/ como /seccion/index.html.
       ...LEGACY_REDIRECTS.flatMap(([from, to]) => [
         { source: from, destination: to, permanent: true },

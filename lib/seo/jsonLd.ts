@@ -151,7 +151,7 @@ export function breadcrumbLd(items: { name: string; path: string }[]) {
   };
 }
 
-// Article — se emite en cada nota de /recursos.
+// Article — se emite en cada nota de /blog.
 //
 // Tres campos hacen casi todo el trabajo y por eso están arriba de todo:
 // `headline` (lo que se cita), `author` (una PERSONA cuando la nota está
@@ -207,7 +207,7 @@ export function articleLd(n: {
 }
 
 // ItemList del hub: la lista de notas publicadas, en orden. Le dice al buscador
-// que /recursos es un índice y no una página de contenido propio, y le da los
+// que /blog es un índice y no una página de contenido propio, y le da los
 // links de las notas antes de haber rastreado ninguna.
 export function listaDeNotasLd(notas: { titulo: string; url: string }[]) {
   if (!notas.length) return null;

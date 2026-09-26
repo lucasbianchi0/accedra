@@ -90,10 +90,10 @@ export type NotaSitio = {
 
 /** La dirección del hub. Una sola constante: si mañana pasa a /blog o /guias,
  *  cambia acá y el sitemap, el llms.txt y los links internos la siguen. */
-export const BASE_RECURSOS = "/recursos";
+export const BASE_BLOG = "/blog";
 
 export function urlDeNota(slug: string): string {
-  return `${BASE_RECURSOS}/${slug}`;
+  return `${BASE_BLOG}/${slug}`;
 }
 
 /** Nombre del bucket público donde el backoffice deja las portadas. */

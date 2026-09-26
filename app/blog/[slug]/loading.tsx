@@ -3,8 +3,8 @@ import { ChevronRight } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import FondoRecursos from "@/components/recursos/FondoRecursos";
-import { Barra, MiniEsqueleto, ParrafoEsqueleto } from "@/components/recursos/Esqueletos";
+import FaroBlog from "@/components/blog/FaroBlog";
+import { Barra, MiniEsqueleto, ParrafoEsqueleto } from "@/components/blog/Esqueletos";
 
 /**
  * Lo que se ve mientras una nota espera a la base.
@@ -22,14 +22,14 @@ import { Barra, MiniEsqueleto, ParrafoEsqueleto } from "@/components/recursos/Es
  * caso común, y de paso evita el salto más grande de la página: el que
  * empuja la portada hacia abajo cuando el título resulta más largo.
  *
- * Las migas son las dos primeras del breadcrumb real —Inicio y Recursos, que
+ * Las migas son las dos primeras del breadcrumb real —Inicio y Blog, que
  * no dependen de la nota— y se dibujan de verdad. La tercera, que es el
  * título, es la única que espera.
  */
 export default function CargandoNota() {
   return (
     <main className="relative min-h-screen bg-[#04070d]">
-      <FondoRecursos />
+      <FaroBlog />
       <Navbar />
 
       <div className="relative z-10">
@@ -44,8 +44,8 @@ export default function CargandoNota() {
                   Inicio
                 </Link>
                 <ChevronRight className="h-3 w-3" />
-                <Link href="/recursos" className="transition-colors hover:text-gray-300">
-                  Recursos
+                <Link href="/blog" className="transition-colors hover:text-gray-300">
+                  Blog
                 </Link>
               </nav>
 

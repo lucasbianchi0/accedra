@@ -17,8 +17,8 @@ const SERVICE_HREFS = [
 ];
 // El hub de notas va en esta columna y no en la de servicios: es contenido de
 // la empresa, no una solución que se contrata. El link del footer es además el
-// que le da a Google una vía estable hacia /recursos desde todas las páginas.
-const COMPANY_HREFS = ["/#nosotros", "/#partners", "/#clientes", "/recursos", "/#contacto"];
+// que le da a Google una vía estable hacia /blog desde todas las páginas.
+const COMPANY_HREFS = ["/#nosotros", "/#partners", "/#clientes", "/blog", "/#contacto"];
 
 export default function Footer() {
   const t = useT();

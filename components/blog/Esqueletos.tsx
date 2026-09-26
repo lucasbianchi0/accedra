@@ -1,5 +1,5 @@
 /**
- * Los esqueletos de /recursos y de una nota.
+ * Los esqueletos de /blog y de una nota.
  *
  * QUÉ TIENEN QUE CUMPLIR
  *

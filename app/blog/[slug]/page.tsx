@@ -6,10 +6,11 @@ import { ArrowRight, ChevronRight } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import FondoRecursos, { rgbDe } from "@/components/recursos/FondoRecursos";
+import WhatsAppButton from "@/components/WhatsAppButton";
+import FaroBlog, { rgbDe } from "@/components/blog/FaroBlog";
 import JsonLd from "@/components/seo/JsonLd";
-import NotaMini from "@/components/recursos/NotaMini";
-import PortadaGenerada from "@/components/recursos/PortadaGenerada";
+import NotaMini from "@/components/blog/NotaMini";
+import PortadaGenerada from "@/components/blog/PortadaGenerada";
 import { leerNotaPorSlug, leerNotasParaIndice, leerNotasPublicadas } from "@/lib/notas-server";
 import {
   CATEGORIA_COLOR,
@@ -27,7 +28,7 @@ import { INDUSTRIES } from "@/components/solutions/industriesData";
 import { getIndustrySeo } from "@/components/solutions/industrySeo";
 
 /**
- * Una nota: accedra.com.ar/recursos/<slug>.
+ * Una nota: accedra.com.ar/blog/<slug>.
  *
  * ISR de cinco minutos, como el hub. La página se arma entera en el servidor
  * —el cuerpo se renderiza de markdown acá, no en el navegador— porque es
@@ -116,7 +117,7 @@ export default async function NotaPage({ params }: Props) {
 
   return (
     <main className="relative min-h-screen bg-[#04070d]">
-      <FondoRecursos color={rgbDe(color)} />
+      <FaroBlog color={rgbDe(color)} />
       <Navbar />
 
       <JsonLd
@@ -138,7 +139,7 @@ export default async function NotaPage({ params }: Props) {
           faqLd(nota.faqs),
           breadcrumbLd([
             { name: "Inicio", path: "/" },
-            { name: "Recursos", path: "/recursos" },
+            { name: "Blog", path: "/blog" },
             { name: nota.titulo, path: urlDeNota(nota.slug) },
           ]),
         ].filter(Boolean)}
@@ -171,14 +172,14 @@ export default async function NotaPage({ params }: Props) {
                 Inicio
               </Link>
               <ChevronRight className="h-3 w-3" />
-              <Link href="/recursos" className="transition-colors hover:text-gray-300">
-                Recursos
+              <Link href="/blog" className="transition-colors hover:text-gray-300">
+                Blog
               </Link>
               {nota.categoria && (
                 <>
                   <ChevronRight className="h-3 w-3" />
                   <Link
-                    href={`/recursos?solucion=${nota.categoria}`}
+                    href={`/blog?solucion=${nota.categoria}`}
                     className="transition-colors hover:text-gray-300"
                   >
                     {CATEGORIA_LABEL[nota.categoria]}
@@ -336,10 +337,10 @@ export default async function NotaPage({ params }: Props) {
                       ))}
                     </div>
                     <Link
-                      href="/recursos"
+                      href="/blog"
                       className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent-300 transition-colors hover:text-white"
                     >
-                      Ver todos los recursos
+                      Ver todo el blog
                       <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
@@ -351,6 +352,7 @@ export default async function NotaPage({ params }: Props) {
 
         <Footer />
       </div>
+      <WhatsAppButton />
     </main>
   );
 }

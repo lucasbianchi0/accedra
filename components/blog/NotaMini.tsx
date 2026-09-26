@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import PortadaGenerada from "@/components/recursos/PortadaGenerada";
+import PortadaGenerada from "@/components/blog/PortadaGenerada";
 import { CATEGORIA_COLOR, CATEGORIA_LABEL, urlDeNota, type NotaSitio } from "@/lib/notas";
 
 /**

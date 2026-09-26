@@ -12,7 +12,7 @@ import { CATEGORIA_COLOR, type EventoSitio } from "@/lib/eventos";
  * es el rectángulo más claro de la pantalla y se lleva el ojo — justo el evento
  * que menos material tiene es el que más grita.
  *
- * Acá el fallback es el mismo recurso que /recursos: un dibujo de marca en el
+ * Acá el fallback es el mismo recurso que /blog: un dibujo de marca en el
  * color de la solución del evento, determinista a partir del slug, en SVG y
  * dentro del mismo HTML. Una fila donde dos eventos tienen foto y uno no se lee
  * como una familia, no como una grilla rota.
@@ -190,7 +190,7 @@ function Asientos() {
   );
 }
 
-/** Arcos apilados: el mismo recurso que en /recursos, para que las dos
+/** Arcos apilados: el mismo recurso que en /blog, para que las dos
  *  secciones se reconozcan como la misma casa. */
 function Ondas({ h }: { h: number }) {
   const base = h % 2 === 0 ? 235 : -10;

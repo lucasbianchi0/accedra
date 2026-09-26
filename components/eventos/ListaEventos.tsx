@@ -209,7 +209,7 @@ function Marquesina({ e, locale, onAbrir }: { e: EventoSitio; locale: string; on
       <div className="absolute inset-0 bg-gradient-to-r from-[#04070d] via-[#04070d]/85 to-[#04070d]/20" />
       <div className="absolute inset-0 bg-gradient-to-t from-[#04070d] via-[#04070d]/40 to-transparent" />
       {/* El hilo de color de la solución arriba: la misma firma que usan las
-          cards de /recursos, acá encendida siempre porque es el destacado. */}
+          cards de /blog, acá encendida siempre porque es el destacado. */}
       <div
         className="absolute inset-x-0 top-0 h-px"
         style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
