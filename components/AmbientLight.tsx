@@ -35,14 +35,19 @@ const PRESETS = {
   // Home: portada · clientes · servicios · partners · nosotros · testimonios ·
   // contacto · footer. Lados alternados para que la luz "serpentee" hacia abajo
   // y el ojo la lea como una sola onda continua, no como manchas sueltas.
+  //
+  // Los alfas son la mitad de los originales. No es que la luz sobrara: es que
+  // el canvas bajó de #0a1424 a #04070d, y sobre casi negro la misma cantidad
+  // de azul rinde el doble. Con los valores viejos la página quedaba igual de
+  // clara que antes y el cambio de canvas no se notaba.
   home: [
-    { top: "8%",  left: "64%", w: 1600, h: 1150, rgb: BLUE,   alpha: 0.14, depth: 0.05,  mob: true },
-    { top: "22%", left: "14%", w: 1250, h: 950,  rgb: CYAN,   alpha: 0.08, depth: 0.03,  mob: false },
-    { top: "36%", left: "82%", w: 1350, h: 1050, rgb: INDIGO, alpha: 0.11, depth: 0.055, mob: true },
-    { top: "50%", left: "26%", w: 1300, h: 1000, rgb: BLUE,   alpha: 0.10, depth: 0.04,  mob: true },
-    { top: "64%", left: "80%", w: 1250, h: 950,  rgb: CYAN,   alpha: 0.08, depth: 0.03,  mob: false },
-    { top: "78%", left: "20%", w: 1350, h: 1050, rgb: INDIGO, alpha: 0.10, depth: 0.05,  mob: true },
-    { top: "91%", left: "68%", w: 1500, h: 1150, rgb: BLUE,   alpha: 0.06, depth: 0.045, mob: false },
+    { top: "8%",  left: "64%", w: 1600, h: 1150, rgb: BLUE,   alpha: 0.07, depth: 0.05,  mob: true },
+    { top: "22%", left: "14%", w: 1250, h: 950,  rgb: CYAN,   alpha: 0.04, depth: 0.03,  mob: false },
+    { top: "36%", left: "82%", w: 1350, h: 1050, rgb: INDIGO, alpha: 0.055, depth: 0.055, mob: true },
+    { top: "50%", left: "26%", w: 1300, h: 1000, rgb: BLUE,   alpha: 0.05, depth: 0.04,  mob: true },
+    { top: "64%", left: "80%", w: 1250, h: 950,  rgb: CYAN,   alpha: 0.04, depth: 0.03,  mob: false },
+    { top: "78%", left: "20%", w: 1350, h: 1050, rgb: INDIGO, alpha: 0.05, depth: 0.05,  mob: true },
+    { top: "91%", left: "68%", w: 1500, h: 1150, rgb: BLUE,   alpha: 0.03, depth: 0.045, mob: false },
   ],
   // Solución: portada · capacidades · proceso · casos · form. Página más corta,
   // misma lógica de onda alternada.

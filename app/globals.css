@@ -1231,6 +1231,18 @@ dialog[data-brochure]::backdrop {
   .esqueleto::after { animation: none; }
 }
 
+/* ── Canvas oscuro de la portada ───────────────────────────────────────────
+   El <body> pinta el navy de marca para todo el sitio, y en la portada eso se
+   ve igual aunque el <main> esté en casi negro: en el rebote del scroll —el
+   overscroll de macOS y de iOS— lo que asoma arriba y abajo es el fondo del
+   body, no el del main. Un destello navy en una página casi negra.
+
+   `:has()` deja resolverlo sin tocar el resto del sitio: el body se oscurece
+   sólo cuando la página que está adentro se marcó como canvas oscuro. */
+body:has(.canvas-oscuro) {
+  background: #04070d;
+}
+
 /* ── El faro del blog ──────────────────────────────────────────────────────
    La luz que se abre hacia abajo sobre el encabezado de /blog. Qué es cada
    capa y por qué, en components/blog/FaroBlog.tsx.

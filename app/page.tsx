@@ -24,7 +24,11 @@ export default function Home() {
     // entero; sin eso las aureolas se posicionarían contra el viewport.
     // Nada de `overflow-hidden` acá: rompería cualquier `position: sticky`
     // que se use más adelante dentro de una sección.
-    <main className="relative bg-navy-800">
+    // El canvas de la portada es el mismo casi negro del blog (#04070d) y no
+    // el navy de marca. Sobre el navy, el azul de las lámparas se suma al azul
+    // del fondo y la página entera flota en un tono medio; sobre casi negro la
+    // misma luz se lee como luz, porque hay contra qué medirla.
+    <main className="canvas-oscuro relative bg-[#04070d]">
       <AmbientLight />
       {/* Los elementos fijos quedan FUERA del wrapper: adentro crearían un
           contexto de apilamiento propio y sus z-index (navbar 50, progreso 60)
