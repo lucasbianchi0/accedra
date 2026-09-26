@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
-import PortadaGenerada from "@/components/recursos/PortadaGenerada";
+import PortadaGenerada from "@/components/blog/PortadaGenerada";
 import {
   CATEGORIA_COLOR,
   CATEGORIA_LABEL,
@@ -29,8 +29,6 @@ import {
  * desaparecen: el srcset lo arma Next.
  */
 const SIZES_CARD = "(min-width: 1024px) 400px, (min-width: 640px) 50vw, 100vw";
-/** La destacada ocupa dos columnas de las tres. */
-const SIZES_ANCHA = "(min-width: 1024px) 800px, (min-width: 640px) 100vw, 100vw";
 
 /**
  * La portada de la card.
@@ -43,7 +41,7 @@ const SIZES_ANCHA = "(min-width: 1024px) 800px, (min-width: 640px) 100vw, 100vw"
  * sobre la portada y tienen que leerse tanto contra una foto clara como contra
  * el dibujo oscuro.
  */
-function Portada({ nota, ratio, ancha, arriba }: { nota: NotaSitio; ratio: string; ancha: boolean; arriba: boolean }) {
+function Portada({ nota, arriba }: { nota: NotaSitio; arriba: boolean }) {
   const color = nota.categoria ? CATEGORIA_COLOR[nota.categoria] : "#2b6fd4";
 
   return (
@@ -53,7 +51,7 @@ function Portada({ nota, ratio, ancha, arriba }: { nota: NotaSitio; ratio: strin
     // negro en ese hueco parece una card rota; esto parece una card de la que
     // todavía no llegó la foto, que es lo que pasa.
     <div
-      className={`relative overflow-hidden ${ratio}`}
+      className="relative aspect-[16/9] overflow-hidden"
       style={{ background: `linear-gradient(135deg, ${color}2e 0%, #0a1424 55%, #05090f 100%)` }}
     >
       {nota.portadaUrl ? (
@@ -61,7 +59,7 @@ function Portada({ nota, ratio, ancha, arriba }: { nota: NotaSitio; ratio: strin
           src={nota.portadaUrl}
           alt=""
           fill
-          sizes={ancha ? SIZES_ANCHA : SIZES_CARD}
+          sizes={SIZES_CARD}
           // La primera fila entra con la página: es la candidata a LCP y con
           // `lazy` el navegador la descubre recién cuando terminó el layout.
           loading={arriba ? "eager" : "lazy"}
@@ -120,40 +118,30 @@ function Etiquetas({ nota }: { nota: NotaSitio }) {
 /**
  * La card de una nota en el hub.
  *
- * `ancha` es la variante que ocupa dos columnas de la misma grilla: la nota
- * destacada pesa más sin salirse del ritmo. Antes era una fila aparte de ancho
- * completo, y con pocas notas dejaba media pantalla vacía arriba de la grilla.
- *
- * La información es la misma en las dos variantes —no hay datos que aparezcan
- * sólo en una— para que destacar una nota sea una decisión de diseño y no de
- * contenido.
+ * Todas miden lo mismo. Existía una variante `ancha` para la destacada, que
+ * ocupaba dos columnas: era la única con el alto de la foto libre, así que la
+ * imagen se estiraba y al lado quedaba un hueco de aire entre el resumen y la
+ * fecha. Una grilla pareja se lee mejor que una jerarquía que se nota sólo
+ * porque algo está deformado.
  */
 export default function NotaCard({
   nota,
-  ancha = false,
   /** Está en la primera fila de la grilla: se carga sin esperar al scroll. */
   arriba = false,
 }: {
   nota: NotaSitio;
-  ancha?: boolean;
   arriba?: boolean;
 }) {
-  // El autor sólo en la card ancha: en una de 390 px, "15 de sept de 2026 ·
-  // Carlos Omar Bianchi" se parte en dos líneas y choca con la flecha. Y el
-  // autor casi siempre es el mismo — no es lo que distingue una nota de otra.
-  const pie = ancha
-    ? [fechaCorta(nota.publicadoEn), nota.autor].filter(Boolean).join(" · ")
-    : fechaCorta(nota.publicadoEn);
+  // Sólo la fecha. El autor no entra: en una card de 390 px, "15 de sept de
+  // 2026 · Carlos Omar Bianchi" se parte en dos líneas y choca con la flecha, y
+  // además casi siempre es el mismo — no es lo que distingue una nota de otra.
+  const pie = fechaCorta(nota.publicadoEn);
   const color = nota.categoria ? CATEGORIA_COLOR[nota.categoria] : "#2b6fd4";
 
   return (
     <Link
       href={urlDeNota(nota.slug)}
-      className={`group relative overflow-hidden rounded-card border border-white/[0.07] bg-white/[0.02] transition duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-white/[0.04] hover:shadow-[0_24px_70px_-20px_rgba(0,0,0,0.8)] ${
-        ancha
-          ? "flex flex-col md:col-span-2 md:grid md:grid-cols-2 md:items-stretch"
-          : "flex flex-col"
-      }`}
+      className="group relative flex flex-col overflow-hidden rounded-card border border-white/[0.07] bg-white/[0.02] transition duration-300 hover:-translate-y-1 hover:border-white/15 hover:bg-white/[0.04] hover:shadow-[0_24px_70px_-20px_rgba(0,0,0,0.8)]"
     >
       {/* El halo del color de la solución, sólo al pasar por encima: es lo que
           hace que la grilla no se sienta un tablero de rectángulos iguales. */}
@@ -162,30 +150,13 @@ export default function NotaCard({
         style={{ background: `linear-gradient(90deg, transparent, ${color}, transparent)` }}
       />
 
-      <Portada
-        nota={nota}
-        ratio={ancha ? "aspect-[16/9] md:aspect-auto md:h-full" : "aspect-[16/9]"}
-        ancha={ancha}
-        arriba={arriba}
-      />
+      <Portada nota={nota} arriba={arriba} />
 
       <div className="flex flex-1 flex-col p-5 lg:p-6">
-        <h3
-          className={`font-display font-bold leading-[1.22] text-white transition-colors group-hover:text-white ${
-            ancha ? "text-[22px] lg:text-[28px]" : "text-[18px]"
-          }`}
-        >
-          {nota.titulo}
-        </h3>
+        <h3 className="font-display text-[18px] font-bold leading-[1.22] text-white">{nota.titulo}</h3>
 
         {nota.resumen && (
-          <p
-            className={`mt-2.5 text-[14px] leading-relaxed text-gray-400 ${
-              ancha ? "line-clamp-3 lg:text-[15px]" : "line-clamp-2"
-            }`}
-          >
-            {nota.resumen}
-          </p>
+          <p className="mt-2.5 line-clamp-2 text-[14px] leading-relaxed text-gray-400">{nota.resumen}</p>
         )}
 
         <div className="mt-auto flex items-center justify-between gap-3 pt-5">

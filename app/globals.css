@@ -98,6 +98,23 @@ body {
   border-radius: inherit;
 }
 
+/* El campo de búsqueda del blog es la excepción, y no se puede resolver con una
+   utilidad de Tailwind: las reglas sin capa —como la de arriba— le ganan en la
+   cascada a cualquier utilidad, sin importar la especificidad.
+
+   Por qué la excepción: un input de texto matchea `:focus-visible` SIEMPRE,
+   también cuando se llega con el mouse, así que el anillo aparecía en cada
+   clic. El foco de teclado se sigue viendo, con el borde realzado que define la
+   utilidad del componente: más discreto, pero presente. */
+.buscador-blog:focus-visible {
+  outline: none;
+  /* La regla de arriba también trae `border-radius: inherit`, para que el
+     anillo siga la forma del elemento. Sin anillo eso no suma nada y sí rompe:
+     el padre no tiene radio, así que al enfocarlo la píldora se volvía un
+     rectángulo. Se lo devolvemos. */
+  border-radius: 9999px;
+}
+
 /* ── Ritmo de secciones (un único sistema de espaciado) ───────
    Antes cada sección tenía su propio padding (py-14 / py-20 / py-28 /
    min-h-screen…) y cada header su propio margen. Estas utilidades
@@ -1074,7 +1091,7 @@ dialog[data-brochure]::backdrop {
   }
 }
 
-/* ── Prosa: el cuerpo de una nota de /recursos ────────────────────
+/* ── Prosa: el cuerpo de una nota de /blog ────────────────────
    El markdown de una nota sale como HTML SIN clases (ver lib/notas-markdown.ts),
    así que todo el estilo se aplica desde acá con selectores descendentes. El
    backoffice tiene su propia hoja, clara, para la vista previa del editor.
@@ -1168,7 +1185,7 @@ dialog[data-brochure]::backdrop {
 
 /* ── Esqueletos de carga ──────────────────────────────────────────────
    La forma gris que ocupa el lugar de un dato mientras el servidor lo trae
-   (ver app/recursos/loading.tsx y app/recursos/[slug]/loading.tsx).
+   (ver app/blog/loading.tsx y app/blog/[slug]/loading.tsx).
 
    UN BARRIDO Y NO UN PARPADEO
    Un `opacity` que sube y baja hace latir la pantalla entera y se lee como un
@@ -1212,4 +1229,81 @@ dialog[data-brochure]::backdrop {
    correcto: se entiende igual, sólo que quieto. */
 @media (prefers-reduced-motion: reduce) {
   .esqueleto::after { animation: none; }
+}
+
+/* ── El faro del blog ──────────────────────────────────────────────────────
+   La luz que se abre hacia abajo sobre el encabezado de /blog. Qué es cada
+   capa y por qué, en components/blog/FaroBlog.tsx.
+
+   Sólo se animan `transform` y `opacity`: las dos las resuelve el compositor
+   sin pedir layout. La receta original de este efecto anima el `width`, que es
+   un layout por cuadro justo en la primera pantalla.
+
+   Cada anillo nace chico sobre el punto de origen y se abre hasta su tamaño.
+   El escalonado lo pone el componente con `animation-delay`: de arriba hacia
+   abajo, que es lo que hace que la luz se lea abriéndose y no apareciendo. */
+.faro-anillo {
+  opacity: 0;
+  transform: scale(0.52) translateY(-34px);
+  animation: faro-abrir 1.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Arranca chica y apagada y termina abierta: la curva llega frenando, así que
+   los últimos cuadros son los que más se ven crecer. */
+@keyframes faro-abrir {
+  from { opacity: 0; transform: scale(0.52) translateY(-34px); }
+  45%  { opacity: 0.6; }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* EL FOCO. Entra ancho y difuso desde arriba y termina cerrado sobre la caja
+   de búsqueda: los anillos abren, esto cierra. Es lo último que se asienta, a
+   los 2,5 s, y se queda: el `forwards` deja el estado final puesto. */
+.faro-foco {
+  opacity: 0;
+  transform: scale(1.06) translateY(-70px);
+  animation: faro-enfocar 2.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+}
+.faro-foco-nucleo {
+  animation-delay: 0.45s;
+  animation-duration: 2.05s;
+}
+
+/* El `scale` de partida es 1,06 y no 1,75.
+   La versión ancha se veía mejor y rompía la página: un resplandor de 92vw
+   escalado 1,75 mide 161vw, y eso son 60vw de scroll horizontal mientras dura
+   la animación —la página entera se podía correr a un costado—. Lo que hace
+   que se lea "enfocando" no es cuánto se encoge: es que baja y se enciende al
+   mismo tiempo. */
+@keyframes faro-enfocar {
+  from { opacity: 0; transform: scale(1.06) translateY(-70px); }
+  35%  { opacity: 0.55; }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* El origen se enciende primero y crece desde el centro hacia los lados. */
+.faro-origen {
+  opacity: 0;
+  transform: translateX(-50%) scaleX(0);
+  transform-origin: 50% 50%;
+  animation: faro-origen 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.06s forwards;
+}
+@keyframes faro-origen {
+  from { opacity: 0; transform: translateX(-50%) scaleX(0); }
+  35%  { opacity: 1; }
+  to   { opacity: 1; transform: translateX(-50%) scaleX(1); }
+}
+
+/* Quien pidió menos movimiento ve la luz igual: encendida y quieta. Apagar el
+   movimiento no es apagar el efecto. */
+@media (prefers-reduced-motion: reduce) {
+  .faro-anillo,
+  .faro-foco,
+  .faro-origen {
+    animation: none;
+    opacity: 1;
+  }
+  .faro-anillo,
+  .faro-foco { transform: none; }
+  .faro-origen { transform: translateX(-50%); }
 }
