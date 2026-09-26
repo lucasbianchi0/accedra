@@ -1266,19 +1266,63 @@ body:has(.canvas-oscuro) {
   --font-display: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* El peso baja de 700 a 600.
+   Un titular en negrita grita; uno en semibold afirma. A cuerpo grande la
+   diferencia de peso se nota mucho más que a cuerpo de texto, así que lo que en
+   un párrafo sería apenas perceptible acá cambia el tono de toda la página: es
+   la diferencia entre un aviso y un informe. El tracking cerrado compensa la
+   pérdida de densidad para que el bloque siga leyéndose compacto. */
 .canvas-oscuro h1,
 .canvas-oscuro h2,
 .canvas-oscuro h3,
 .canvas-oscuro .font-display,
 .canvas-oscuro .section-title {
   letter-spacing: -0.025em;
-  font-weight: 700;
+  font-weight: 600;
+}
+
+/* Los titulares más grandes afinan un punto más: cuanto mayor el cuerpo, más
+   peso aparente tiene el mismo grosor de trazo. */
+.canvas-oscuro h1,
+.canvas-oscuro .section-title {
+  font-weight: 550;
 }
 
 /* Los titulares grandes cierran un poco más que el resto, pero no tanto como
    para que las letras se toquen: a -0,045em "Infraestructura" se empastaba. */
 .canvas-oscuro h1 {
   letter-spacing: -0.03em;
+}
+
+/* ── Los puntos de claridad de la portada ──────────────────────────────────
+   Una página toda del mismo negro cansa: el ojo no tiene dónde apoyarse y
+   todo pesa igual. La solución no es aclarar el fondo —eso devuelve la página
+   al tono medio del que venía— sino levantar las SUPERFICIES: las cards y los
+   paneles suben unos puntos sobre el canvas y quedan flotando, que es
+   exactamente lo que hace legible un sitio oscuro.
+
+   Son tres niveles y nada más:
+     · el canvas, casi negro
+     · la superficie, apenas levantada
+     · el borde, un pelo de luz arriba que simula el reflejo
+
+   Va como `@layer` para no pelearle especificidad a las utilidades que ya
+   traen las cards: sólo sube el piso cuando el componente no dijo otra cosa. */
+.canvas-oscuro .superficie {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0.022) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+/* La banda con piso propio: un tramo apenas más claro que el canvas, con
+   filetes arriba y abajo. Sirve para separar dos secciones sin meter un color
+   nuevo ni un bloque blanco. */
+.canvas-oscuro .banda-clara {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.032) 50%, rgba(255, 255, 255, 0.012));
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 /* ── El faro del blog ──────────────────────────────────────────────────────

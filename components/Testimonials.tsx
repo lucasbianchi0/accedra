@@ -107,7 +107,7 @@ export default function Testimonials() {
                     <div
                       className="relative rounded-card px-6 sm:px-11 pt-7 sm:pt-9 pb-7 sm:pb-9 border flex flex-col justify-center min-h-[200px] sm:min-h-[268px]"
                       style={{
-                        background: "rgba(255,255,255,0.04)",
+                        background: "rgba(255,255,255,0.07)",
                         backdropFilter: "blur(16px)",
                         WebkitBackdropFilter: "blur(16px)",
                         borderColor: active ? `rgba(${BLUE_RGB},0.35)` : "rgba(255,255,255,0.09)",

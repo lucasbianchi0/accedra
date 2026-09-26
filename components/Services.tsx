@@ -135,12 +135,16 @@ function CardsGrid({ t }: { t: ReturnType<typeof useT> }) {
               style={{
                 // Vidrio translúcido + blur del fondo, igual que Testimonios/WhyUs.
                 // La destacada lleva un tinte azul; las demás vidrio neutro.
+                // Sobre el navy, un vidrio al 6% se leía como una card. Sobre
+                // casi negro se hundía en el fondo: la card dejaba de existir y
+                // quedaban ilustraciones flotando. Sube a 9%, que es lo que la
+                // vuelve a despegar del canvas sin encender la página.
                 background: featured
-                  ? `linear-gradient(180deg, rgba(${BLUE_RGB},0.16) 0%, rgba(255,255,255,0.03) 100%)`
-                  : "linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.025) 100%)",
+                  ? `linear-gradient(180deg, rgba(${BLUE_RGB},0.2) 0%, rgba(255,255,255,0.045) 100%)`
+                  : "linear-gradient(180deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.035) 100%)",
                 backdropFilter: "blur(16px)",
                 WebkitBackdropFilter: "blur(16px)",
-                borderColor: featured ? `rgba(${BLUE_RGB},0.4)` : "rgba(255,255,255,0.1)",
+                borderColor: featured ? `rgba(${BLUE_RGB},0.45)` : "rgba(255,255,255,0.13)",
                 boxShadow: featured
                   ? `inset 0 1px 0 rgba(255,255,255,0.14), 0 18px 48px rgba(0,0,0,0.4)`
                   : "inset 0 1px 0 rgba(255,255,255,0.12), 0 18px 48px rgba(0,0,0,0.36)",

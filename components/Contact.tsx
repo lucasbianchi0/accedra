@@ -217,7 +217,11 @@ export default function Contact() {
                   // el blur+saturate dejaba pasar la luz ambiental, que se mueve al
                   // scrollear → el panel "cambiaba de color" y se veía manchado. Ahora
                   // es un panel firme, premium y parejo en todo momento.
-                  background: "linear-gradient(165deg, #17293F 0%, #111F32 52%, #0C1826 100%)",
+                  // El panel del formulario sube sobre el canvas casi negro.
+                  // Es el punto de la página donde se pide algo: si se funde
+                  // con el fondo, el formulario deja de ser un objeto y pasa a
+                  // ser texto suelto sobre una pared oscura.
+                  background: "linear-gradient(165deg, #1B2C42 0%, #142336 52%, #0E1B2B 100%)",
                   boxShadow: "inset 0 1px 0 rgba(255,255,255,0.12), 0 40px 100px rgba(0,0,0,0.5)",
                 }}
               >

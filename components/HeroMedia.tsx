@@ -198,8 +198,30 @@ export default function HeroMedia() {
           se leía como una pieza pegada encima; ahora la imagen nace del mismo
           fondo y el degradé inferior la funde con la banda de clientes sin una
           costura. La izquierda va más cerrada porque es donde vive el texto. */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#04070d]/96 via-[#04070d]/86 to-[#04070d]/62" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#04070d] via-[#04070d]/25 to-[#04070d]/45" />
+      {/* El velo no es parejo: es un degradé con paradas propias en vez de las
+          de Tailwind, que reparte el `via` siempre al 50%.
+
+          A la izquierda cierra casi del todo —ahí vive el titular y el texto
+          tiene que ganarle a la foto—, y a la derecha se abre hasta un 28%: esa
+          mitad es la que muestra el rack, y taparla al 62% dejaba la portada en
+          una mancha oscura sin nada que mirar. Un fondo oscuro necesita un
+          lugar donde el ojo descanse, y ese lugar es la foto. */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(90deg, #04070d 0%, rgba(4,7,13,0.95) 30%, rgba(4,7,13,0.74) 52%, rgba(4,7,13,0.40) 76%, rgba(4,7,13,0.26) 100%)",
+        }}
+      />
+      {/* El de abajo funde la foto con la banda de clientes; el medio se abre
+          para no apagar lo que el horizontal acaba de dejar ver. */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(0deg, #04070d 0%, rgba(4,7,13,0.55) 18%, rgba(4,7,13,0.10) 48%, rgba(4,7,13,0.38) 100%)",
+        }}
+      />
     </div>
   );
 }
