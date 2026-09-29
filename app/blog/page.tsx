@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -125,13 +125,15 @@ export default async function BlogPage() {
         </header>
 
         <section className="container-x pb-24 pt-8">
-          {/* `useSearchParams` (el filtro) necesita un límite de Suspense para
-              que el resto de la página se pueda prerenderizar. El fallback no
-              dibuja nada: lo de adentro se renderiza en el servidor igual, sin
-              filtro, que es exactamente el hub completo. */}
-          <Suspense>
-            <HubNotas todas={todas} />
-          </Suspense>
+          {/* SIN LÍMITE DE SUSPENSE, Y ESE ES EL ARREGLO.
+              Acá había un `<Suspense>` sin fallback, puesto porque `HubNotas`
+              leía `useSearchParams`. En una página prerenderizada eso no se
+              puede resolver en el servidor: React suspendía y Next escribía el
+              fallback —o sea, nada— en el HTML estático. La grilla entera
+              quedaba del lado del cliente en una página marcada como estática.
+              `HubNotas` ya no lee la query con un hook que suspenda, así que
+              no necesita límite y se renderiza en el servidor como corresponde. */}
+          <HubNotas todas={todas} />
         </section>
 
         <Footer />

@@ -3,7 +3,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { ArrowUpRight, Search, SearchX, X } from "lucide-react";
 
 import NotaCard from "@/components/blog/NotaCard";
@@ -28,12 +27,16 @@ import { track } from "@/lib/track";
  * caché y Supabase se consulta una vez cada cinco minutos, no una vez por
  * visitante.
  *
- * EL HTML SIGUE TRAYENDO TODAS LAS NOTAS
+ * EL HTML TRAE TODAS LAS NOTAS
  *
  * Esto se renderiza también en el servidor: lo que cambia es quién decide qué
  * se ve, no quién dibuja. El primer HTML es el del hub sin filtrar —todas las
  * notas, que es justo lo que tiene que indexar Google— y el filtro se aplica al
  * hidratar. Sin JavaScript se ven todas: se pierde el recorte, no el contenido.
+ *
+ * Durante un tiempo esto fue mentira y el archivo lo afirmaba igual: mientras
+ * el filtro salió de `useSearchParams`, el HTML servido no traía ni una card.
+ * Está contado abajo, en «De dónde sale el filtro».
  *
  * LOS FILTROS SIGUEN SIENDO LINKS
  *
@@ -63,6 +66,48 @@ import { track } from "@/lib/track";
  */
 const useEfectoDeLayout = typeof window === "undefined" ? useEffect : useLayoutEffect;
 
+/* ── De dónde sale el filtro ───────────────────────────────────────────────
+ *
+ * Acá vivía `useSearchParams()`, y costaba la página entera.
+ *
+ * En una página prerenderizada, `useSearchParams` NO puede resolverse en el
+ * servidor: no hay pedido, así que no hay query. React suspende, y lo que Next
+ * escribe en el HTML estático es el FALLBACK del Suspense más cercano. El
+ * nuestro estaba vacío, así que el HTML de /blog salía con el título y nada
+ * más: ni el buscador, ni los filtros, ni una sola de las once cards. Todo eso
+ * se pintaba recién cuando bajaba, parseaba e hidrataba el JavaScript.
+ *
+ * Medido en el build de producción: 0 apariciones de `rounded-card` en el HTML
+ * servido. La grilla era client-side rendering puro, con la página marcada
+ * como estática.
+ *
+ * Lo que rompía: el LCP esperaba al bundle en vez de a una imagen que el
+ * navegador podía haber empezado a bajar con el HTML, y el `fetchPriority` de
+ * las tres primeras portadas no servía de nada porque esas etiquetas no
+ * existían todavía.
+ *
+ * LA URL SE LEE SIN SUSPENDER
+ *
+ * `useSyncExternalStore` devuelve null en el servidor y lo que diga la URL en
+ * el cliente. Eso es exactamente lo que queremos: el HTML sale con las once
+ * notas —que es lo que tiene que indexar Google— y el recorte de `?solucion=`
+ * se aplica al hidratar. Y como no suspende, no hay fallback ni bailout.
+ *
+ * Los dos snapshots distintos no son un error de hidratación: es para lo que
+ * existe este hook. React pinta con el del servidor y vuelve a pintar con el
+ * del cliente, sin avisos.
+ */
+function leerSolucion(): string | null {
+  return new URLSearchParams(window.location.search).get("solucion");
+}
+
+/** `popstate` cubre atrás y adelante del navegador. Los clics en los filtros
+ *  no pasan por acá: escriben el estado y la URL a la vez. */
+function suscribirUrl(avisar: () => void): () => void {
+  window.addEventListener("popstate", avisar);
+  return () => window.removeEventListener("popstate", avisar);
+}
+
 /** Sin tildes y en minúsculas: "biométrica" y "biometrica" tienen que empatar. */
 function normalizar(t: string): string {
   return t
@@ -72,8 +117,22 @@ function normalizar(t: string): string {
 }
 
 export default function HubNotas({ todas }: { todas: NotaSitio[] }) {
-  const parametro = useSearchParams().get("solucion");
-  const filtro = CATEGORIAS.find((c) => c === parametro) ?? null;
+  // `undefined` = todavía no tocó ningún filtro, así que manda la URL. Una vez
+  // que elige, manda su elección: si no, volver a "Todo" no tendría efecto
+  // hasta recargar.
+  const [elegido, setElegido] = useState<string | null | undefined>(undefined);
+  const enLaUrl = useSyncExternalStore(suscribirUrl, leerSolucion, () => null);
+  const crudo = elegido === undefined ? enLaUrl : elegido;
+  const filtro = CATEGORIAS.find((c) => c === crudo) ?? null;
+
+  // Cambiar de filtro no es navegar: es recortar una lista que ya está en
+  // memoria. `replaceState` deja la URL compartible sin pedirle nada al
+  // servidor y sin agregar una entrada al historial por cada clic.
+  function elegirFiltro(valor: string | null) {
+    setElegido(valor);
+    const url = valor ? `/blog?solucion=${valor}` : "/blog";
+    window.history.replaceState(window.history.state, "", url);
+  }
   const [busqueda, setBusqueda] = useState("");
   const [abierto, setAbierto] = useState(false);
   const [pegada, setPegada] = useState(false);
@@ -373,11 +432,18 @@ export default function HubNotas({ todas }: { todas: NotaSitio[] }) {
             pegada ? "border-b border-white/[0.06] bg-[#04070d]/85 backdrop-blur-xl" : "border-b border-transparent"
           }`}
         >
-          <Filtro href="/blog" activo={!filtro} label="Todo" cantidad={todas.length} />
+          <Filtro
+            href="/blog"
+            onElegir={() => elegirFiltro(null)}
+            activo={!filtro}
+            label="Todo"
+            cantidad={todas.length}
+          />
           {conNotas.map((c) => (
             <Filtro
               key={c}
               href={`/blog?solucion=${c}`}
+              onElegir={() => elegirFiltro(c)}
               activo={filtro === c}
               label={CATEGORIA_LABEL[c]}
               color={CATEGORIA_COLOR[c]}
@@ -614,20 +680,37 @@ function Filtro({
   activo,
   color,
   cantidad,
+  onElegir,
 }: {
   href: string;
   label: string;
   activo: boolean;
   color?: string;
   cantidad: number;
+  onElegir: () => void;
 }) {
   return (
-    <Link
+    // SIGUE SIENDO UN `<a href>`, Y A PROPÓSITO.
+    //
+    // Un `<button>` habría sido más corto, pero el filtro dejaría de poder
+    // abrirse en otra pestaña, copiarse o compartirse, y Google dejaría de ver
+    // que existe. El `href` real conserva todo eso.
+    //
+    // Lo que el `onClick` evita es la NAVEGACIÓN: recortar once notas que ya
+    // están en memoria no necesita un viaje al servidor. Se respetan los clics
+    // con modificador y el del medio —ahí no llamamos a `preventDefault`— para
+    // que "abrir en pestaña nueva" siga funcionando.
+    //
+    // Antes esto era un `<Link>` de Next. El problema no era el Link: era que
+    // el filtro salía de `useSearchParams`, y eso volvía la grilla entera
+    // client-side. Ver el comentario de arriba del archivo.
+    <a
       href={href}
-      // `scroll={false}`: el filtro vive pegado arriba de la grilla y la
-      // navegación es dentro de la misma página; saltar al tope en cada clic
-      // deja al visitante mirando el encabezado que ya leyó.
-      scroll={false}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        e.preventDefault();
+        onElegir();
+      }}
       className={`inline-flex h-9 items-center gap-2 rounded-full border px-4 text-[13px] font-medium transition-colors ${
         activo
           ? "border-white/20 bg-white/[0.09] text-white"
@@ -642,6 +725,6 @@ function Filtro({
       )}
       {label}
       <span className={activo ? "text-gray-400" : "text-gray-600"}>{cantidad}</span>
-    </Link>
+    </a>
   );
 }

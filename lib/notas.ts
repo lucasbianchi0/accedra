@@ -102,10 +102,19 @@ export const BUCKET_NOTAS = "notas";
 export const COLUMNAS_NOTA_SITIO =
   "id, slug, destacada, tipo, titulo, titulo_seo, resumen, respuesta, cuerpo, categoria, industrias, tags, faqs, fuentes, autor, autor_cargo, portada_ruta, publicado_en, revisado_en";
 
-/** La lista del hub no necesita el cuerpo de cada nota: son hasta 60 kB por
- *  fila que no se dibujan en una card. */
+/**
+ * La lista del hub no necesita el cuerpo de cada nota: son hasta 60 kB por
+ * fila que no se dibujan en una card.
+ *
+ * Tampoco `industrias`, `autor` ni `revisado_en`. Ninguna card los dibuja —el
+ * autor se sacó a propósito, porque en 390 px partía en dos líneas y chocaba
+ * con la flecha— y sin embargo viajaban dos veces en cada visita a /blog: una
+ * en el HTML y otra en el payload de React que hidrata la grilla. Las tres
+ * columnas siguen en `COLUMNAS_NOTA_SITIO`, que es de donde las lee la nota
+ * abierta, único lugar que las usa.
+ */
 export const COLUMNAS_LISTA_SITIO =
-  "id, slug, destacada, tipo, titulo, resumen, categoria, industrias, tags, autor, portada_ruta, publicado_en, revisado_en";
+  "id, slug, destacada, tipo, titulo, resumen, categoria, tags, portada_ruta, publicado_en";
 
 export const ZONA = "America/Argentina/Buenos_Aires";
 
