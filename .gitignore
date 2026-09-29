@@ -51,3 +51,7 @@ next-env.d.ts
 /plan/
 /docs/propuesta/
 /scripts/ads/
+# Los brochures de venta y todo lo que los arma: 23 MB de PDFs, fotos y HTML
+# generado, material comercial que además no lo consume el sitio. Los PDF que
+# sí se descargan desde la landing no salen de acá.
+/brochures/
