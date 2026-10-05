@@ -1160,6 +1160,28 @@ dialog[data-brochure]::backdrop {
 }
 .prosa pre code { background: none; padding: 0; font-size: 0.875rem; }
 .prosa hr { border-color: rgba(255, 255, 255, 0.09); }
+/* Las fotos salen del ancho del texto un poco para respirar, y en una galería
+   (varias fotos seguidas en el markdown) se reparten en dos columnas: en
+   celular una sola, porque dos fotos de 160px no muestran nada. */
+.prosa figure { margin-top: 2rem; margin-bottom: 2rem; }
+.prosa figure img {
+  width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+.prosa figure[data-galeria] { display: grid; gap: 0.75rem; grid-template-columns: 1fr; }
+@media (min-width: 640px) {
+  .prosa figure[data-galeria] { grid-template-columns: repeat(2, 1fr); }
+}
+.prosa figure[data-galeria] img { aspect-ratio: 4 / 3; object-fit: cover; }
+.prosa figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #8a9ab3;
+  text-align: center;
+}
 /* La tabla es el bloque que más se rompe en celular: se la deja desbordar
    dentro de su propio scroll horizontal en vez de apretar las columnas. */
 .prosa table {
