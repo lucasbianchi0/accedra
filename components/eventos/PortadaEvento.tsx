@@ -72,6 +72,9 @@ export default function PortadaEvento({
       <div className={`overflow-hidden bg-[#05090f] ${className}`}>
         <Image
           src={e.portadaUrl}
+          // Sin el optimizador de Vercel: la cuota se agota y devuelve 402 (imagen
+          // rota). El backoffice ya la sube como WebP de 1600 px.
+          unoptimized
           alt=""
           fill
           sizes={sizes}

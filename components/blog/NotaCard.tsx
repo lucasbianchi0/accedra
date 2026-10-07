@@ -57,6 +57,9 @@ function Portada({ nota, arriba }: { nota: NotaSitio; arriba: boolean }) {
       {nota.portadaUrl ? (
         <Image
           src={nota.portadaUrl}
+          // Sin el optimizador de Vercel: la cuota se agota y devuelve 402 (imagen
+          // rota). El backoffice ya la sube como WebP de 1600 px.
+          unoptimized
           alt=""
           fill
           sizes={SIZES_CARD}

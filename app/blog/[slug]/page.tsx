@@ -227,15 +227,14 @@ export default async function NotaPage({ params }: Props) {
               style={{ background: `linear-gradient(135deg, ${color}2e 0%, #0a1424 55%, #05090f 100%)` }}
             >
               {nota.portadaUrl ? (
-                // Iba sin optimizador: el `<img>` apuntaba al original del
-                // bucket, que el backoffice sube a 1600 px y pesa cientos de
-                // kilobytes, para verse a 760. Y es el LCP de la nota, así que
-                // se pagaba entero antes de que la página se considerara
-                // pintada. Ahora viaja por `next/image` —AVIF, el ancho que
-                // corresponde a la pantalla— y con `eager`, porque está arriba
-                // del pliegue y no tiene sentido esperar al scroll.
+                // Pasó por el optimizador de Vercel para bajar el peso del LCP,
+                // y volvió al original: cuando la cuota de optimización del
+                // plan se agota, `/_next/image` responde 402 y la portada sale
+                // rota en todas las notas. Mejor 1600 px en WebP que nada.
+                // Sigue con `eager`: está arriba del pliegue.
                 <Image
                   src={nota.portadaUrl}
+                  unoptimized
                   alt=""
                   fill
                   sizes="(min-width: 1024px) 760px, 100vw"

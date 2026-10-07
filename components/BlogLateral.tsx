@@ -260,6 +260,9 @@ function ItemNota({ nota, onIr }: { nota: NotaSitio; onIr: () => void }) {
         {nota.portadaUrl ? (
           <Image
             src={nota.portadaUrl}
+            // Sin el optimizador de Vercel: la cuota se agota y devuelve 402 (imagen
+            // rota). El backoffice ya la sube como WebP de 1600 px.
+            unoptimized
             alt=""
             fill
             sizes="(min-width: 640px) 112px, 96px"

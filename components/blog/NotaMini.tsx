@@ -32,6 +32,9 @@ export default function NotaMini({ nota }: { nota: NotaSitio }) {
         {nota.portadaUrl ? (
           <Image
             src={nota.portadaUrl}
+            // Sin el optimizador de Vercel: la cuota se agota y devuelve 402 (imagen
+            // rota). El backoffice ya la sube como WebP de 1600 px.
+            unoptimized
             alt=""
             fill
             // Mide 92 px siempre, en cualquier pantalla: el `srcset` que arma
