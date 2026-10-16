@@ -10,7 +10,16 @@ import type { IndustrySeo } from "./industrySeo";
 // Este componente es la razón por la que la página se puede indexar. Sin él, el
 // único texto distinto entre /firma-biometrica y /firma-biometrica/juridicos sería
 // el subtítulo de la portada — y eso Google lo lee como la misma página dos veces.
-export default function IndustryContext({ seo }: { seo: IndustrySeo }) {
+export default function IndustryContext({
+  seo,
+  complianceTitle = "Marco normativo aplicable",
+  complianceNote = "Referencias de contexto, no asesoramiento legal. El alcance concreto se define en cada implementación.",
+}: {
+  seo: IndustrySeo;
+  /** Las landings de servicio listan normas técnicas, no leyes: cambian el rótulo. */
+  complianceTitle?: string;
+  complianceNote?: string;
+}) {
   return (
     <section className="section relative overflow-hidden">
       <div className="container-x relative z-10">
@@ -56,7 +65,7 @@ export default function IndustryContext({ seo }: { seo: IndustrySeo }) {
                   style={{ background: `rgba(var(--accent-rgb,43,111,212),0.14)`, border: `1px solid rgba(var(--accent-rgb,43,111,212),0.3)` }}>
                   <Scale size={19} strokeWidth={1.7} className="text-accent" />
                 </span>
-                <h3 className="text-white font-semibold text-[15px]">Marco normativo aplicable</h3>
+                <h3 className="text-white font-semibold text-[15px]">{complianceTitle}</h3>
               </div>
 
               <ul className="space-y-5">
@@ -69,8 +78,7 @@ export default function IndustryContext({ seo }: { seo: IndustrySeo }) {
               </ul>
 
               <p className="mt-7 pt-5 text-[12px] text-gray-500 leading-relaxed border-t border-white/[0.07]">
-                Referencias de contexto, no asesoramiento legal. El alcance concreto
-                se define en cada implementación.
+                {complianceNote}
               </p>
             </Reveal>
           )}

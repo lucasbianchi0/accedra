@@ -5,6 +5,7 @@
 import { SITE_URL, ORG, SERVICES, abs, DEFAULT_DESCRIPTION } from "./site";
 import { INDUSTRIES } from "@/components/solutions/industriesData";
 import { getIndustrySeo, type IndustryFaq } from "@/components/solutions/industrySeo";
+import { getSubService } from "@/components/solutions/subServicesData";
 
 const ORG_ID = `${SITE_URL}/#organization`;
 const WEBSITE_ID = `${SITE_URL}/#website`;
@@ -118,6 +119,42 @@ export function industryServiceLd(slug: string, industria: string) {
       url: abs(`/soluciones/${slug}`),
     },
     keywords: seo.keywords.join(", "),
+  };
+}
+
+// Service de una landing de servicio (/soluciones/<solucion>/<servicio>). Se
+// declara como parte de la solución madre (`isRelatedTo`) y con su propio
+// catálogo de prestaciones: es lo que un buscador o un modelo generativo lee
+// para entender que Accedra hace ESE servicio puntual, no "networking" en
+// general.
+export function subServiceLd(parent: string, servicio: string) {
+  const svc = SERVICES.find((s) => s.slug === parent);
+  const sub = getSubService(parent, servicio);
+  if (!svc || !sub) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: sub.name,
+    description: sub.seo.metaDescription,
+    url: abs(`/soluciones/${parent}/${servicio}`),
+    serviceType: sub.name,
+    provider: { "@id": ORG_ID },
+    areaServed: [
+      { "@type": "City", name: "Ciudad Autónoma de Buenos Aires" },
+      { "@type": "AdministrativeArea", name: "Gran Buenos Aires" },
+      { "@type": "Country", name: "Argentina" },
+    ],
+    audience: { "@type": "BusinessAudience", audienceType: "Empresas" },
+    hasOfferCatalog: {
+      "@type": "OfferCatalog",
+      name: sub.name,
+      itemListElement: sub.capabilities.map((c) => ({
+        "@type": "Offer",
+        itemOffered: { "@type": "Service", name: c.title, description: c.desc },
+      })),
+    },
+    isRelatedTo: { "@type": "Service", name: svc.name, url: abs(`/soluciones/${parent}`) },
+    keywords: sub.seo.keywords.join(", "),
   };
 }
 

@@ -3,6 +3,7 @@ import { SITE_URL, SERVICES } from "@/lib/seo/site";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { INDUSTRY_SLUGS } from "@/components/solutions/industriesData";
 import { getIndustrySeo } from "@/components/solutions/industrySeo";
+import { SUB_SERVICES } from "@/components/solutions/subServicesData";
 import { HOME_CASES } from "@/components/homeCases";
 import { leerNotasParaIndice } from "@/lib/notas-server";
 import { BASE_BLOG } from "@/lib/notas";
@@ -31,6 +32,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${SITE_URL}/soluciones/${s.slug}`,
     lastModified: now,
     changeFrequency: "monthly",
+    priority: 0.9,
+  }));
+
+  // Landings de servicio (/soluciones/<solucion>/<servicio>). Misma prioridad que
+  // la solución base: responden la búsqueda exacta que más convierte.
+  const servicios: MetadataRoute.Sitemap = Object.values(SUB_SERVICES).map((s) => ({
+    url: `${SITE_URL}/soluciones/${s.parent}/${s.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
     priority: 0.9,
   }));
 
@@ -75,5 +85,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ]
     : [];
 
-  return [...home, ...solutions, ...industries, ...cases, ...blog];
+  return [...home, ...solutions, ...servicios, ...industries, ...cases, ...blog];
 }

@@ -17,7 +17,16 @@ const photo = (id: number) =>
 // El poster de cada video es su PRIMER FRAME: /videos/{id}.jpg (mismo id).
 const video = (id: number) => `/videos/${id}.mp4`;
 
-export type Capability = { icon: LucideIcon; title: string; desc: string; photo?: string };
+export type Capability = {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+  photo?: string;
+  /** Página propia del servicio, si la tiene (ver subServicesData). Se muestra
+   *  como link visible: es el enlace interno que le pasa autoridad. */
+  href?: string;
+  hrefLabel?: string;
+};
 
 // Caso de éxito por solución. ⚠️ EJEMPLOS — reemplazar por casos reales
 // (anónimos o autorizados) con métricas verificables antes de publicar.
@@ -121,7 +130,7 @@ export const SOLUTIONS: Record<string, Solution> = {
       { icon: Waypoints, title: "Switching & Routing", desc: "Conmutación y ruteo Cisco / Meraki para conectar cada sitio y cada dispositivo con performance y baja latencia.", photo: photo(442151) },
       { icon: Server, title: "Contingencia y continuidad", desc: "Energía protegida, redundancia y recuperación ante fallos para que la operación no se detenga ni en el sitio más aislado.", photo: photo(4682189) },
       { icon: ShieldCheck, title: "Seguridad de red", desc: "Protección perimetral y segmentación contra amenazas y ataques cifrados, en toda la red distribuida.", photo: photo(2881229) },
-      { icon: Cable, title: "Relevamiento, cableado y certificación", desc: "Relevamiento técnico sitio por sitio y cableado estructurado certificado de voz, datos, video y seguridad, según las normas que exige cada industria.", photo: photo(2881232) },
+      { icon: Cable, title: "Relevamiento, cableado y certificación", desc: "Relevamiento técnico sitio por sitio y cableado estructurado certificado de voz, datos, video y seguridad, según las normas que exige cada industria.", photo: photo(2881232), href: "/soluciones/networking/cableado-estructurado", hrefLabel: "Ver cableado estructurado" },
     ],
     cases: [
       { industry: "Logística", image: "/cases/andreani.jpg", challenge: "El líder logístico del país crecía a gran escala y necesitaba conectividad continua, segura y sin interrupciones en toda su operación nacional.", solution: "Rediseño de red integral con Cisco: wireless gestionado, switching/routing, seguridad y soporte.", result: "Red sin interrupciones para el líder logístico", metrics: [{ value: "5→<1", label: "caídas de red por mes" }, { value: "+1.260", label: "vehículos conectados" }, { value: "10", label: "plantas de operación" }], body: ["Andreani, la compañía líder en logística de la Argentina (75 años de trayectoria, +1.260 vehículos y 10 plantas de operación), atravesaba un crecimiento exponencial: +550 puntos de venta, 122 sucursales, más usuarios móviles y más aplicaciones en la nube. Eso trajo más movilidad, necesidad de robustez y mayor exposición a amenazas — y sus equipos necesitaban conectividad más allá de la red corporativa.", "Como partner de Cisco, rediseñamos la red de punta a punta en cuatro frentes: wireless gestionado (Cisco Wireless LAN Controller + DNA Center), switching y routing (Catalyst 9500/9200/4500/3850/2960 y routers ASR 1000), seguridad (Umbrella, AMP e ISE) y un esquema flexible de licenciamiento y soporte (Cisco ONE, SMARTnet Total Care).", "Hoy Andreani trabaja sin interrupciones ni retrasos, con visibilidad total de la operación y gestión de accesos centralizada en todas sus locaciones. Las caídas de red pasaron de 5 por semana a menos de 1 por mes."] },

@@ -16,6 +16,7 @@ import BrochureLink from "./BrochureLink";
 import IndustryContext from "./IndustryContext";
 import IndustryFaq from "./IndustryFaq";
 import { getIndustrySeo } from "./industrySeo";
+import { getSubService } from "./subServicesData";
 import { useLang } from "@/lib/i18n/LangProvider";
 import { useT } from "@/lib/i18n/useT";
 import { whatsappLink } from "@/lib/whatsapp";
@@ -44,7 +45,7 @@ const STATS = [
   { value: "100+", label: "Clientes activos" },
 ];
 
-export default function SolutionPage({ slug, industria }: { slug: string; industria?: string }) {
+export default function SolutionPage({ slug, industria, servicio }: { slug: string; industria?: string; servicio?: string }) {
   const { lang } = useLang();
   const t = useT();
   const raw = SOLUTIONS[slug];
@@ -52,15 +53,23 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
   // Contenido efectivo: si hay industria con override, lo usa; si no, cae al base.
   // Las páginas de industria NO se traducen: quedan siempre en español.
   const industry = industria ? INDUSTRIES[industria] : null;
-  const data = industry ? raw : getLocalizedSolution(raw, lang);
-  const st = industry ? es.solution : t.solution;
+  // Landing de servicio (ver subServicesData): la misma solución con el texto y
+  // las capacidades del servicio puntual. Como las de industria, va siempre en
+  // español y emite su structured data desde el page.tsx.
+  const sub = servicio ? getSubService(slug, servicio) : null;
+  const landing = Boolean(industry || sub);
+  const base = landing ? raw : getLocalizedSolution(raw, lang);
+  const data = sub
+    ? { ...base, name: sub.name, title: sub.title, highlight: sub.highlight, subtitle: sub.subtitle, brands: sub.brands, brandsLabel: sub.brandsLabel, capabilities: sub.capabilities }
+    : base;
+  const st = landing ? es.solution : t.solution;
   const override = industry ? raw.industryContent?.[industry.slug] : undefined;
   const subtitle = override?.subtitle ?? data.subtitle;
-  const heroImage = industry?.heroImage ?? data.heroImage;
+  const heroImage = sub?.heroImage ?? industry?.heroImage ?? data.heroImage;
   // Capa SEO/GEO de la combinación: contexto propio, normativa y FAQs. Es lo que
   // vuelve indexable a la landing, así que si falta no se renderiza nada extra
   // (y generateMetadata deja la página en noindex por la misma condición).
-  const industrySeo = industry ? getIndustrySeo(slug, industry.slug) : null;
+  const industrySeo = sub ? sub.seo : industry ? getIndustrySeo(slug, industry.slug) : null;
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoPlaying, setVideoPlaying] = useState(false);
@@ -79,7 +88,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
   // liviano). Las páginas de industria siguen con poster. Donde hay video, el
   // poster y la imagen de respaldo son el PRIMER FRAME del propio video
   // (/videos/{id}.jpg) para que no haya salto de contenido al arrancar.
-  const showVideo = !industry;
+  const showVideo = !landing;
   const heroVideoPoster = data.heroVideo.replace(/\.mp4$/, ".jpg");
   const staticHeroSrc = showVideo ? heroVideoPoster : heroImage;
 
@@ -97,7 +106,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
       {/* Structured data de la página base. Las landings por industria emiten el
           suyo (Service + FAQPage + Breadcrumb) desde su page.tsx, que es Server
           Component — así el grafo va en el HTML inicial y no tras la hidratación. */}
-      {!industry && (() => {
+      {!landing && (() => {
         const svc = serviceLd(slug);
         const crumbs = breadcrumbLd([
           { name: "Inicio", path: "/" },
@@ -174,10 +183,10 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
               elemento LCP y con framer no se pintaba hasta después de hidratar.
               Mismos valores que tenía la versión con motion. */}
           <div className="hero-enter max-w-2xl" style={ENTER.block}>
-            {industry && (
+            {landing && (
               <div className="inline-flex items-center gap-2 mb-5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] text-white/90"
                 style={{ background: `rgba(var(--accent-rgb,43,111,212),0.18)`, border: `1px solid rgba(var(--accent-rgb,43,111,212),0.4)` }}>
-                Solución {industry.forLabel}
+                {sub ? sub.badge : `Solución ${industry?.forLabel}`}
               </div>
             )}
             {/* La línea "para <industria>" va DENTRO del h1, no en un <p> aparte.
@@ -218,7 +227,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
                 href={whatsappLink(data.name)}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => track({ type: "click", name: "whatsapp", target: `hero:${slug}` })}
+                onClick={() => track({ type: "click", name: "whatsapp", target: `hero:${sub ? `${slug}/${sub.slug}` : slug}` })}
                 className="sm:hidden relative overflow-hidden shine inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white transition-all duration-200 hover:gap-3 hover:-translate-y-0.5"
                 style={{
                   background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
@@ -234,7 +243,7 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
               <Link href="#contacto"
                 className="hidden sm:inline-flex relative overflow-hidden shine items-center justify-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white transition-all duration-200 hover:gap-3 hover:-translate-y-0.5"
                 style={{ background: data.accent, boxShadow: `0 8px 28px rgba(var(--accent-rgb,43,111,212),0.4)` }}>
-                {st.ctaPrimary} <ArrowRight size={17} />
+                {sub?.cta ?? st.ctaPrimary} <ArrowRight size={17} />
               </Link>
               <a href="#capacidades"
                 className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white border border-white/15 hover:bg-white/5 hover:gap-3 transition-all">
@@ -335,7 +344,9 @@ export default function SolutionPage({ slug, industria }: { slug: string; indust
           Va inmediatamente después de la portada, antes de las capacidades: es el
           texto propio de esta combinación y conviene que esté alto en el documento,
           no enterrado al final. */}
-      {industrySeo && <IndustryContext seo={industrySeo} />}
+      {industrySeo && (
+        <IndustryContext seo={industrySeo} complianceTitle={sub?.complianceTitle} complianceNote={sub?.complianceNote} />
+      )}
 
       {/* ── Capabilities ── */}
       {/* `consultable` va también en las landings de industria: el form de contacto

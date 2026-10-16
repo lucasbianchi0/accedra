@@ -83,6 +83,12 @@ export default function CapabilitiesBento({
                     {/* En reposo gris (jerarquía); en hover blanco, porque pasa a
                         leerse contra la foto y no contra el fondo plano de la card. */}
                     <p className="text-gray-400 lg:group-hover:text-white transition-colors duration-300 text-[13.5px] leading-relaxed">{c.desc}</p>
+                    {c.href && (
+                      <Link href={c.href}
+                        className="relative z-10 mt-3 inline-flex items-center gap-1.5 text-[13px] font-semibold text-white/90 underline decoration-white/25 underline-offset-4 transition-all hover:gap-2.5 hover:text-white hover:decoration-white/60">
+                        {c.hrefLabel ?? "Ver más"} <ArrowRight size={14} />
+                      </Link>
+                    )}
                     {/* Botón Consultar → form local: siempre 12px debajo del texto (mismo bloque) */}
                     {consultable && (
                       <Link href="#contacto" aria-label={`Consultar sobre ${c.title}`}

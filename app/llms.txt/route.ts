@@ -1,6 +1,7 @@
 import { SITE_URL, ORG, SERVICES, DEFAULT_DESCRIPTION } from "@/lib/seo/site";
 import { INDUSTRIES, INDUSTRY_SLUGS } from "@/components/solutions/industriesData";
 import { getIndustrySeo } from "@/components/solutions/industrySeo";
+import { SUB_SERVICES } from "@/components/solutions/subServicesData";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { leerNotasParaIndice } from "@/lib/notas-server";
 import { BASE_BLOG } from "@/lib/notas";
@@ -58,6 +59,12 @@ export async function GET() {
         .join("\n")
     : "Todavía no hay notas publicadas.";
 
+  // Servicios puntuales con página propia: es lo que se busca por nombre
+  // ("cableado estructurado"), así que va con la pregunta que responden.
+  const servicios = Object.values(SUB_SERVICES)
+    .map((s) => `- [${s.name}](${SITE_URL}/soluciones/${s.parent}/${s.slug}): ${s.seo.metaDescription}`)
+    .join("\n");
+
   const body = `# ${ORG.name}
 
 > ${DEFAULT_DESCRIPTION}
@@ -76,6 +83,12 @@ de tecnología para empresas líderes de Argentina. Más de 17 años de experien
 
 ## Soluciones
 ${services}
+
+## Servicios
+Páginas de un servicio concreto, con cómo se trabaja, las normas que aplican y
+preguntas frecuentes (precio, alcance, qué se entrega).
+
+${servicios}
 
 ## Soluciones por industria
 Cada solución tiene una página propia por vertical, con el contexto, el marco
