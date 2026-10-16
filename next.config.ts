@@ -14,6 +14,12 @@ const LEGACY_REDIRECTS: [string, string][] = [
 
 const nextConfig: NextConfig = {
   images: {
+    // Sin el optimizador de Vercel: con la cuota del plan agotada `/_next/image`
+    // responde 402 y las fotos salen rotas (7/10 en el blog, 16/10 en las
+    // soluciones). Las de /public van pregeneradas en WebP —ver
+    // scripts/optimizar-imagenes.mjs— y el loader elige la variante por ancho.
+    loader: "custom",
+    loaderFile: "./lib/image-loader.ts",
     // NO AGREGAR AVIF ACÁ. Está medido, no supuesto.
     //
     // Las portadas que sube el backoffice ya son WebP, y volver a comprimir un
