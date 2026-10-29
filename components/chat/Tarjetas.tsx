@@ -325,7 +325,7 @@ export function Humano({ t }: { t: TarjetaHumano }) {
 }
 
 const campo =
-  "chat-campo w-full rounded-xl border border-white/10 bg-navy-900/60 px-3 py-2.5 text-[16px] sm:text-[13.5px] text-white placeholder:text-gray-500 outline-none transition-[border-color,box-shadow] focus:border-[#9F8CFB]/60 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)]";
+  "chat-campo w-full rounded-xl border border-white/10 bg-navy-900/60 px-3 py-2.5 text-[16px] lg:text-[13.5px] text-white placeholder:text-gray-500 outline-none transition-[border-color,box-shadow] focus:border-[#9F8CFB]/60 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)]";
 
 export function Contacto({
   t,

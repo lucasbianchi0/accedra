@@ -400,6 +400,19 @@ h1, h2, h3, h4, .section-title, .gradient-text {
   transition-delay: 0s;
 }
 
+/* La primera entrada de los dos botones flotantes: después de los botones de
+   la portada (que terminan de entrar a ~1,2 s), WhatsApp y enseguida el
+   robotito. Antes estaban desde el primer cuadro, encima del título que
+   todavía estaba apareciendo, y en el celular se veía todo a destiempo.
+   `backwards` y no `both`: terminada la entrada no queda nada pegado, y el
+   mostrar/ocultar por `data-shown` sigue funcionando con sus transiciones. */
+@keyframes flotante-entra {
+  from { opacity: 0; transform: translateY(24px) scale(0.5); }
+  to { opacity: 1; transform: none; }
+}
+.wa-bubble { animation: flotante-entra 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 1.25s backwards; }
+.chat-launcher { animation: flotante-entra 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 1.4s backwards; }
+
 /* whileHover / whileTap, en CSS. El `:active` va después del `:hover` a
    propósito: en desktop los dos se cumplen a la vez durante el click y gana el
    último declarado. */
@@ -408,7 +421,7 @@ h1, h2, h3, h4, .section-title, .gradient-text {
 .wa-cta:active { transform: scale(0.94); }
 
 @media (prefers-reduced-motion: reduce) {
-  .wa-halo, .wa-ping, .wa-sheen { animation: none; }
+  .wa-halo, .wa-ping, .wa-sheen, .wa-bubble, .chat-launcher { animation: none; }
   .wa-ping { opacity: 0; }
   /* Sin movimiento: aparece y desaparece, pero sin desplazamiento ni escala. */
   .wa-bubble { transition: opacity 0.2s linear, visibility 0s linear 0.2s; }
@@ -1519,6 +1532,24 @@ dialog[data-brochure]::backdrop {
 .chat-hoja-raiz[data-open="false"] .hoja-entra > * { opacity: 0; transition: opacity 0.15s ease; }
 /* Mientras se arrastra con el dedo, la hoja sigue al dedo sin transición. */
 .chat-hoja[data-arrastrando="true"] { transition: none; }
+
+/* Celular y tablet: el alto lo maneja el teclado (visualViewport), y tiene
+   que seguirlo en el mismo cuadro. Con la transición de `height` la hoja
+   tardaba medio segundo en achicarse y el teclado tapaba el campo. */
+@media (max-width: 1023px) {
+  .chat-hoja-raiz[data-open="true"] .chat-hoja {
+    transition:
+      transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0s linear 0.75s;
+  }
+}
+
+/* Con el teclado abierto, la bienvenida se queda con lo esencial —la
+   pregunta y el campo, arriba— para que se vea lo que se escribe. */
+.chat-hoja[data-teclado="true"] .bienvenida-extra { display: none; }
+.chat-hoja[data-teclado="true"] .bienvenida { margin-top: 0; padding-top: 4px; }
+.chat-hoja[data-teclado="true"] .bienvenida h2 { font-size: 21px; margin-top: 0; }
 
 /* El contenido de la bienvenida entra escalonado mientras la hoja se asienta. */
 .chat-hoja-raiz[data-open="true"] .hoja-entra > *,

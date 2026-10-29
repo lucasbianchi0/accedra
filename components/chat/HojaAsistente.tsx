@@ -75,6 +75,9 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
     const ajustar = () => {
       el.style.height = `${vv.height}px`;
       el.style.top = `${vv.offsetTop}px`;
+      // Teclado abierto: la ventana visible se achicó bastante más que lo
+      // que mueve la barra del navegador.
+      el.dataset.teclado = String(window.innerHeight - vv.height > 150);
     };
     ajustar();
     vv.addEventListener("resize", ajustar);
@@ -84,6 +87,7 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
       vv.removeEventListener("scroll", ajustar);
       el.style.height = "";
       el.style.top = "";
+      delete el.dataset.teclado;
     };
   }, [abierto]);
 
@@ -296,22 +300,22 @@ function Bienvenida({ solucion }: { solucion?: string }) {
     // cuando sobra lugar.
     <div className="flex flex-1 flex-col">
       {/* `hoja-entra`: cada hijo entra escalonado cuando la hoja termina de subir. */}
-      <div className="hoja-entra my-auto flex flex-col items-center pb-4 text-center">
-        <MascotaRetrato size={112} className="lg:h-[96px] lg:w-[96px]" />
-        <p className="mt-1 text-[14px] text-gray-400">
+      <div className="bienvenida hoja-entra my-auto flex flex-col items-center pb-4 text-center">
+        <MascotaRetrato size={112} className="bienvenida-extra lg:h-[96px] lg:w-[96px]" />
+        <p className="bienvenida-extra mt-1 text-[14px] text-gray-400">
           Hola, soy el asistente de <NombreAccedraAI className="font-semibold text-white" />
         </p>
         <h2 className="font-display mt-1.5 text-[26px] font-semibold leading-tight tracking-[-0.015em] text-white sm:text-[34px]">
           {titulo}
         </h2>
-        <PromesaPdf className="mt-4" />
+        <PromesaPdf className="bienvenida-extra mt-4" />
 
         {/* Industrias: elegir una cambia los ejemplos y le dice el rubro al asistente. */}
         <div
           role="radiogroup"
           aria-label="Tu industria"
           // En el teléfono se deslizan de costado; el fundido a la derecha avisa que hay más.
-          className="no-scrollbar -mx-4 mt-6 flex max-w-[calc(100%+2rem)] gap-2 sm:gap-1.5 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,#000_82%,transparent)] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none]"
+          className="bienvenida-extra no-scrollbar -mx-4 mt-6 flex max-w-[calc(100%+2rem)] gap-2 sm:gap-1.5 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,#000_82%,transparent)] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none]"
         >
           {INDUSTRIAS.map((ind) => {
             const activa = industria?.id === ind.id;

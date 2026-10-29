@@ -239,9 +239,19 @@ export default function Conversacion({
                     mandar();
                   }
                 }}
+                // Al abrirse el teclado, el último mensaje queda a la vista: es
+                // lo que se está contestando.
+                onFocus={() =>
+                  setTimeout(() => {
+                    const el = lista.current;
+                    if (el && !sinMensajes.current) el.scrollTop = el.scrollHeight;
+                  }, 350)
+                }
                 placeholder={placeholder}
                 aria-label="Tu mensaje"
-                className="chat-campo max-h-[132px] flex-1 resize-none bg-transparent py-2 text-[16px] leading-snug text-white placeholder:text-gray-500 outline-none sm:text-[14px]"
+                // 16px hasta escritorio: con menos, iOS hace zoom al enfocar y
+                // desarma la hoja (en tablet también).
+                className="chat-campo max-h-[132px] flex-1 resize-none bg-transparent py-2 text-[16px] leading-snug text-white placeholder:text-gray-500 outline-none lg:text-[14px]"
               />
               {enCurso ? (
                 <button
