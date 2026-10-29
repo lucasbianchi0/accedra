@@ -9,6 +9,26 @@ import type { Parte, TarjetaOpciones } from "./tipos";
  * lo demás queda donde estaba.
  */
 export function separarPregunta(partes: Parte[]): { partes: Parte[]; pregunta: string | null } {
+  // Si la pregunta vino en las opciones y el modelo además la escribió en el
+  // texto (pasa con las listas numeradas), se corta el texto ahí: si no, la
+  // lista se leía dos veces.
+  const deOpciones = partes.find(
+    (p): p is Extract<Parte, { tipo: "tarjeta" }> => p.tipo === "tarjeta" && p.tarjeta.tipo === "opciones" && Boolean(p.tarjeta.pregunta),
+  );
+  const entrada = deOpciones && (deOpciones.tarjeta as { pregunta: string }).pregunta.split("\n")[0].trim();
+  if (entrada) {
+    let cortado = false;
+    const sinRepetir = partes.flatMap<Parte>((p) => {
+      if (p.tipo !== "texto") return [p];
+      const i = p.texto.indexOf(entrada);
+      if (i < 0) return [p];
+      cortado = true;
+      const resto = p.texto.slice(0, i).trim();
+      return resto ? [{ ...p, texto: resto }] : [];
+    });
+    if (cortado) return { partes: sinRepetir, pregunta: null };
+  }
+
   let ultimo = -1;
   for (let i = partes.length - 1; i >= 0; i--) {
     if (partes[i].tipo === "texto") {
