@@ -58,7 +58,7 @@ export default function Conversacion({
    *  el `inicio` trae el suyo. */
   campoAlInicio?: boolean;
 }) {
-  const { mensajes, enCurso, leadEnviado } = useConversacion();
+  const { mensajes, enCurso, leadEnviado, preparando } = useConversacion();
   // Sólo se animan los mensajes que llegan con la conversación a la vista: al
   // reabrir el chat, lo que ya estaba aparece quieto.
   const [presentes] = useState(() => new Set(mensajes.map((m) => m.id)));
@@ -144,8 +144,10 @@ export default function Conversacion({
                   </div>
                 ) : (
                   <div key={m.id} className={`flex gap-2.5 ${nuevo(m.id) ? "msg-entra" : ""}`}>
+                    {/* `self-start` y tamaño fijo: sin eso el span se estiraba al
+                        alto del mensaje y el latido dibujaba una pastilla. */}
                     <span
-                      className={`mt-0.5 shrink-0 rounded-full ${m.id === ultimo?.id && enCurso ? "avatar-pensando" : ""}`}
+                      className={`mt-0.5 h-7 w-7 shrink-0 self-start rounded-full ${m.id === ultimo?.id && enCurso ? "avatar-pensando" : ""}`}
                     >
                       <MascotaCara size={28} className="ring-1 ring-white/10" />
                     </span>
@@ -180,7 +182,10 @@ export default function Conversacion({
                           <Opciones t={opcionesDe(m.partes)!} onElegir={(o) => void enviar(o, `${origen}:opcion`)} />
                         </div>
                       )}
-                      {m.id === ultimo?.id && pensando && (
+                      {m.id === ultimo?.id && enCurso && preparando && ESQUELETO[preparando] && (
+                        <Esqueleto herramienta={preparando} />
+                      )}
+                      {m.id === ultimo?.id && pensando && !preparando && (
                         <span className="pensando-texto inline-block pt-1 text-[13.5px] font-medium" role="status">
                           Analizando tu caso…
                         </span>
@@ -297,4 +302,33 @@ function TarjetaVista({ t, onNavegar, leadEnviado }: { t: Tarjeta; onNavegar: ()
     case "opciones":
       return null;
   }
+}
+
+/** Lo que dice el esqueleto mientras llega cada tarjeta. Las rápidas no tienen. */
+const ESQUELETO: Record<string, string> = {
+  armar_relevamiento: "Armando tu relevamiento en PDF…",
+  mostrar_solucion: "Buscando la solución para tu caso…",
+  mostrar_caso: "Buscando un caso parecido…",
+  pedir_contacto: "Preparando el formulario…",
+  mostrar_nota: "Buscando una nota del blog…",
+  mostrar_evento: "Buscando un evento del tema…",
+};
+
+/** La forma de la tarjeta que viene, con un brillo que la recorre. */
+function Esqueleto({ herramienta }: { herramienta: string }) {
+  const pdf = herramienta === "armar_relevamiento";
+  return (
+    <div role="status" className="tarjeta-entra rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <div className="flex items-center gap-4">
+        {pdf && <div className="esqueleto h-12 w-10 shrink-0 rounded-lg" />}
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="esqueleto h-2.5 w-24 rounded-full" />
+          <div className="esqueleto h-3.5 w-3/5 rounded-full" />
+          <div className="esqueleto h-2.5 w-4/5 rounded-full" />
+        </div>
+        {pdf && <div className="esqueleto hidden h-9 w-20 shrink-0 rounded-full sm:block" />}
+      </div>
+      <p className="pensando-texto mt-3 text-[12.5px] font-medium">{ESQUELETO[herramienta]}</p>
+    </div>
+  );
 }

@@ -548,6 +548,15 @@ export async function POST(req: NextRequest) {
             { signal: senal },
           );
 
+          // Apenas el modelo empieza a escribir una herramienta, el navegador
+          // muestra el esqueleto de su tarjeta: el relevamiento tarda varios
+          // segundos en llegar entero y, sin esto, el chat parecía colgado.
+          respuesta.on("streamEvent", (e) => {
+            if (e.type === "content_block_start" && e.content_block.type === "tool_use") {
+              enviar("preparando", e.content_block.name);
+            }
+          });
+
           respuesta.on("text", (t) => {
             if (separar) {
               enviar("texto", "\n\n");

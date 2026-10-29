@@ -18,10 +18,11 @@ import { track } from "@/lib/track";
  * HTML del SSR coincide con la hidratación y lo guardado aparece después.
  */
 
-export type Estado = { mensajes: Mensaje[]; leadEnviado: boolean; enCurso: boolean };
+/** `preparando`: la herramienta que el modelo está escribiendo (ver "preparando" en la API). */
+export type Estado = { mensajes: Mensaje[]; leadEnviado: boolean; enCurso: boolean; preparando: string | null };
 
 const CLAVE = "accedra-chat";
-const VACIO: Estado = { mensajes: [], leadEnviado: false, enCurso: false };
+const VACIO: Estado = { mensajes: [], leadEnviado: false, enCurso: false, preparando: null };
 
 let estado: Estado = VACIO;
 let cargado = false;
@@ -34,7 +35,7 @@ function cargar() {
   try {
     const g = JSON.parse(sessionStorage.getItem(CLAVE) ?? "null") as Partial<Estado> | null;
     if (g && Array.isArray(g.mensajes)) {
-      estado = { mensajes: g.mensajes, leadEnviado: Boolean(g.leadEnviado), enCurso: false };
+      estado = { mensajes: g.mensajes, leadEnviado: Boolean(g.leadEnviado), enCurso: false, preparando: null };
     }
   } catch {}
 }
@@ -144,8 +145,10 @@ export async function enviar(crudo: string, origen = "panel") {
       return { ...m, partes };
     });
   };
-  const agregarTarjeta = (tarjeta: Tarjeta) =>
+  const agregarTarjeta = (tarjeta: Tarjeta) => {
     actualizar(respuesta.id, (m) => ({ ...m, partes: [...m.partes, { tipo: "tarjeta", tarjeta } as Parte] }));
+    set((e) => ({ ...e, preparando: null }));
+  };
   const fallar = (error: string) => actualizar(respuesta.id, (m) => ({ ...m, error }));
 
   try {
@@ -178,6 +181,7 @@ export async function enviar(crudo: string, origen = "panel") {
         if (!evento || dato === undefined) continue;
         const valor = JSON.parse(dato);
         if (evento === "texto") agregarTexto(valor as string);
+        else if (evento === "preparando") set((e) => ({ ...e, preparando: String(valor) }));
         else if (evento === "tarjeta") agregarTarjeta(valor as Tarjeta);
         else if (evento === "error") fallar((valor as { mensaje: string }).mensaje);
         else if (evento === "fin" && typeof (valor as { firma?: unknown })?.firma === "string") {
@@ -189,7 +193,7 @@ export async function enviar(crudo: string, origen = "panel") {
   } catch (e) {
     if ((e as Error).name !== "AbortError") fallar("Se cortó la conexión. Probá de nuevo.");
   } finally {
-    set((e) => ({ ...e, enCurso: false }));
+    set((e) => ({ ...e, enCurso: false, preparando: null }));
     if (abortar === ctrl) abortar = null;
   }
 }
