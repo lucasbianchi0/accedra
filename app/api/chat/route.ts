@@ -599,8 +599,9 @@ export async function POST(req: NextRequest) {
               is_error: !tarjeta,
             };
           });
-          // Si ya había escrito antes de las tarjetas, el relevamiento también
-          // cierra el turno: la vuelta siguiente repetía "ya tenés el PDF".
+          // Si ya había escrito antes de las tarjetas, el relevamiento y el
+          // botón de WhatsApp también cierran el turno: la vuelta siguiente
+          // repetía "ya tenés el PDF" o "escribile al equipo por ahí".
           const yaEscribio = huboTexto;
           // Después de una tarjeta el texto vuelve a arrancar en otro párrafo.
           huboTexto = true;
@@ -608,7 +609,7 @@ export async function POST(req: NextRequest) {
           // que sigue es la respuesta de la persona. Otra vuelta sólo
           // agregaría relleno (o las repetiría).
           if (llamadas.some((l) => l.name === "ofrecer_opciones")) break;
-          if (yaEscribio && llamadas.some((l) => l.name === "armar_relevamiento")) break;
+          if (yaEscribio && llamadas.some((l) => l.name === "armar_relevamiento" || l.name === "derivar_a_persona")) break;
           mensajes.push({ role: "user", content: resultados });
         }
         // La firma de esta respuesta: vuelve en el historial del próximo pedido.
