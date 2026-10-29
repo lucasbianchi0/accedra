@@ -10,6 +10,9 @@ import {
 } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import LangSwitcher from "@/components/LangSwitcher";
+import { useChat } from "@/components/chat/ChatProvider";
+import { track } from "@/lib/track";
+import { LogoAccedraAI, NombreAccedraAI } from "@/components/chat/AccedraAI";
 import { enter } from "@/components/Reveal";
 
 /* El overlay del menú mobile es lo único que sigue necesitando framer-motion
@@ -46,6 +49,7 @@ export default function Navbar() {
   const solutions = SOLUTION_ITEMS.map((s, i) => ({ ...s, label: t.services.columns[i].title }));
   const otherLinks = otherLinkHrefs.map((l) => ({ href: l.href, label: t.nav[l.key] }));
 
+  const { abrirHoja: abrirAsistente, precargarHoja: precargarAsistente } = useChat();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [solOpen, setSolOpen] = useState(false); // desktop dropdown
@@ -171,6 +175,23 @@ export default function Navbar() {
               </div>
             </div>
 
+            {/* Accedra AI: abre la hoja del asistente. Va pegado a Soluciones
+                porque es la otra forma de llegar a la solución correcta. */}
+            <button
+              type="button"
+              onClick={() => {
+                track({ type: "click", name: "asistente", target: "menu" });
+                abrirAsistente(undefined, "menu");
+              }}
+              onPointerEnter={precargarAsistente}
+              className="group flex items-center gap-2 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              <span className="transition-transform duration-300 group-hover:rotate-[-8deg] group-hover:scale-110">
+                <LogoAccedraAI size={20} />
+              </span>
+              <NombreAccedraAI />
+            </button>
+
             {otherLinks.map((l) => (
               <a
                 key={l.href}
@@ -229,6 +250,11 @@ export default function Navbar() {
           otherLinks={otherLinks}
           activeSlug={activeSlug}
           labels={{ services: t.nav.services, cta: t.nav.cta, language: t.nav.language }}
+          onAsistente={() => {
+            setOpen(false);
+            track({ type: "click", name: "asistente", target: "menu_mobile" });
+            abrirAsistente(undefined, "menu");
+          }}
         />
       )}
     </>

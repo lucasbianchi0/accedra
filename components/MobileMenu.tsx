@@ -8,6 +8,7 @@ import type { LucideIcon } from "lucide-react";
 import LangSwitcher from "@/components/LangSwitcher";
 import { whatsappLink } from "@/lib/whatsapp";
 import { track } from "@/lib/track";
+import { LogoAccedraAI, NombreAccedraAI } from "@/components/chat/AccedraAI";
 import { useT } from "@/lib/i18n/useT";
 
 /* Overlay del menú mobile — el ÚNICO lugar del sitio que todavía usa
@@ -43,6 +44,7 @@ export default function MobileMenu({
   otherLinks,
   activeSlug,
   labels,
+  onAsistente,
 }: {
   open: boolean;
   onClose: () => void;
@@ -50,6 +52,8 @@ export default function MobileMenu({
   otherLinks: OtherLink[];
   activeSlug?: string;
   labels: { services: string; cta: string; language: string };
+  /** Abre la hoja de Accedra AI (el menú se cierra antes). */
+  onAsistente: () => void;
 }) {
   // Sub-vista de soluciones. Vive acá adentro porque sólo existe mientras el
   // overlay está montado.
@@ -212,6 +216,16 @@ export default function MobileMenu({
               {/* Bottom: contacto + acciones (CTA + WhatsApp) e idioma al final */}
               <div className="relative px-6 pb-10 flex-shrink-0 space-y-3">
                 <div className="h-px mb-5" style={{ background: "rgba(255,255,255,0.06)" }} />
+
+                {/* Accedra AI */}
+                <button
+                  type="button"
+                  onClick={onAsistente}
+                  className="boton-ai flex w-full items-center justify-center gap-2.5 rounded-full border border-white/15 py-4 text-[15px] font-semibold text-white active:scale-[0.99]"
+                >
+                  <LogoAccedraAI size={22} />
+                  Preguntale a <NombreAccedraAI />
+                </button>
 
                 {/* CTA principal */}
                 <a

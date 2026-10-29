@@ -1465,6 +1465,38 @@ dialog[data-brochure]::backdrop {
 }
 .chat-panel[data-open="true"] { transition-delay: 0s; }
 
+/* La hoja de Accedra AI: sube desde abajo; el fondo oscurece y desenfoca.
+   Queda montada y alterna `data-open`, así tiene animación de salida. */
+.chat-hoja-fondo {
+  transition: opacity 0.35s ease, visibility 0s linear 0.45s;
+}
+.chat-hoja {
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.55s;
+}
+.chat-hoja-raiz[data-open="false"] .chat-hoja-fondo { opacity: 0; visibility: hidden; pointer-events: none; }
+.chat-hoja-raiz[data-open="false"] .chat-hoja { transform: translateY(105%); visibility: hidden; }
+.chat-hoja-raiz[data-open="true"] .chat-hoja-fondo,
+.chat-hoja-raiz[data-open="true"] .chat-hoja { transition-delay: 0s; }
+
+/* El logo de Accedra AI en la hoja: un halo violeta que respira. */
+.ai-logo-brillo { filter: drop-shadow(0 0 18px rgba(159, 108, 246, 0.55)); animation: ai-respira 3.2s ease-in-out infinite; }
+@keyframes ai-respira {
+  0%, 100% { filter: drop-shadow(0 0 14px rgba(159, 108, 246, 0.45)); }
+  50% { filter: drop-shadow(0 0 26px rgba(124, 108, 246, 0.75)); }
+}
+
+/* "Preguntale a nuestro asistente": filo violeta de Accedra AI. */
+.boton-ai {
+  box-shadow: inset 0 0 0 1px rgba(159, 140, 251, 0.18), 0 8px 28px rgba(124, 108, 246, 0.16);
+}
+.boton-ai:hover {
+  border-color: rgba(159, 140, 251, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(159, 140, 251, 0.3), 0 10px 34px rgba(124, 108, 246, 0.32);
+}
+
 .chat-pensando i {
   width: 6px;
   height: 6px;
@@ -1501,6 +1533,9 @@ dialog[data-brochure]::backdrop {
 @media (prefers-reduced-motion: reduce) {
   .chat-launcher, .chat-panel { transition: opacity 0.2s linear, visibility 0s linear 0.2s; }
   .chat-launcher[data-shown="false"], .chat-panel[data-open="false"] { transform: none; translate: none; scale: none; }
+  .chat-hoja { transition: opacity 0.2s linear, visibility 0s linear 0.2s; }
+  .chat-hoja-raiz[data-open="false"] .chat-hoja { transform: none; opacity: 0; }
+  .ai-logo-brillo { animation: none; }
   .chat-boton-halo, .chat-globo, .chat-pensando i, .robot-vivo .robot-ojos, .robot-vivo .robot-antena { animation: none; }
 }
 

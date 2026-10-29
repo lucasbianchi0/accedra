@@ -6,7 +6,7 @@ import { useT } from "@/lib/i18n/useT";
 import CountUp from "@/components/CountUp";
 import HeroMedia from "@/components/HeroMedia";
 import { enter } from "@/components/Reveal";
-import ChatPortada from "@/components/chat/ChatPortada";
+import BotonAsistente from "@/components/chat/BotonAsistente";
 
 const stats = ["17+", "400+", "26+", "100+"];
 
@@ -22,7 +22,6 @@ const ENTER = {
   title: { ...enter("40px", "1.3s", "0s", "12px"), "--enter-from": "0.01" } as CSSProperties,
   subtitle: enter("16px", "1.1s", "0.42s"),
   ctas: enter("16px", "1.1s", "0.66s"),
-  chat: enter("24px", "1.2s", "0.4s"),
   stats: enter("30px", "1.2s", "0.9s"),
 };
 
@@ -43,57 +42,44 @@ export default function Hero() {
       {/* `px-5` en mobile como el resto del sitio: con `px-8` quedaban 296px
           útiles en un iPhone de 360 y el h1 no entraba. */}
       <div className="relative z-10 container-x pt-28 pb-20">
-        {/* Dos columnas desde `lg`: el título a la izquierda y el chat a la
-            derecha, donde la persona cuenta su caso sin abrir nada. En el
-            teléfono el chat no entra al lado del título: queda el robotito. */}
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(400px,440px)] lg:items-center lg:gap-14 xl:gap-20">
-          <div className="max-w-3xl">
-            {/* Headline — animado por CSS (.hero-enter), no por framer: es el
-                elemento LCP y con framer no se pintaba hasta después de hidratar.
-                Los valores son los mismos que tenía la versión con motion. */}
-            <h1
-              className="hero-enter text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-[-0.02em] mb-6"
-              style={ENTER.title}
-            >
-              {t.hero.titlePre}<br className="hidden sm:block" />{" "}
-              <span className="gradient-text">{t.hero.titleHighlight}</span>
-              <br className="hidden sm:block" />{" "}
-              {t.hero.titlePost}
-            </h1>
+        <div className="max-w-3xl">
+          {/* Headline — animado por CSS (.hero-enter), no por framer: es el
+              elemento LCP y con framer no se pintaba hasta después de hidratar.
+              Los valores son los mismos que tenía la versión con motion. */}
+          <h1
+            className="hero-enter text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-[-0.02em] mb-6"
+            style={ENTER.title}
+          >
+            {t.hero.titlePre}<br className="hidden sm:block" />{" "}
+            <span className="gradient-text">{t.hero.titleHighlight}</span>
+            <br className="hidden sm:block" />{" "}
+            {t.hero.titlePost}
+          </h1>
 
-            {/* Subheadline */}
-            <p
-              className="hero-enter text-gray-300 text-lg leading-relaxed mb-10 max-w-xl"
-              style={ENTER.subtitle}
-            >
-              {t.hero.subtitlePre}
-              <span className="text-gray-200 font-medium">{t.hero.subtitleStrong}</span>.
-            </p>
+          {/* Subheadline */}
+          <p
+            className="hero-enter text-gray-300 text-lg leading-relaxed mb-10 max-w-xl"
+            style={ENTER.subtitle}
+          >
+            {t.hero.subtitlePre}
+            <span className="text-gray-200 font-medium">{t.hero.subtitleStrong}</span>.
+          </p>
 
-            {/* CTAs */}
-            <div
-              className="hero-enter flex flex-col sm:flex-row gap-4"
-              style={ENTER.ctas}
+          {/* CTAs */}
+          <div
+            className="hero-enter flex flex-col sm:flex-row gap-4"
+            style={ENTER.ctas}
+          >
+            <a
+              href="#contacto"
+              className="relative overflow-hidden shine inline-flex items-center justify-center gap-2 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 hover:-translate-y-0.5 hover:gap-3 group text-base"
+              style={{ background: "#2560BC", boxShadow: "0 8px 28px rgba(43,111,212,0.35)" }}
             >
-              <a
-                href="#contacto"
-                className="relative overflow-hidden shine inline-flex items-center justify-center gap-2 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 hover:-translate-y-0.5 hover:gap-3 group text-base"
-                style={{ background: "#2560BC", boxShadow: "0 8px 28px rgba(43,111,212,0.35)" }}
-              >
-                {t.services.ctaButton}
-                <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
-              </a>
-              <a
-                href="#servicios"
-                className="inline-flex items-center justify-center gap-2 border border-white/20 hover:border-white/40 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 hover:bg-white/5 text-base"
-              >
-                {t.hero.ctaServices}
-              </a>
-            </div>
-          </div>
-
-          <div className="hero-enter" style={ENTER.chat}>
-            <ChatPortada />
+              {t.services.ctaButton}
+              <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
+            </a>
+            {/* En el lugar de "Ver servicios": abre la hoja de Accedra AI. */}
+            <BotonAsistente origen="portada" />
           </div>
         </div>
 
@@ -103,7 +89,7 @@ export default function Hero() {
             sheen + brillo interior, y así TODA la barra aparece junta (fade + slide) con
             los números contando, sin ningún cambio de color. */}
         <div
-          className="hero-enter relative mt-16 lg:mt-28 max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-px rounded-[20px] overflow-hidden border"
+          className="hero-enter relative mt-16 lg:mt-20 max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-px rounded-[20px] overflow-hidden border"
           style={{
             ...ENTER.stats,
             borderColor: "rgba(255,255,255,0.18)",
