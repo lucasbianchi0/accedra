@@ -54,13 +54,31 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onCerrar();
     window.addEventListener("keydown", onKey);
     const html = document.documentElement;
-    const previo = { body: document.body.style.overflow, html: html.style.overflow };
-    document.body.style.overflow = "hidden";
+    const body = document.body.style;
+    const previo = { overflow: body.overflow, html: html.style.overflow, position: body.position, top: body.top, width: body.width };
+    body.overflow = "hidden";
     html.style.overflow = "hidden";
+    // En celular y tablet, además, el body fijo: iOS ignora el `overflow` y
+    // seguía moviendo la página de atrás al abrir el teclado o al arrastrar
+    // sobre una parte de la hoja sin scroll, y la hoja quedaba corrida. (En
+    // escritorio no: ahí el scroll lo lleva Lenis y alcanza con el overflow.)
+    const celular = window.matchMedia("(max-width: 1023px)").matches;
+    const y = window.scrollY;
+    if (celular) {
+      body.position = "fixed";
+      body.top = `-${y}px`;
+      body.width = "100%";
+    }
     return () => {
       window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = previo.body;
+      body.overflow = previo.overflow;
       html.style.overflow = previo.html;
+      if (celular) {
+        body.position = previo.position;
+        body.top = previo.top;
+        body.width = previo.width;
+        window.scrollTo({ top: y, behavior: "instant" });
+      }
     };
   }, [abierto, onCerrar]);
 
@@ -72,22 +90,41 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
     const vv = window.visualViewport;
     const el = hoja.current;
     if (!vv || !el) return;
+    // El alto sin teclado es el mayor que se vio con la hoja abierta: en
+    // Android `innerHeight` también se achica con el teclado y no sirve de
+    // referencia.
+    let base = vv.height;
+    let alto = 0;
+    let cuadro = 0;
     const ajustar = () => {
-      el.style.height = `${vv.height}px`;
-      el.style.top = `${vv.offsetTop}px`;
-      // Teclado abierto: la ventana visible se achicó bastante más que lo
-      // que mueve la barra del navegador.
-      el.dataset.teclado = String(window.innerHeight - vv.height > 150);
+      cancelAnimationFrame(cuadro);
+      cuadro = requestAnimationFrame(() => {
+        base = Math.max(base, vv.height);
+        el.style.height = `${vv.height}px`;
+        el.style.top = `${vv.offsetTop}px`;
+        // Con el teclado abierto, el campo donde se escribe (con sus botones)
+        // queda a la vista, justo arriba. En cada cambio de alto y no una sola
+        // vez: el teclado sube en varios pasos. Sin esconder ni mover nada
+        // más: la bienvenida se desliza dentro de la hoja.
+        const teclado = base - vv.height > 150;
+        if (teclado && vv.height !== alto) {
+          const foco = document.activeElement;
+          if (foco instanceof HTMLElement && el.contains(foco)) {
+            (foco.closest("form") ?? foco).scrollIntoView({ block: "nearest" });
+          }
+        }
+        alto = vv.height;
+      });
     };
     ajustar();
     vv.addEventListener("resize", ajustar);
     vv.addEventListener("scroll", ajustar);
     return () => {
+      cancelAnimationFrame(cuadro);
       vv.removeEventListener("resize", ajustar);
       vv.removeEventListener("scroll", ajustar);
       el.style.height = "";
       el.style.top = "";
-      delete el.dataset.teclado;
     };
   }, [abierto]);
 
@@ -300,22 +337,22 @@ function Bienvenida({ solucion }: { solucion?: string }) {
     // cuando sobra lugar.
     <div className="flex flex-1 flex-col">
       {/* `hoja-entra`: cada hijo entra escalonado cuando la hoja termina de subir. */}
-      <div className="bienvenida hoja-entra my-auto flex flex-col items-center pb-4 text-center">
-        <MascotaRetrato size={112} className="bienvenida-extra lg:h-[96px] lg:w-[96px]" />
-        <p className="bienvenida-extra mt-1 text-[14px] text-gray-400">
+      <div className="hoja-entra my-auto flex flex-col items-center pb-4 text-center">
+        <MascotaRetrato size={112} className="lg:h-[96px] lg:w-[96px]" />
+        <p className="mt-1 text-[14px] text-gray-400">
           Hola, soy el asistente de <NombreAccedraAI className="font-semibold text-white" />
         </p>
         <h2 className="font-display mt-1.5 text-[26px] font-semibold leading-tight tracking-[-0.015em] text-white sm:text-[34px]">
           {titulo}
         </h2>
-        <PromesaPdf className="bienvenida-extra mt-4" />
+        <PromesaPdf className="mt-4" />
 
         {/* Industrias: elegir una cambia los ejemplos y le dice el rubro al asistente. */}
         <div
           role="radiogroup"
           aria-label="Tu industria"
           // En el teléfono se deslizan de costado; el fundido a la derecha avisa que hay más.
-          className="bienvenida-extra no-scrollbar -mx-4 mt-6 flex max-w-[calc(100%+2rem)] gap-2 sm:gap-1.5 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,#000_82%,transparent)] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none]"
+          className="no-scrollbar -mx-4 mt-6 flex max-w-[calc(100%+2rem)] gap-2 sm:gap-1.5 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,#000_82%,transparent)] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none]"
         >
           {INDUSTRIAS.map((ind) => {
             const activa = industria?.id === ind.id;
@@ -325,6 +362,8 @@ function Bienvenida({ solucion }: { solucion?: string }) {
                 key={ind.id}
                 type="button"
                 role="radio"
+                // Con el teclado abierto, elegir un rubro no lo cierra.
+                onPointerDown={(e) => e.preventDefault()}
                 aria-checked={activa}
                 onClick={() => {
                   setIndustria(activa ? null : ind);
@@ -394,6 +433,9 @@ function Bienvenida({ solucion }: { solucion?: string }) {
               <IconoWhatsApp size={16} />
             </a>
             <button
+              // Sin robarle el foco al campo: si no, el teclado empieza a cerrarse
+              // con el toque, la hoja se reacomoda y el toque cae en otro lado.
+              onPointerDown={(e) => e.preventDefault()}
               type="submit"
               disabled={!texto.trim()}
               aria-label="Enviar"

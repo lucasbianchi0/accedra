@@ -1545,11 +1545,6 @@ dialog[data-brochure]::backdrop {
   }
 }
 
-/* Con el teclado abierto, la bienvenida se queda con lo esencial —la
-   pregunta y el campo, arriba— para que se vea lo que se escribe. */
-.chat-hoja[data-teclado="true"] .bienvenida-extra { display: none; }
-.chat-hoja[data-teclado="true"] .bienvenida { margin-top: 0; padding-top: 4px; }
-.chat-hoja[data-teclado="true"] .bienvenida h2 { font-size: 21px; margin-top: 0; }
 
 /* El contenido de la bienvenida entra escalonado mientras la hoja se asienta. */
 .chat-hoja-raiz[data-open="true"] .hoja-entra > *,

@@ -264,6 +264,9 @@ export default function Conversacion({
                 </button>
               ) : (
                 <button
+                  // Sin robarle el foco al campo: si no, el teclado empieza a cerrarse
+                  // con el toque, la hoja se reacomoda y el toque cae en otro lado.
+                  onPointerDown={(e) => e.preventDefault()}
                   type="submit"
                   disabled={!texto.trim()}
                   aria-label="Enviar"
