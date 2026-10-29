@@ -211,7 +211,7 @@ export default function EventosLateral() {
         aria-haspopup="dialog"
         aria-expanded={abierto}
         aria-label={`${t.events.tab} (${eventos.length})`}
-        className="fixed right-0 top-1/2 z-30 flex flex-col items-center gap-3 rounded-l-2xl border border-r-0 border-white/20 px-2.5 py-4 text-white sm:px-3 sm:py-5"
+        className="fixed right-0 top-1/2 z-30 hidden flex-col items-center gap-3 rounded-l-2xl border border-r-0 border-white/20 px-2.5 py-4 text-white sm:px-3 sm:py-5 md:flex"
         style={{
           transform: pestanaVisible ? "translate3d(0, -50%, 0)" : "translate3d(115%, -50%, 0)",
           transition: `transform ${ENTRADA_MS}ms ${CURVA_ENTRADA}`,

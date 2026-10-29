@@ -3,7 +3,7 @@
 import { LazyMotion, MotionConfig, m, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, ChevronLeft } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import LangSwitcher from "@/components/LangSwitcher";
 import { whatsappLink } from "@/lib/whatsapp";
@@ -60,6 +60,8 @@ export default function MobileMenu({
   const [solView, setSolView] = useState(false);
   const t = useT();
 
+  // En el celular las pestañas laterales de Eventos y Blog no se muestran (le
+  // tapaban la portada): viven acá, en el menú.
   // "Eventos" aparece en el menú sólo si hay al menos un evento próximo. Se
   // pregunta al abrir el menú, que es cuando se va a mostrar: el endpoint está
   // cacheado en el CDN y responde en milisegundos.
@@ -120,12 +122,12 @@ export default function MobileMenu({
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -24 }}
                       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                      className="absolute inset-0 overflow-y-auto overflow-x-hidden flex flex-col justify-center px-6"
+                      className="absolute inset-0 overflow-y-auto overflow-x-hidden flex flex-col justify-center-safe px-6"
                     >
                       {/* Soluciones — abre la sub-vista (no despliega inline) */}
                       <button
                         onClick={() => setSolView(true)}
-                        className="w-full group flex items-center gap-5 py-[17px] px-3 -mx-3 rounded-2xl border-b transition-colors hover:bg-white/[0.03]"
+                        className="w-full group flex items-center gap-5 py-[17px] [@media(max-height:720px)]:py-3 px-3 -mx-3 rounded-2xl border-b transition-colors hover:bg-white/[0.03]"
                         style={{ borderColor: "rgba(255,255,255,0.05)" }}
                       >
                         <span className="text-[11px] font-bold tabular-nums w-5 flex-shrink-0" style={{ color: `rgba(${BLUE_RGB},0.45)` }}>01</span>
@@ -138,7 +140,7 @@ export default function MobileMenu({
                           key={l.href}
                           href={l.href}
                           onClick={onClose}
-                          className="group flex items-center gap-5 py-[17px] px-3 -mx-3 rounded-2xl border-b last:border-0 transition-colors duration-200 hover:bg-white/[0.03] active:bg-white/[0.05]"
+                          className="group flex items-center gap-5 py-[17px] [@media(max-height:720px)]:py-3 px-3 -mx-3 rounded-2xl border-b last:border-0 transition-colors duration-200 hover:bg-white/[0.03] active:bg-white/[0.05]"
                           style={{ borderColor: "rgba(255,255,255,0.05)" }}
                         >
                           <span className="text-[11px] font-bold tabular-nums w-5 flex-shrink-0" style={{ color: `rgba(${BLUE_RGB},0.45)` }}>
@@ -149,25 +151,37 @@ export default function MobileMenu({
                         </a>
                       ))}
 
-                      {eventosProximos > 0 && (
+                      {/* Secundarios: el blog y, si hay, los eventos. Chicos y en
+                          una fila para no competir con las secciones. */}
+                      <div className="mt-5 flex gap-2.5 [@media(max-height:720px)]:mt-3">
                         <Link
-                          href="/eventos"
+                          href="/blog"
                           onClick={() => {
-                            track({ type: "click", name: "eventos_menu", target: String(eventosProximos) });
+                            track({ type: "click", name: "blog_menu", target: "menu" });
                             onClose();
                           }}
-                          className="group flex items-center gap-5 py-[17px] px-3 -mx-3 rounded-2xl transition-colors duration-200 hover:bg-white/[0.03] active:bg-white/[0.05]"
+                          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] py-3 text-[15px] font-semibold text-gray-200 transition-colors hover:bg-white/[0.06] hover:text-white active:bg-white/[0.08]"
                         >
-                          <span className="text-[11px] font-bold tabular-nums w-5 flex-shrink-0" style={{ color: `rgba(${BLUE_RGB},0.45)` }}>
-                            {String(otherLinks.length + 2).padStart(2, "0")}
-                          </span>
-                          <span className="text-white text-[22px] font-bold leading-none group-hover:text-blue-300 transition-colors duration-200">{t.events.tab}</span>
-                          <span className="grid h-6 min-w-6 place-items-center rounded-full bg-[#2560BC] px-1.5 text-[12px] font-bold text-white tabular-nums">
-                            {eventosProximos}
-                          </span>
-                          <ArrowRight size={15} className="ml-auto text-gray-700 group-hover:text-blue-400 group-hover:translate-x-1 transition-all duration-200" />
+                          <BookOpen size={16} className="text-blue-300/80" />
+                          Blog
                         </Link>
-                      )}
+                        {eventosProximos > 0 && (
+                          <Link
+                            href="/eventos"
+                            onClick={() => {
+                              track({ type: "click", name: "eventos_menu", target: String(eventosProximos) });
+                              onClose();
+                            }}
+                            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] py-3 text-[15px] font-semibold text-gray-200 transition-colors hover:bg-white/[0.06] hover:text-white active:bg-white/[0.08]"
+                          >
+                            <CalendarDays size={16} className="text-blue-300/80" />
+                            {t.events.tab}
+                            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#2560BC] px-1.5 text-[11px] font-bold text-white tabular-nums">
+                              {eventosProximos}
+                            </span>
+                          </Link>
+                        )}
+                      </div>
                     </m.nav>
                   ) : (
                     <m.nav
@@ -176,7 +190,7 @@ export default function MobileMenu({
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 24 }}
                       transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                      className="absolute inset-0 overflow-y-auto overflow-x-hidden flex flex-col justify-center px-6"
+                      className="absolute inset-0 overflow-y-auto overflow-x-hidden flex flex-col justify-center-safe px-6"
                     >
                       {/* Volver a la vista principal */}
                       <button
