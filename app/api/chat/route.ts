@@ -142,20 +142,20 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
   {
     name: "ofrecer_opciones",
     description:
-      "Muestra tu pregunta destacada con botones de respuesta rápida (la persona igual puede escribir). Usala cuando la respuesta tiene alternativas típicas: tamaño de la empresa, cantidad de sedes, tipo de problema, urgencia, sí/no. La pregunta va en `pregunta`, NO en el texto: no la repitas. Una sola vez por mensaje.",
+      "Muestra tu pregunta destacada al final del mensaje, con botones de respuesta rápida si los hay (la persona igual puede escribir, y siempre tiene un botón 'No lo sé' que agrega el sitio: no lo incluyas). Toda pregunta va acá, en `pregunta`, y NO en el texto. Con respuestas típicas (tamaño, sedes, tipo de problema, urgencia, sí/no) poné opciones; si la pregunta es abierta o son varias preguntas juntas, dejá `opciones` vacío. Una sola vez por mensaje.",
     input_schema: {
       type: "object",
       properties: {
         pregunta: {
           type: "string",
-          description: "La pregunta, una oración corta terminada en '?'. Ej.: '¿Cuántas sedes tienen con este problema?'",
+          description:
+            "La pregunta, terminada en '?'. Ej.: '¿Cuántas sedes tienen con este problema?'. Si son 2 o 3 preguntas para que la persona desarrolle, una lista numerada en líneas separadas, con una frase de entrada: 'Para afinar la propuesta, contame:\n1. ¿…?\n2. ¿…?'",
         },
         opciones: {
           type: "array",
           items: { type: "string" },
-          minItems: 2,
           maxItems: 6,
-          description: "De 2 a 6 opciones cortas (máx. 32 caracteres), en el orden natural.",
+          description: "De 2 a 6 opciones cortas (máx. 32 caracteres), en el orden natural; vacío si la pregunta es abierta.",
         },
         multiple: { type: "boolean", description: "true si tiene sentido elegir más de una (p. ej. varios problemas)." },
       },
@@ -326,8 +326,11 @@ function armarTarjeta(nombre: string, entrada: Record<string, unknown>): Tarjeta
         .map((o) => texto(o, 40))
         .filter(Boolean)
         .slice(0, 6);
-      const pregunta = texto(entrada.pregunta, 200);
-      return opciones.length >= 2
+      // Con saltos de línea: la pregunta puede ser una lista numerada.
+      const pregunta = typeof entrada.pregunta === "string"
+        ? entrada.pregunta.split("\n").map((l) => texto(l, 220)).filter(Boolean).slice(0, 5).join("\n")
+        : "";
+      return opciones.length >= 2 || (pregunta && opciones.length === 0)
         ? { tipo: "opciones", ...(pregunta ? { pregunta } : {}), opciones, multiple: entrada.multiple === true }
         : null;
     }

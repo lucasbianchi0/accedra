@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowUp, Square } from "lucide-react";
 import { MascotaCara } from "./Mascota";
-import { preguntaDe, separarPregunta } from "@/lib/chat/pregunta";
+import { opcionesDe, preguntaDe, separarPregunta } from "@/lib/chat/pregunta";
 import Formato from "./Formato";
 import {
   Caso,
@@ -175,15 +175,11 @@ export default function Conversacion({
                       )}
                       {/* Las opciones van al final y sólo en la última respuesta:
                           contestada la pregunta, dejan de tener sentido. */}
-                      {m.id === ultimo?.id &&
-                        !enCurso &&
-                        m.partes.map((p, i) =>
-                          p.tipo === "tarjeta" && p.tarjeta.tipo === "opciones" ? (
-                            <div key={`o-${i}`} className="opciones-entra">
-                              <Opciones t={p.tarjeta} onElegir={(o) => void enviar(o, `${origen}:opcion`)} />
-                            </div>
-                          ) : null,
-                        )}
+                      {m.id === ultimo?.id && !enCurso && opcionesDe(m.partes) && (
+                        <div className="opciones-entra">
+                          <Opciones t={opcionesDe(m.partes)!} onElegir={(o) => void enviar(o, `${origen}:opcion`)} />
+                        </div>
+                      )}
                       {m.id === ultimo?.id && pensando && (
                         <span className="pensando-texto inline-block pt-1 text-[13.5px] font-medium" role="status">
                           Analizando tu caso…

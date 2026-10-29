@@ -1,4 +1,4 @@
-import type { Parte } from "./tipos";
+import type { Parte, TarjetaOpciones } from "./tipos";
 
 /**
  * Saca la pregunta con la que termina una respuesta para dibujarla aparte.
@@ -40,4 +40,16 @@ export function preguntaDe(partes: Parte[]): string | null {
     if (p.tipo === "tarjeta" && p.tarjeta.tipo === "opciones" && p.tarjeta.pregunta) return p.tarjeta.pregunta;
   }
   return separarPregunta(partes).pregunta;
+}
+
+/**
+ * Los botones debajo de la pregunta: los que mandó el modelo o, si la
+ * pregunta es abierta, ninguno. El "No lo sé" lo agrega `Opciones` siempre.
+ * Null si la respuesta no termina en una pregunta.
+ */
+export function opcionesDe(partes: Parte[]): TarjetaOpciones | null {
+  for (const p of partes) {
+    if (p.tipo === "tarjeta" && p.tarjeta.tipo === "opciones") return p.tarjeta;
+  }
+  return preguntaDe(partes) ? { tipo: "opciones", opciones: [], multiple: false } : null;
 }

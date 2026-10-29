@@ -209,7 +209,7 @@ export function notaDeTarjeta(t: Tarjeta): string {
     case "humano":
       return "[Mostré el botón para hablar por WhatsApp con una persona]";
     case "opciones":
-      return `[${t.pregunta ? `Pregunté: ${t.pregunta} ` : ""}Ofrecí opciones de respuesta: ${t.opciones.join(" / ")}]`;
+      return `[${t.pregunta ? `Pregunté: ${t.pregunta}` : ""}${t.opciones.length ? ` Ofrecí opciones de respuesta: ${t.opciones.join(" / ")}` : ""}]`;
     case "relevamiento":
       return `[Armé el relevamiento en PDF con lo identificado${t.datos.puntaje != null ? ` (nivel ${t.datos.puntaje}%)` : ""}]`;
     case "nota":

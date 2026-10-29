@@ -240,6 +240,14 @@ export function Relevamiento({ t }: { t: TarjetaRelevamiento }) {
  * Opciones de respuesta. Una: se manda al tocarla. Varias: se marcan y se
  * confirman. Escribir sigue valiendo: las opciones no reemplazan al campo.
  */
+/**
+ * "No lo sé" va siempre: una pregunta que la persona no sabe contestar no
+ * puede trabar la conversación. Si el modelo ya puso algo parecido, no se
+ * repite.
+ */
+const NO_SE = "No lo sé";
+const yaTieneNoSe = (opciones: string[]) => opciones.some((o) => /no (lo )?s[eé]|no sabemos|no lo tenemos|no tengo claro|no est[aá] claro|ni idea/i.test(o));
+
 export function Opciones({ t, onElegir }: { t: TarjetaOpciones; onElegir: (texto: string) => void }) {
   const [elegidas, setElegidas] = useState<string[]>([]);
   return (
@@ -261,6 +269,15 @@ export function Opciones({ t, onElegir }: { t: TarjetaOpciones; onElegir: (texto
           </button>
         );
       })}
+      {!yaTieneNoSe(t.opciones) && (
+        <button
+          type="button"
+          onClick={() => onElegir(NO_SE)}
+          className="rounded-full border border-dashed border-white/15 px-3.5 py-1.5 text-[13px] text-gray-400 transition-colors hover:border-white/30 hover:text-gray-200"
+        >
+          {NO_SE}
+        </button>
+      )}
       {t.multiple && elegidas.length > 0 && (
         <button
           type="button"
