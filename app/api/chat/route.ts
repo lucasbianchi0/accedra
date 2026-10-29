@@ -444,10 +444,14 @@ export async function POST(req: NextRequest) {
   // Primero la IP y sólo si pasa el global: si no, una sola IP bloqueada
   // seguiría sumando al techo global hasta apagar el asistente para todos.
   const ip = ipParaLimite(req);
-  const [porIp, porBloque] = await Promise.all([
-    consume("chat", ip, LIMITE_IP),
-    consume("chat-bloque", bloqueDeRed(req), LIMITE_BLOQUE),
-  ]);
+  // En `next dev` la IP es siempre la de la máquina de quien prueba, y el
+  // contador vive en la base compartida: una tarde de pruebas lo llenaba y el
+  // chat dejaba de contestar en local. Los cupos por IP no aplican ahí; los
+  // globales sí. En Vercel (preview o producción) NODE_ENV es "production".
+  const enDesarrollo = process.env.NODE_ENV === "development";
+  const [porIp, porBloque] = enDesarrollo
+    ? [{ allowed: true }, { allowed: true }]
+    : await Promise.all([consume("chat", ip, LIMITE_IP), consume("chat-bloque", bloqueDeRed(req), LIMITE_BLOQUE)]);
   if (!porIp.allowed || !porBloque.allowed) return error(LIMITE_ALCANZADO, 429);
   const global = await consume("chat-global", "todos", LIMITE_GLOBAL);
   if (!global.allowed) {
@@ -459,14 +463,14 @@ export async function POST(req: NextRequest) {
   // enseguida y no se llama al modelo.
   const reserva = reservaPara(historial);
   const [saldoIp, saldoGlobal] = await Promise.all([
-    consume("chat-tokens", ip, PRESUPUESTO_IP, reserva),
+    enDesarrollo ? { allowed: true } : consume("chat-tokens", ip, PRESUPUESTO_IP, reserva),
     consume("chat-tokens-global", "todos", PRESUPUESTO_GLOBAL, reserva),
   ]);
   // Negativa cobra la diferencia (una respuesta que gastó más que la reserva).
   const devolver = (cantidad: number) =>
     cantidad !== 0
       ? Promise.all([
-          consume("chat-tokens", ip, PRESUPUESTO_IP, -cantidad),
+          enDesarrollo ? null : consume("chat-tokens", ip, PRESUPUESTO_IP, -cantidad),
           consume("chat-tokens-global", "todos", PRESUPUESTO_GLOBAL, -cantidad),
         ]).catch(() => {})
       : Promise.resolve();

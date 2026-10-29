@@ -41,10 +41,15 @@ export async function POST(req: NextRequest) {
 
   // Por IP, por documento y en total: armar un PDF cuesta CPU, y un mismo
   // relevamiento firmado no puede servir para pedir miles desde muchas IPs.
-  const [porIp, porDocumento] = await Promise.all([
-    consume("relevamiento", ipParaLimite(req), LIMITE),
-    consume("relevamiento-doc", String(body.firma).slice(0, 64), LIMITE_DOCUMENTO),
-  ]);
+  // En `next dev` sin cupos por IP ni por documento (ver /api/chat): se
+  // prueba siempre desde la misma máquina y con el mismo PDF.
+  const [porIp, porDocumento] =
+    process.env.NODE_ENV === "development"
+      ? [{ allowed: true }, { allowed: true }]
+      : await Promise.all([
+          consume("relevamiento", ipParaLimite(req), LIMITE),
+          consume("relevamiento-doc", String(body.firma).slice(0, 64), LIMITE_DOCUMENTO),
+        ]);
   const permitido = porIp.allowed && porDocumento.allowed ? await consume("relevamiento-global", "todos", LIMITE_GLOBAL) : porIp;
   if (!porIp.allowed || !porDocumento.allowed || !permitido.allowed) {
     return Response.json({ error: "Probá de nuevo en un rato." }, { status: 429 });
