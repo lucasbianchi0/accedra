@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 
-import { verificar } from "@/lib/chat/relevamiento";
+import { alterado, verificar } from "@/lib/chat/relevamiento";
+import { alertar } from "@/lib/chat/alertas";
 import { nombreArchivo, pdfRelevamiento } from "@/lib/chat/pdf-relevamiento";
 import { esBot, leerJson, mismoOrigen } from "@/lib/chat/guardia";
 import { ipParaLimite } from "@/lib/contact/clientIp";
@@ -31,11 +32,17 @@ const LIMITE_GLOBAL = [
 
 export async function POST(req: NextRequest) {
   if (!mismoOrigen(req)) return Response.json({ error: "Pedido inválido" }, { status: 403 });
-  if (await esBot()) return Response.json({ error: "No pudimos verificar el navegador." }, { status: 403 });
+  if (await esBot(req)) return Response.json({ error: "No pudimos verificar el navegador." }, { status: 403 });
 
   const body = await leerJson(req, 32 * 1024);
-  if (body === "grande") return Response.json({ error: "Pedido demasiado grande" }, { status: 413 });
+  if (body === "grande") {
+    alertar(req, "cuerpo-grande", "Llegó a la descarga del PDF un pedido de más de 32 KB.");
+    return Response.json({ error: "Pedido demasiado grande" }, { status: 413 });
+  }
   if (!body || !verificar(body.datos, body.firma)) {
+    if (body && alterado(body.datos, body.firma)) {
+      alertar(req, "firma-falsa", "Pidieron un PDF con datos del relevamiento modificados a mano (la firma no coincide): alguien intentó generar un documento con la marca de Accedra.");
+    }
     return Response.json({ error: "El relevamiento venció. Pedile al asistente que lo arme de nuevo." }, { status: 400 });
   }
 
@@ -52,6 +59,11 @@ export async function POST(req: NextRequest) {
         ]);
   const permitido = porIp.allowed && porDocumento.allowed ? await consume("relevamiento-global", "todos", LIMITE_GLOBAL) : porIp;
   if (!porIp.allowed || !porDocumento.allowed || !permitido.allowed) {
+    if (!permitido.allowed && porIp.allowed && porDocumento.allowed) {
+      alertar(req, "techo-global", "Se alcanzó el techo global de PDFs: la descarga quedó cerrada para todos.", "pdf");
+    } else {
+      alertar(req, "limite-ip", "Una IP superó el tope de descargas del PDF (o pidió muchas veces el mismo documento).");
+    }
     return Response.json({ error: "Probá de nuevo en un rato." }, { status: 429 });
   }
 

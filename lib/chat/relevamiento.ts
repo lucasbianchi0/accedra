@@ -29,6 +29,10 @@ function firmar(datos: Relevamiento): string | null {
  */
 const VIGENCIA_MS = 7 * 24 * 60 * 60 * 1000;
 
+/** La firma no corresponde a los datos: alguien los modificó (no es un vencimiento). */
+export const alterado = (datos: unknown, firma: unknown) =>
+  typeof firma === "string" && !!datos && typeof datos === "object" && !iguales(firmar(datos as Relevamiento), firma);
+
 export function verificar(datos: unknown, firma: unknown): datos is Relevamiento {
   if (!datos || typeof datos !== "object" || typeof firma !== "string") return false;
   if (!iguales(firmar(datos as Relevamiento), firma)) return false;

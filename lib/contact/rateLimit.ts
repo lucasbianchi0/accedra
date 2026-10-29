@@ -179,7 +179,8 @@ async function contar(claves: string[], rules: readonly Rule[], cantidad: number
   return enMemoria();
 }
 
-export type RateVerdict = { allowed: boolean; rule?: string };
+/** `fraccion`: cuánto de la regla más cargada ya se usó (0 a 1 o más), para avisar antes del tope. */
+export type RateVerdict = { allowed: boolean; rule?: string; fraccion?: number };
 
 /**
  * Consume una cuota y dice si el pedido pasa.
@@ -201,8 +202,9 @@ export async function consume(
   const claves = rules.map((r) => `${scope}:${r.suffix}:${id}`);
   const totales = await contar(claves, rules, cantidad);
   if (cantidad < 0) return { allowed: true };
+  const fraccion = Math.max(...rules.map((r, i) => totales[i] / r.limit));
   const excedida = rules.findIndex((r, i) => (cantidad === 0 ? totales[i] >= r.limit : totales[i] > r.limit));
-  return excedida === -1 ? { allowed: true } : { allowed: false, rule: `${scope}:${rules[excedida].suffix}` };
+  return excedida === -1 ? { allowed: true, fraccion } : { allowed: false, rule: `${scope}:${rules[excedida].suffix}`, fraccion };
 }
 
 /** Cuota del formulario de contacto. Mismas claves y límites que antes. */
