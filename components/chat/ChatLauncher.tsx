@@ -72,7 +72,7 @@ export default function ChatLauncher() {
 
   return (
     <div
-      className={`chat-launcher fixed right-5 z-50 flex items-center gap-3 ${conWhatsApp ? "bottom-[84px] sm:bottom-[86px]" : "bottom-6"}`}
+      className={`chat-launcher fixed right-5 z-50 flex items-center gap-3 ${conWhatsApp ? "bottom-[96px]" : "bottom-6"}`}
       data-shown={visible ? "true" : "false"}
     >
       {globo && visible && (
@@ -105,7 +105,7 @@ export default function ChatLauncher() {
         onFocus={precargar}
         onTouchStart={precargarHoja}
         aria-label="Abrir el asistente de Accedra"
-        className="chat-boton group relative grid h-[52px] w-[52px] place-items-center rounded-full text-white"
+        className="chat-boton group relative grid h-[60px] w-[60px] place-items-center rounded-full text-white"
       >
         <span aria-hidden className="chat-boton-halo absolute -inset-1.5 rounded-full" />
         {/* La cara del personaje con un aro en el degradé de Accedra AI. */}
@@ -119,7 +119,7 @@ export default function ChatLauncher() {
         >
           <span className="block h-full w-full overflow-hidden rounded-full bg-navy-900">
             <MascotaCara
-              size={48}
+              size={56}
               className="h-full w-full transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
             />
           </span>
