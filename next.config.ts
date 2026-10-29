@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withBotId } from "botid/next/config";
 
 // Mapa de las URLs del sitio VIEJO (estático, .html) a las del sitio nuevo.
 // Google todavía tiene esas URLs indexadas y hoy devuelven 404, así que toda la
@@ -76,4 +77,6 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// BotID sirve su desafío desde el propio dominio (rewrites a Vercel): ver
+// instrumentation-client.ts.
+export default withBotId(nextConfig);

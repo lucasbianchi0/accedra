@@ -38,6 +38,15 @@ export type TarjetaContacto = {
   solucion: string | null;
   nombre: string;
   empresa: string;
+  /** Cuándo la emitió el servidor (ms). La firma vence. */
+  emitido: number;
+  /**
+   * HMAC de resumen + solución + emitido. El formulario sólo se acepta con una
+   * tarjeta que haya emitido el asistente: así, para cargar un lead hay que
+   * pasar antes por el chat (con sus cupos y su BotID), y el resumen que le
+   * llega al equipo es el que escribió el asistente, no uno inventado.
+   */
+  firma: string;
 };
 
 export type TarjetaHumano = {
@@ -105,10 +114,26 @@ export type Mensaje = {
   rol: "user" | "assistant";
   partes: Parte[];
   error?: string;
+  /** Firma del servidor sobre lo que respondió (ver `huella`). Sólo del asistente. */
+  firma?: string;
 };
 
 /** Lo que viaja al servidor por mensaje. */
-export type Entrada = { role: "user" | "assistant"; content: string };
+export type Entrada = { role: "user" | "assistant"; content: string; firma?: string };
+
+/**
+ * Lo que se firma de una respuesta del asistente: su texto y las notas de sus
+ * tarjetas, sin espacios ni invisibles.
+ *
+ * El historial lo manda el navegador, así que sin firma cualquiera podría
+ * escribir respuestas "del asistente" y usarlas para torcerlo (diálogos falsos
+ * donde ya aceptó otro rol, o ya prometió un precio). El servidor firma lo que
+ * él mismo generó y descarta lo que no reconoce.
+ *
+ * Se ignoran los espacios porque el panel los acomoda al dibujar (une párrafos,
+ * saca los del principio): lo que importa es que las palabras sean las mismas.
+ */
+export const huella = (texto: string) => texto.replace(/[\s\u200B-\u200D\uFEFF]/g, "");
 
 export const LIMITES_CHAT = {
   /** Lo que puede escribir la persona en un mensaje. */

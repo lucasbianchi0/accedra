@@ -8,17 +8,28 @@
 //
 // En Vercel cada request puede caer en una instancia distinta y las instancias se
 // reciclan, así que un contador en memoria NO frena a un atacante: le alcanza con
-// espaciar los envíos o simplemente tener suerte con el routing. Sirve sólo como
-// red de contención en desarrollo.
+// espaciar los envíos o simplemente tener suerte con el routing.
 //
-// Con UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN definidas el contador pasa
-// a ser compartido entre instancias y el límite se vuelve real. `isDurable` expone
-// cuál de los dos modos está activo para poder loguearlo.
+// El contador durable sale, en orden:
+//   1. Upstash, si están UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN.
+//   2. Supabase (`site_rate_limit_hit`, migración 007), que ya está en todos los
+//      entornos donde hay leads. Es el que corre hoy en producción.
+//   3. Memoria, sólo en desarrollo o si los otros dos fallan.
+//
+// Ante un error del backend durable NO se deja pasar todo: se cuenta en memoria.
+// Es un límite peor, pero un límite; rechazar todo convertiría una caída de
+// infra en pérdida de consultas, y dejar pasar todo la convertiría en factura.
 
 const URL_BASE = process.env.UPSTASH_REDIS_REST_URL;
 const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 
-export const isDurable = Boolean(URL_BASE && TOKEN);
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+const backend: "upstash" | "supabase" | "memoria" =
+  URL_BASE && TOKEN ? "upstash" : SUPABASE_URL && SUPABASE_KEY ? "supabase" : "memoria";
+
+export const isDurable = backend !== "memoria";
 
 export type Rule = { suffix: string; limit: number; windowSec: number };
 
@@ -86,41 +97,86 @@ export const EVENTO_GLOBAL_RULES: readonly Rule[] = [
   { suffix: "day", limit: 400, windowSec: 24 * 60 * 60 },
 ];
 
-async function redisIncr(key: string, windowSec: number): Promise<number> {
-  const res = await fetch(`${URL_BASE}/incr/${encodeURIComponent(key)}`, {
+async function redisIncr(key: string, windowSec: number, cantidad: number): Promise<number> {
+  const res = await fetch(`${URL_BASE}/incrby/${encodeURIComponent(key)}/${cantidad}`, {
     headers: { Authorization: `Bearer ${TOKEN}` },
     cache: "no-store",
+    signal: AbortSignal.timeout(2500),
   });
-  if (!res.ok) throw new Error(`upstash incr ${res.status}`);
+  if (!res.ok) throw new Error(`upstash incrby ${res.status}`);
   const count = Number((await res.json()).result);
 
   // Sólo el primer hit de la ventana define el TTL; si no, la ventana se
   // renovaría en cada request y el contador nunca expiraría.
-  if (count === 1) {
+  if (count === cantidad) {
     await fetch(`${URL_BASE}/expire/${encodeURIComponent(key)}/${windowSec}`, {
       headers: { Authorization: `Bearer ${TOKEN}` },
       cache: "no-store",
+      signal: AbortSignal.timeout(2500),
     });
   }
   return count;
 }
 
-// Fallback en memoria: timestamps por clave, podados por ventana.
-const memory = new Map<string, number[]>();
+/**
+ * Todas las reglas de un `consume` en una sola ida y vuelta a Postgres. Por
+ * fetch directo a PostgREST y no con supabase-js: es un POST y nada más, y así
+ * se le puede poner un timeout corto.
+ */
+async function supabaseIncr(claves: string[], ventanas: number[], cantidad: number): Promise<number[]> {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/site_rate_limit_hit`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_KEY!,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ keys: claves, windows: ventanas, amounts: claves.map(() => cantidad) }),
+    cache: "no-store",
+    signal: AbortSignal.timeout(2500),
+  });
+  if (!res.ok) throw new Error(`supabase rate ${res.status}`);
+  const valores = (await res.json()) as unknown;
+  if (!Array.isArray(valores) || valores.length !== claves.length) throw new Error("supabase rate: respuesta inesperada");
+  return valores.map(Number);
+}
 
-function memoryIncr(key: string, windowSec: number, now: number): number {
+// Fallback en memoria: [timestamp, cantidad] por clave, podados por ventana.
+const memory = new Map<string, [number, number][]>();
+
+function memoryIncr(key: string, windowSec: number, now: number, cantidad: number): number {
   const cutoff = now - windowSec * 1000;
-  const hits = (memory.get(key) ?? []).filter((t) => t > cutoff);
-  hits.push(now);
+  const hits = (memory.get(key) ?? []).filter(([t]) => t > cutoff);
+  if (cantidad !== 0) hits.push([now, cantidad]);
   memory.set(key, hits);
 
   // Poda perezosa para que el Map no crezca sin techo en un proceso largo.
   if (memory.size > 5_000) {
     for (const [k, v] of memory) {
-      if (v.every((t) => t <= cutoff)) memory.delete(k);
+      if (v.every(([t]) => t <= cutoff)) memory.delete(k);
     }
   }
-  return hits.length;
+  return Math.max(0, hits.reduce((n, [, c]) => n + c, 0));
+}
+
+/** Un aviso por minuto y por instancia: lo bastante para verlo, sin inundar el log. */
+let ultimoAviso = 0;
+
+async function contar(claves: string[], rules: readonly Rule[], cantidad: number): Promise<number[]> {
+  const now = Date.now();
+  const enMemoria = () => claves.map((k, i) => memoryIncr(k, rules[i].windowSec, now, cantidad));
+  try {
+    if (backend === "supabase") return await supabaseIncr(claves, rules.map((r) => r.windowSec), cantidad);
+    if (backend === "upstash") return await Promise.all(claves.map((k, i) => redisIncr(k, rules[i].windowSec, cantidad)));
+  } catch (err) {
+    // En serverless la memoria es por instancia: con el backend caído los
+    // límites casi no frenan. Tiene que verse en el log.
+    if (now - ultimoAviso > 60_000) {
+      console.error(`[rate] el backend ${backend} falló, se cuenta en memoria (límites débiles):`, (err as Error).message);
+      ultimoAviso = now;
+    }
+  }
+  return enMemoria();
 }
 
 export type RateVerdict = { allowed: boolean; rule?: string };
@@ -132,29 +188,21 @@ export type RateVerdict = { allowed: boolean; rule?: string };
  * "brochure:email"…); `id` es el sujeto contado (una IP, un mail hasheado, o
  * "all" para un techo global).
  *
- * Ante un error de Upstash deja pasar (fail-open) en vez de bloquear: si Redis se
- * cae, rechazar todo convertiría una caída de infra en pérdida de consultas
- * comerciales. El costo es que durante esa ventana el límite no aplica.
+ * `cantidad` es cuánto se descuenta: 1 por pedido, o tokens para un
+ * presupuesto. Con 0 sólo se mira el saldo (y pasa mientras no se haya pasado
+ * del límite). Negativa devuelve parte de una reserva.
  */
 export async function consume(
   scope: string,
   id: string,
-  rules: readonly Rule[]
+  rules: readonly Rule[],
+  cantidad = 1,
 ): Promise<RateVerdict> {
-  const now = Date.now();
-
-  for (const rule of rules) {
-    const key = `${scope}:${rule.suffix}:${id}`;
-    try {
-      const count = isDurable
-        ? await redisIncr(key, rule.windowSec)
-        : memoryIncr(key, rule.windowSec, now);
-      if (count > rule.limit) return { allowed: false, rule: `${scope}:${rule.suffix}` };
-    } catch (err) {
-      console.error(`[rate] "${scope}:${rule.suffix}" falló, se deja pasar:`, err);
-    }
-  }
-  return { allowed: true };
+  const claves = rules.map((r) => `${scope}:${r.suffix}:${id}`);
+  const totales = await contar(claves, rules, cantidad);
+  if (cantidad < 0) return { allowed: true };
+  const excedida = rules.findIndex((r, i) => (cantidad === 0 ? totales[i] >= r.limit : totales[i] > r.limit));
+  return excedida === -1 ? { allowed: true } : { allowed: false, rule: `${scope}:${rules[excedida].suffix}` };
 }
 
 /** Cuota del formulario de contacto. Mismas claves y límites que antes. */

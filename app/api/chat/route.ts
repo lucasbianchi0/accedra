@@ -4,9 +4,10 @@ import type { NextRequest } from "next/server";
 import { crearClienteClaude, hayClaveClaude } from "@/lib/chat/claude";
 import { IDS_CASO, SLUGS_SOLUCION, tarjetaCaso, tarjetaSolucion } from "@/lib/chat/conocimiento";
 import { systemPrompt } from "@/lib/chat/prompt";
-import { LIMITES_CHAT, type Entrada, type Tarjeta } from "@/lib/chat/tipos";
+import { LIMITES_CHAT, huella, notaDeTarjeta, type Entrada, type Tarjeta } from "@/lib/chat/tipos";
 import { armarRelevamiento } from "@/lib/chat/relevamiento";
-import { clientIp } from "@/lib/contact/clientIp";
+import { esBot, firmaValida, firmar, leerJson, limpiarInvisibles, mismoOrigen, sinEnlaces } from "@/lib/chat/guardia";
+import { bloqueDeRed, ipParaLimite } from "@/lib/contact/clientIp";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { SUB_SERVICES } from "@/components/solutions/subServicesData";
 import { INDUSTRIES } from "@/components/solutions/industriesData";
@@ -18,6 +19,9 @@ import { consume } from "@/lib/contact/rateLimit";
  * Es público: cualquiera puede postear acá sin pasar por el panel, así que
  * todo lo que llega es entrada hostil. Del navegador viene el historial y nada
  * más; el prompt, el catálogo y los datos de cada tarjeta salen del servidor.
+ * Las defensas comunes están en `lib/chat/guardia.ts`; acá, el orden: origen y
+ * BotID (gratis), cuerpo con tope, historial con las respuestas firmadas, cupos
+ * por IP, techo global y presupuesto de tokens. Recién ahí se llama a Claude.
  *
  * Responde SSE armado a mano (`texto`, `tarjeta`, `error`, `fin`), igual que el
  * asistente del backoffice: un error a mitad de respuesta tiene que poder
@@ -33,16 +37,60 @@ const MODELO = "claude-sonnet-5-5";
  *  se come la cuenta. */
 const VUELTAS = 3;
 
-/** Por IP. Una conversación larga de verdad son 15-20 mensajes. */
+/**
+ * Por IP. Una conversación larga de verdad son 15-20 mensajes, y nadie lee y
+ * contesta más de uno cada ~8 segundos.
+ */
 const LIMITE_IP = [
-  { suffix: "burst", limit: 30, windowSec: 10 * 60 },
-  { suffix: "day", limit: 80, windowSec: 24 * 60 * 60 },
+  { suffix: "minute", limit: 8, windowSec: 60 },
+  { suffix: "burst", limit: 25, windowSec: 10 * 60 },
+  { suffix: "day", limit: 60, windowSec: 24 * 60 * 60 },
 ] as const;
-/** Techo del endpoint entero: corta un ataque distribuido antes de que lo pague la cuenta. */
+/**
+ * Por bloque de red: un servidor con IPv6 trae miles de /64 propios, y cada uno
+ * tendría su cupo entero. El /48 los junta (en IPv4 es la misma IP, así que no
+ * castiga a los que comparten conexión del celular).
+ */
+const LIMITE_BLOQUE = [
+  { suffix: "minute", limit: 20, windowSec: 60 },
+  { suffix: "day", limit: 150, windowSec: 24 * 60 * 60 },
+] as const;
+/**
+ * Techo de pedidos del endpoint entero. Alto a propósito: el techo de la
+ * factura es el presupuesto de tokens. Si fuera bajo, alguien con unas decenas
+ * de IPs apagaría el asistente para todos.
+ */
 const LIMITE_GLOBAL = [
-  { suffix: "hour", limit: 600, windowSec: 60 * 60 },
-  { suffix: "day", limit: 3000, windowSec: 24 * 60 * 60 },
+  { suffix: "hour", limit: 2000, windowSec: 60 * 60 },
+  { suffix: "day", limit: 12_000, windowSec: 24 * 60 * 60 },
 ] as const;
+
+/**
+ * Presupuesto de tokens, en "unidades de entrada": la entrada nueva cuenta 1,
+ * escribir caché de una hora 2, leerla 0,1 y la salida 5 (es lo que cuesta
+ * cada cosa en relación con la entrada). Una conversación completa con
+ * relevamiento anda por las 100.000.
+ *
+ * Los cupos de arriba cuentan pedidos; esto cuenta plata. Por IP alcanza para
+ * cinco conversaciones largas por día (detrás de la conexión del celular
+ * comparten IP muchas personas). El global es el techo de la factura diaria
+ * aunque alguien reparta el ataque entre miles de IPs.
+ *
+ * Se RESERVA el peor caso antes de llamar al modelo y se devuelve lo que no se
+ * gastó sólo si la respuesta terminó bien. Si se mirara el saldo y se cobrara
+ * al final, ocho pedidos en paralelo verían todos saldo, y cortar la conexión
+ * antes del final dejaría la respuesta sin cobrar.
+ */
+const PRESUPUESTO_IP = [{ suffix: "day", limit: 500_000, windowSec: 24 * 60 * 60 }] as const;
+const PRESUPUESTO_GLOBAL = [{ suffix: "day", limit: 10_000_000, windowSec: 24 * 60 * 60 }] as const;
+
+/** El historial entero como JSON, con margen para el escapado y los acentos. */
+const MAX_BODY = LIMITES_CHAT.total * 3;
+/** Antes del `maxDuration`, para cerrar con un error prolijo y no con un corte. */
+const TIEMPO_MAX_MS = 55_000;
+
+/** Lo que ve el modelo en lugar de una respuesta que el servidor no reconoce. */
+const RESPUESTA_NO_VERIFICADA = "[Respuesta anterior del asistente, no disponible]";
 
 const HERRAMIENTAS: Anthropic.Tool[] = [
   {
@@ -181,8 +229,9 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
   },
 ];
 
+/** Lo que el modelo pone en una tarjeta: sin controles, invisibles ni enlaces. */
 function texto(v: unknown, max: number): string {
-  return typeof v === "string" ? v.replace(/[\u0000-\u001F\u007F]/g, " ").trim().slice(0, max) : "";
+  return typeof v === "string" ? sinEnlaces(limpiarInvisibles(v.replace(/[\u0000-\u001F\u007F]/g, " "))).slice(0, max) : "";
 }
 
 /** Convierte un pedido de herramienta en la tarjeta que se le muestra a la persona. */
@@ -193,13 +242,20 @@ function armarTarjeta(nombre: string, entrada: Record<string, unknown>): Tarjeta
     case "mostrar_caso":
       return tarjetaCaso(texto(entrada.id, 40));
     case "pedir_contacto": {
-      const solucion = texto(entrada.solucion, 40);
+      const crudo = texto(entrada.solucion, 40);
+      const solucion = SLUGS_SOLUCION.includes(crudo) ? crudo : null;
+      const resumen = texto(entrada.resumen, 800);
+      const emitido = Date.now();
+      const firma = firmar("contacto", JSON.stringify([resumen, solucion, emitido]));
+      if (!firma) return null;
       return {
         tipo: "contacto",
-        resumen: texto(entrada.resumen, 800),
-        solucion: SLUGS_SOLUCION.includes(solucion) ? solucion : null,
+        resumen,
+        solucion,
         nombre: texto(entrada.nombre, 80),
         empresa: texto(entrada.empresa, 80),
+        emitido,
+        firma,
       };
     }
     case "derivar_a_persona":
@@ -222,12 +278,25 @@ function leerHistorial(body: unknown): Entrada[] | null {
   if (!Array.isArray(crudo) || crudo.length === 0 || crudo.length > LIMITES_CHAT.historial) return null;
 
   const mensajes: Entrada[] = [];
+  // El largo se mide sobre lo que mandó el navegador (que recorta a este
+  // mismo techo): medirlo después de reemplazar o juntar mensajes podía
+  // pasarse por unos caracteres y trabar la conversación en un 400.
+  let largo = 0;
   for (const m of crudo) {
-    const { role, content } = (m ?? {}) as Record<string, unknown>;
+    const { role, content, firma } = (m ?? {}) as Record<string, unknown>;
+    if (typeof content === "string") largo += content.length;
     if ((role !== "user" && role !== "assistant") || typeof content !== "string") return null;
-    const limpio = content.trim();
     const tope = role === "user" ? LIMITES_CHAT.mensaje : LIMITES_CHAT.respuesta;
-    if (!limpio || limpio.length > tope) return null;
+    if (content.length > tope) return null;
+    let limpio = content.trim();
+    if (role === "user") {
+      limpio = limpiarInvisibles(limpio).trim();
+    } else if (!firmaValida("turno", huella(limpio), firma)) {
+      // No la escribió este servidor (o se cortó antes de firmarse): el modelo
+      // no la lee. Ver `huella`.
+      limpio = RESPUESTA_NO_VERIFICADA;
+    }
+    if (!limpio) return null;
     // Dos turnos seguidos del mismo rol los rechaza la API: se juntan.
     const previo = mensajes[mensajes.length - 1];
     if (previo?.role === role) previo.content += `\n\n${limpio}`;
@@ -235,7 +304,7 @@ function leerHistorial(body: unknown): Entrada[] | null {
   }
 
   if (mensajes[0].role !== "user" || mensajes[mensajes.length - 1].role !== "user") return null;
-  if (mensajes.reduce((n, m) => n + m.content.length, 0) > LIMITES_CHAT.total) return null;
+  if (largo > LIMITES_CHAT.total) return null;
   return mensajes;
 }
 
@@ -268,31 +337,75 @@ function error(mensaje: string, status: number) {
   return Response.json({ error: mensaje }, { status });
 }
 
+const LIMITE_ALCANZADO = "Llegamos al límite de mensajes por ahora. Seguimos por WhatsApp, así no se pierde nada.";
+
+/** Unidades de entrada de una vuelta (ver PRESUPUESTO_IP). */
+const unidades = (u: Anthropic.Usage) =>
+  Math.ceil(
+    u.input_tokens + (u.cache_creation_input_tokens ?? 0) * 2 + (u.cache_read_input_tokens ?? 0) * 0.1 + u.output_tokens * 5,
+  );
+
+const MAX_TOKENS = 4000;
+
+/**
+ * El peor caso de un pedido: el historial (≈3 caracteres por token, de más) en
+ * cada vuelta, la salida máxima de cada vuelta y escribir la caché del prompt.
+ */
+const reservaPara = (historial: Entrada[]) =>
+  Math.ceil(historial.reduce((n, m) => n + m.content.length, 0) / 3) * VUELTAS + MAX_TOKENS * 5 * VUELTAS + 15_000;
+
 export async function POST(req: NextRequest) {
+  if (!mismoOrigen(req)) return error("Pedido inválido", 403);
+  if (await esBot()) return error("No pudimos verificar el navegador. Escribinos por WhatsApp.", 403);
+
   if (!hayClaveClaude()) {
     console.error("[chat] falta OPENROUTER_API_KEY / ANTHROPIC_API_KEY");
     return error("El asistente no está disponible ahora. Escribinos por WhatsApp.", 503);
   }
 
-  const raw = await req.text();
-  if (raw.length > LIMITES_CHAT.total * 2) return error("La conversación es demasiado larga.", 413);
-  let body: unknown;
-  try {
-    body = JSON.parse(raw);
-  } catch {
-    return error("Pedido inválido", 400);
-  }
+  const body = await leerJson(req, MAX_BODY);
+  if (body === "grande") return error("La conversación es demasiado larga.", 413);
+  if (!body) return error("Pedido inválido", 400);
   const historial = leerHistorial(body);
   if (!historial) return error("Pedido inválido", 400);
 
-  const ip = clientIp(req);
-  const porIp = await consume("chat", ip, LIMITE_IP);
+  // Primero la IP y sólo si pasa el global: si no, una sola IP bloqueada
+  // seguiría sumando al techo global hasta apagar el asistente para todos.
+  const ip = ipParaLimite(req);
+  const [porIp, porBloque] = await Promise.all([
+    consume("chat", ip, LIMITE_IP),
+    consume("chat-bloque", bloqueDeRed(req), LIMITE_BLOQUE),
+  ]);
+  if (!porIp.allowed || !porBloque.allowed) return error(LIMITE_ALCANZADO, 429);
   const global = await consume("chat-global", "todos", LIMITE_GLOBAL);
-  if (!porIp.allowed || !global.allowed) {
-    return error("Llegamos al límite de mensajes por ahora. Seguimos por WhatsApp, así no se pierde nada.", 429);
+  if (!global.allowed) {
+    console.error("[chat] techo global de pedidos alcanzado");
+    return error(LIMITE_ALCANZADO, 429);
+  }
+
+  // La reserva: si no entra en alguno de los dos presupuestos se devuelve
+  // enseguida y no se llama al modelo.
+  const reserva = reservaPara(historial);
+  const [saldoIp, saldoGlobal] = await Promise.all([
+    consume("chat-tokens", ip, PRESUPUESTO_IP, reserva),
+    consume("chat-tokens-global", "todos", PRESUPUESTO_GLOBAL, reserva),
+  ]);
+  // Negativa cobra la diferencia (una respuesta que gastó más que la reserva).
+  const devolver = (cantidad: number) =>
+    cantidad !== 0
+      ? Promise.all([
+          consume("chat-tokens", ip, PRESUPUESTO_IP, -cantidad),
+          consume("chat-tokens-global", "todos", PRESUPUESTO_GLOBAL, -cantidad),
+        ]).catch(() => {})
+      : Promise.resolve();
+  if (!saldoIp.allowed || !saldoGlobal.allowed) {
+    if (!saldoGlobal.allowed) console.error("[chat] presupuesto global de tokens agotado");
+    await devolver(reserva);
+    return error(LIMITE_ALCANZADO, 429);
   }
 
   const client = crearClienteClaude();
+  const senal = AbortSignal.any([req.signal, AbortSignal.timeout(TIEMPO_MAX_MS)]);
   const mensajes: Anthropic.MessageParam[] = historial.map((m) => ({ role: m.role, content: m.content }));
   // El prompt es igual para todos: cacheado una hora, cada conversación paga
   // sólo lo suyo.
@@ -318,10 +431,13 @@ export async function POST(req: NextRequest) {
       };
 
       let huboTexto = false;
+      let terminada = false;
+      // Lo que la persona ve, en el mismo orden: es lo que se firma al final.
+      let generado = "";
       // Una sola tanda de opciones y un solo relevamiento por respuesta: el
       // modelo a veces los repite en la vuelta siguiente.
       const yaMostradas = new Set<string>();
-      const uso = { vueltas: 0, entrada: 0, lecturaCache: 0, salida: 0 };
+      const uso = { vueltas: 0, entrada: 0, lecturaCache: 0, salida: 0, unidades: 0 };
       try {
         for (let vuelta = 0; vuelta < VUELTAS; vuelta++) {
           const ultima = vuelta === VUELTAS - 1;
@@ -333,13 +449,13 @@ export async function POST(req: NextRequest) {
               // El relevamiento viaja como argumentos de herramienta, junto con
               // el texto, la solución, el caso y el formulario: con 1800 se
               // cortaba y las herramientas llegaban truncadas (se descartan).
-              max_tokens: 4000,
+              max_tokens: MAX_TOKENS,
               system,
               messages: mensajes,
               tools: HERRAMIENTAS,
               tool_choice: ultima ? { type: "none" } : { type: "auto" },
             },
-            { signal: req.signal },
+            { signal: senal },
           );
 
           respuesta.on("text", (t) => {
@@ -348,6 +464,7 @@ export async function POST(req: NextRequest) {
               separar = false;
             }
             huboTexto = true;
+            generado += t;
             enviar("texto", t);
           });
 
@@ -356,6 +473,7 @@ export async function POST(req: NextRequest) {
           uso.entrada += final.usage.input_tokens;
           uso.lecturaCache += final.usage.cache_read_input_tokens ?? 0;
           uso.salida += final.usage.output_tokens;
+          uso.unidades += unidades(final.usage);
 
           if (final.stop_reason !== "tool_use") break;
 
@@ -367,7 +485,10 @@ export async function POST(req: NextRequest) {
             const repetida = unica && yaMostradas.has(l.name);
             if (unica) yaMostradas.add(l.name);
             const tarjeta = repetida ? null : armarTarjeta(l.name, (l.input ?? {}) as Record<string, unknown>);
-            if (tarjeta) enviar("tarjeta", tarjeta);
+            if (tarjeta) {
+              generado += notaDeTarjeta(tarjeta);
+              enviar("tarjeta", tarjeta);
+            }
             return {
               type: "tool_result",
               tool_use_id: l.id,
@@ -389,7 +510,9 @@ export async function POST(req: NextRequest) {
           if (llamadas.some((l) => l.name === "ofrecer_opciones")) break;
           mensajes.push({ role: "user", content: resultados });
         }
-        enviar("fin", { ok: true });
+        // La firma de esta respuesta: vuelve en el historial del próximo pedido.
+        enviar("fin", { ok: true, firma: firmar("turno", huella(generado)) });
+        terminada = true;
       } catch (e) {
         if (!req.signal.aborted) {
           // Sin el contenido: la conversación no se guarda en los logs.
@@ -397,7 +520,12 @@ export async function POST(req: NextRequest) {
           enviar("error", { mensaje: "Se me cortó la respuesta. Probá de nuevo o seguí por WhatsApp." });
         }
       } finally {
-        if (uso.vueltas > 0) console.info("[chat] uso", uso);
+        if (uso.vueltas > 0) console.info("[chat] uso", { ...uso, reserva, terminada });
+        // Sólo una respuesta completa devuelve lo que no gastó: una cortada
+        // (por la persona, por el tiempo o por un error) se cobra la reserva
+        // entera, porque lo generado hasta el corte igual se pagó. Se espera
+        // antes de cerrar: con el stream cerrado la función puede congelarse.
+        if (terminada) await devolver(reserva - uso.unidades);
         cerrado = true;
         try {
           controller.close();

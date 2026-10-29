@@ -95,9 +95,11 @@ export function ultimoRelevamiento(): { datos: unknown; firma: string } | null {
 function historial(mensajes: Mensaje[]): Entrada[] {
   const entradas = mensajes
     .filter((m) => !m.error)
-    .map((m) => ({
+    .map((m): Entrada => ({
       role: m.rol,
       content: textoDe(m).slice(0, m.rol === "user" ? LIMITES_CHAT.mensaje : LIMITES_CHAT.respuesta),
+      // Sin la firma del servidor, el asistente no lee su propia respuesta.
+      ...(m.firma ? { firma: m.firma } : {}),
     }))
     .filter((e) => e.content);
   let recortado = entradas.slice(-LIMITES_CHAT.historial);
@@ -178,6 +180,10 @@ export async function enviar(crudo: string, origen = "panel") {
         if (evento === "texto") agregarTexto(valor as string);
         else if (evento === "tarjeta") agregarTarjeta(valor as Tarjeta);
         else if (evento === "error") fallar((valor as { mensaje: string }).mensaje);
+        else if (evento === "fin" && typeof (valor as { firma?: unknown })?.firma === "string") {
+          const firma = (valor as { firma: string }).firma;
+          actualizar(respuesta.id, (m) => ({ ...m, firma }));
+        }
       }
     }
   } catch (e) {

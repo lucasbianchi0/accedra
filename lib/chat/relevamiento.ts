@@ -1,6 +1,7 @@
-import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes } from "node:crypto";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { tarjetaCaso } from "./conocimiento";
+import { claveDeFirma, iguales, sinEnlaces } from "./guardia";
 import type { Prioridad, Relevamiento, TarjetaRelevamiento } from "./tipos";
 
 /**
@@ -15,34 +16,30 @@ import type { Prioridad, Relevamiento, TarjetaRelevamiento } from "./tipos";
  * Sólo server: usa `node:crypto` y la clave de firma.
  */
 
-/**
- * La clave de firma. RELEVAMIENTO_SECRET si está; si no, una derivada de la
- * clave de servicio de Supabase, que existe en todos los entornos donde hay
- * leads. Sin ninguna de las dos no se firma nada y no hay PDF.
- */
-function clave(): string | null {
-  const propia = process.env.RELEVAMIENTO_SECRET;
-  if (propia) return propia;
-  const base = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.OPENROUTER_API_KEY;
-  return base ? createHmac("sha256", base).update("accedra:relevamiento").digest("hex") : null;
-}
-
 function firmar(datos: Relevamiento): string | null {
-  const k = clave();
+  const k = claveDeFirma();
   return k ? createHmac("sha256", k).update(JSON.stringify(datos)).digest("base64url") : null;
 }
 
+/**
+ * Cuánto vale una firma. El relevamiento se descarga y se manda con el lead en
+ * la misma visita; uno de hace un mes no tiene por qué seguir generando PDFs
+ * con nuestra marca.
+ */
+const VIGENCIA_MS = 7 * 24 * 60 * 60 * 1000;
+
 export function verificar(datos: unknown, firma: unknown): datos is Relevamiento {
   if (!datos || typeof datos !== "object" || typeof firma !== "string") return false;
-  const esperada = firmar(datos as Relevamiento);
-  if (!esperada) return false;
-  const a = Buffer.from(esperada);
-  const b = Buffer.from(firma);
-  return a.length === b.length && timingSafeEqual(a, b);
+  if (!iguales(firmar(datos as Relevamiento), firma)) return false;
+  const fecha = Date.parse(String((datos as Relevamiento).fecha));
+  return Number.isFinite(fecha) && Date.now() - fecha < VIGENCIA_MS && fecha - Date.now() < 60_000;
 }
 
+/** Sale con la marca de Accedra: sin enlaces ni casillas (ver `sinEnlaces`). */
 const texto = (v: unknown, max: number) =>
-  typeof v === "string" ? v.replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, max) : "";
+  typeof v === "string"
+    ? sinEnlaces(v.replace(/[\u0000-\u001F\u007F\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFEFF]/g, " ").replace(/\s+/g, " ")).slice(0, max)
+    : "";
 
 const lista = (v: unknown, max: number, largo: number) =>
   (Array.isArray(v) ? v : []).map((x) => texto(x, largo)).filter(Boolean).slice(0, max);

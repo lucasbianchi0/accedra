@@ -284,8 +284,11 @@ export function Contacto({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          // La tarjeta tal como la firmó el asistente: sin esto no se acepta.
           resumen: t.resumen,
           solucion: t.solucion,
+          emitido: t.emitido,
+          firma: t.firma,
           conversacion: conversacion(),
           // Si el asistente armó el relevamiento, viaja firmado y le llega al
           // equipo comercial como PDF adjunto.

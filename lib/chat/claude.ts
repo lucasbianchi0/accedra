@@ -28,12 +28,18 @@ const fetchOpenRouter: typeof fetch = async (url, init) => {
   return fetch(url, init);
 };
 
+/**
+ * Un reintento como mucho (el SDK hace dos): cada uno se paga entero, y con el
+ * proveedor caído los reintentos sólo multiplican la cuenta y la espera.
+ */
+const OPCIONES = { maxRetries: 1, timeout: 50_000 } as const;
+
 export function crearClienteClaude(): Anthropic {
   const claveOpenRouter = process.env.OPENROUTER_API_KEY;
   if (claveOpenRouter) {
-    return new Anthropic({ apiKey: claveOpenRouter, baseURL: OPENROUTER_URL, fetch: fetchOpenRouter });
+    return new Anthropic({ ...OPCIONES, apiKey: claveOpenRouter, baseURL: OPENROUTER_URL, fetch: fetchOpenRouter });
   }
-  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+  return new Anthropic({ ...OPCIONES, apiKey: process.env.ANTHROPIC_API_KEY });
 }
 
 export const hayClaveClaude = () => Boolean(process.env.OPENROUTER_API_KEY || process.env.ANTHROPIC_API_KEY);

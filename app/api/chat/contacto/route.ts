@@ -15,17 +15,26 @@
  * backoffice. Mientras tanto, sin mail se guarda el teléfono en esa columna
  * —es el dato de contacto real de ese lead, y es lo que el comercial va a usar—
  * y `metadata.sin_email` lo marca para que nadie le mande un correo.
+ *
+ * SÓLO CON UNA TARJETA DEL ASISTENTE
+ *
+ * El formulario trae la firma de la tarjeta `pedir_contacto` que emitió el
+ * chat. Sin ella no entra: para cargar un lead hay que haber pasado por el
+ * asistente (con sus cupos y su BotID), así que no se puede llenar `leads`
+ * pegándole directo a este endpoint. Y el resumen del caso que recibe el equipo
+ * es el firmado, no uno que alguien escribió a mano.
  */
 
 import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
 
 import { EMAIL_RE, extractAttribution, type ContactData, type Service } from "@/lib/contact/schema";
-import { clientIp } from "@/lib/contact/clientIp";
+import { clientIp, ipParaLimite } from "@/lib/contact/clientIp";
 import { consume } from "@/lib/contact/rateLimit";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { verificar } from "@/lib/chat/relevamiento";
+import { esBot, firmaValida, leerJson, limpiarInvisibles, mismoOrigen, unaLinea } from "@/lib/chat/guardia";
 import { nombreArchivo, pdfRelevamiento } from "@/lib/chat/pdf-relevamiento";
 import type { Relevamiento } from "@/lib/chat/tipos";
 import { asuntoEquipo, htmlEquipo, textoEquipo, type LeadAsistente } from "@/lib/chat/emailEquipo";
@@ -36,10 +45,19 @@ const LIMITE_IP = [
   { suffix: "burst", limit: 4, windowSec: 10 * 60 },
   { suffix: "day", limit: 10, windowSec: 24 * 60 * 60 },
 ] as const;
+/**
+ * Muy por encima de lo real (hoy son unos pocos leads por semana): sólo corta
+ * cuando algo está claramente mal, y protege la base, la cuota de Resend y la
+ * reputación del dominio.
+ */
 const LIMITE_GLOBAL = [
-  { suffix: "minute", limit: 20, windowSec: 60 },
-  { suffix: "day", limit: 400, windowSec: 24 * 60 * 60 },
+  { suffix: "minute", limit: 10, windowSec: 60 },
+  { suffix: "day", limit: 150, windowSec: 24 * 60 * 60 },
 ] as const;
+/** Por tarjeta firmada: corregir un dato y reenviar es normal; diez veces, no. */
+const LIMITE_TARJETA = [{ suffix: "day", limit: 3, windowSec: 24 * 60 * 60 }] as const;
+/** La tarjeta vale lo que dura una visita larga. */
+const VIGENCIA_TARJETA_MS = 24 * 60 * 60 * 1000;
 
 /** La solución del sitio → el `service` que usa el formulario de contacto. */
 const SERVICIO: Record<string, Service> = {
@@ -55,7 +73,17 @@ const MAX_BODY = 48 * 1024;
 const MAX_CONVERSACION = 6000;
 
 function limpio(v: unknown, max: number): string {
-  return typeof v === "string" ? v.replace(/[\u0000-\u0009\u000B-\u001F\u007F]/g, "").trim().slice(0, max) : "";
+  return typeof v === "string" ? limpiarInvisibles(v).replace(/\t/g, " ").trim().slice(0, max) : "";
+}
+
+/** La tarjeta de contacto la emitió el asistente y no venció. */
+function tarjetaValida(resumen: unknown, solucion: unknown, emitido: unknown, firma: unknown): boolean {
+  if (typeof resumen !== "string" || (solucion !== null && typeof solucion !== "string") || typeof emitido !== "number") {
+    return false;
+  }
+  const edad = Date.now() - emitido;
+  if (!(edad >= -60_000 && edad < VIGENCIA_TARJETA_MS)) return false;
+  return firmaValida("contacto", JSON.stringify([resumen, solucion, emitido]), firma);
 }
 
 function error(mensaje: string, status: number) {
@@ -63,21 +91,23 @@ function error(mensaje: string, status: number) {
 }
 
 export async function POST(req: NextRequest) {
-  const raw = await req.text();
-  if (raw.length > MAX_BODY) return error("Pedido demasiado grande", 413);
-  let body: Record<string, unknown>;
-  try {
-    body = JSON.parse(raw) as Record<string, unknown>;
-  } catch {
-    return error("Pedido inválido", 400);
-  }
+  if (!mismoOrigen(req)) return error("Pedido inválido", 403);
+  if (await esBot()) return error("No pudimos verificar el navegador. Escribinos por WhatsApp.", 403);
+
+  const body = await leerJson(req, MAX_BODY);
+  if (body === "grande") return error("Pedido demasiado grande", 413);
+  if (!body) return error("Pedido inválido", 400);
 
   // Honeypot, como en el formulario de contacto: se finge éxito.
   if (typeof body.website === "string" && body.website.trim() !== "") return Response.json({ ok: true });
 
-  const nombre = limpio(body.nombre, 80);
-  const empresa = limpio(body.empresa, 80);
-  const telefono = limpio(body.telefono, 30);
+  if (!tarjetaValida(body.resumen, body.solucion ?? null, body.emitido, body.firma)) {
+    return error("No pudimos validar el formulario. Reiniciá la conversación o escribinos por WhatsApp.", 400);
+  }
+
+  const nombre = unaLinea(typeof body.nombre === "string" ? body.nombre : "", 80);
+  const empresa = unaLinea(typeof body.empresa === "string" ? body.empresa : "", 80);
+  const telefono = limpio(body.telefono, 30).replace(/[^\d +()-]/g, "");
   const email = limpio(body.email, 254);
   const resumen = limpio(body.resumen, 800);
   const conversacion = limpio(body.conversacion, MAX_CONVERSACION);
@@ -89,16 +119,30 @@ export async function POST(req: NextRequest) {
   if (email && !EMAIL_RE.test(email)) return error("Revisá el email: parece que falta algo.", 400);
 
   const ip = clientIp(req);
-  const porIp = await consume("chat-lead", ip, LIMITE_IP);
+  // La IP y la tarjeta antes que el global: si no, alguien bloqueado igual
+  // sumaría al techo global hasta cerrarle el formulario a los clientes reales.
+  const porIp = await consume("chat-lead", ipParaLimite(req), LIMITE_IP);
+  if (!porIp.allowed) return error("Ya recibimos tus datos. ¡Gracias!", 429);
+  // Por tarjeta y por teléfono: ni la misma tarjeta ni el mismo número sirven
+  // para cargar leads repetidos desde muchas IPs.
+  const [porTarjeta, porTelefono] = await Promise.all([
+    consume("chat-lead-tarjeta", String(body.firma).slice(0, 64), LIMITE_TARJETA),
+    consume("chat-lead-tel", createHash("sha256").update(digitos).digest("hex").slice(0, 32), LIMITE_TARJETA),
+  ]);
+  if (!porTarjeta.allowed || !porTelefono.allowed) return error("Ya recibimos tus datos. ¡Gracias!", 429);
   const global = await consume("chat-lead-global", "todos", LIMITE_GLOBAL);
-  if (!porIp.allowed || !global.allowed) return error("Ya recibimos tus datos. ¡Gracias!", 429);
+  if (!global.allowed) {
+    console.error("[chat lead] techo global alcanzado");
+    return error("No pudimos guardar tus datos ahora. Escribinos por WhatsApp, así no se pierde nada.", 429);
+  }
 
   const servicio = SOLUTIONS[solucion] ? SERVICIO[solucion] ?? "otro" : "";
   const mensaje = [
     `Llegó por el asistente del sitio.`,
     `Teléfono / WhatsApp: ${telefono}`,
     resumen ? `\nResumen del caso:\n${resumen}` : "",
-    conversacion ? `\n— Conversación —\n${conversacion}` : "",
+    // La transcripción la manda el navegador: puede estar editada. Lo firmado es el resumen.
+    conversacion ? `\n— Conversación (enviada por el navegador, sin verificar) —\n${conversacion}` : "",
   ]
     .filter(Boolean)
     .join("\n")
@@ -232,7 +276,7 @@ async function avisar(lead: LeadAsistente, ip: string, origen: string): Promise<
 
   if (email && relevamiento && adjunto.length) {
     const hash = createHash("sha256").update(email.toLowerCase()).digest("hex").slice(0, 32);
-    const permitido = await consume("chat-lead-email", hash, [{ suffix: "day", limit: 2, windowSec: 24 * 60 * 60 }]);
+    const permitido = await consume("chat-lead-email", hash, [{ suffix: "day", limit: 1, windowSec: 24 * 60 * 60 }]);
     if (permitido.allowed) {
       await resend({
         to: [email],

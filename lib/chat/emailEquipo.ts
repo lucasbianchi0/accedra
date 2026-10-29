@@ -65,7 +65,7 @@ export function textoEquipo(l: LeadAsistente): string {
     l.resumen || r?.resumen || "",
     r ? `\n— Lo que identificó —\n${r.hallazgos.map((h) => `• [${h.prioridad}] ${h.texto}`).join("\n")}` : "",
     ``,
-    `— Conversación —`,
+    `— Conversación (enviada por el navegador, sin verificar) —`,
     l.conversacion,
   ]
     .filter((x) => x !== "")
@@ -125,7 +125,7 @@ export function htmlEquipo(l: LeadAsistente): string {
   }
 
   <div style="padding:18px 30px 26px;background:#f8fafc;border-top:1px solid #e9edf3">
-    <div style="font-size:12px;color:#6b7a90;margin-bottom:8px">Conversación</div>
+    <div style="font-size:12px;color:#6b7a90;margin-bottom:8px">Conversación · enviada por el navegador, sin verificar</div>
     <div style="font-size:12.5px;line-height:1.6;color:#3b4a60">${conSaltos(l.conversacion || "—")}</div>
   </div>
 </div>
