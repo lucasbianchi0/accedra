@@ -141,10 +141,14 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
   {
     name: "ofrecer_opciones",
     description:
-      "Muestra botones de respuesta rápida debajo de tu pregunta (la persona igual puede escribir). Usala cuando la respuesta tiene alternativas típicas: tamaño de la empresa, cantidad de sedes, tipo de problema, urgencia, sí/no. Escribí la pregunta en el texto y llamá a esta herramienta en el mismo mensaje. Una sola vez por mensaje.",
+      "Muestra tu pregunta destacada con botones de respuesta rápida (la persona igual puede escribir). Usala cuando la respuesta tiene alternativas típicas: tamaño de la empresa, cantidad de sedes, tipo de problema, urgencia, sí/no. La pregunta va en `pregunta`, NO en el texto: no la repitas. Una sola vez por mensaje.",
     input_schema: {
       type: "object",
       properties: {
+        pregunta: {
+          type: "string",
+          description: "La pregunta, una oración corta terminada en '?'. Ej.: '¿Cuántas sedes tienen con este problema?'",
+        },
         opciones: {
           type: "array",
           items: { type: "string" },
@@ -154,7 +158,7 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
         },
         multiple: { type: "boolean", description: "true si tiene sentido elegir más de una (p. ej. varios problemas)." },
       },
-      required: ["opciones"],
+      required: ["pregunta", "opciones"],
     },
   },
   {
@@ -265,7 +269,10 @@ function armarTarjeta(nombre: string, entrada: Record<string, unknown>): Tarjeta
         .map((o) => texto(o, 40))
         .filter(Boolean)
         .slice(0, 6);
-      return opciones.length >= 2 ? { tipo: "opciones", opciones, multiple: entrada.multiple === true } : null;
+      const pregunta = texto(entrada.pregunta, 200);
+      return opciones.length >= 2
+        ? { tipo: "opciones", ...(pregunta ? { pregunta } : {}), opciones, multiple: entrada.multiple === true }
+        : null;
     }
     case "armar_relevamiento":
       return armarRelevamiento(entrada);

@@ -62,6 +62,8 @@ export type TarjetaHumano = {
  */
 export type TarjetaOpciones = {
   tipo: "opciones";
+  /** La pregunta que contestan; se dibuja arriba de los botones. */
+  pregunta?: string;
   opciones: string[];
   /** Se puede elegir más de una y confirmar. */
   multiple: boolean;
@@ -163,7 +165,7 @@ export function notaDeTarjeta(t: Tarjeta): string {
     case "humano":
       return "[Mostré el botón para hablar por WhatsApp con una persona]";
     case "opciones":
-      return `[Ofrecí opciones de respuesta: ${t.opciones.join(" / ")}]`;
+      return `[${t.pregunta ? `Pregunté: ${t.pregunta} ` : ""}Ofrecí opciones de respuesta: ${t.opciones.join(" / ")}]`;
     case "relevamiento":
       return "[Armé el relevamiento en PDF con lo identificado]";
   }

@@ -378,12 +378,6 @@ function Bienvenida({ solucion }: { solucion?: string }) {
             </p>
           )}
           <div className="flex items-center gap-2 px-3 pb-3">
-            <span className="hidden pl-2 text-[11.5px] text-gray-500 lg:inline">
-              <kbd className="rounded border border-white/15 px-1.5 py-px font-sans text-[10.5px] text-gray-400">
-                Tab
-              </kbd>{" "}
-              usa el ejemplo
-            </span>
             <a
               href={whatsappDeLaCharla(mensajes)}
               target="_blank"

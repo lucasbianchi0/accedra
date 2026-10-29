@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowUp, Square } from "lucide-react";
 import { MascotaCara } from "./Mascota";
+import { preguntaDe, separarPregunta } from "@/lib/chat/pregunta";
 import Formato from "./Formato";
 import { Caso, Contacto, Humano, IconoWhatsApp, Opciones, Relevamiento, Solucion, enlaceWhatsApp } from "./Tarjetas";
 import { LIMITES_CHAT, type Tarjeta } from "@/lib/chat/tipos";
@@ -137,8 +138,8 @@ export default function Conversacion({
                     >
                       <MascotaCara size={28} className="ring-1 ring-white/10" />
                     </span>
-                    <div className="min-w-0 flex-1 space-y-3 text-[14px] leading-relaxed text-gray-200">
-                      {m.partes.map((p, i) =>
+                    <div className="min-w-0 flex-1 space-y-4 text-[14px] leading-relaxed text-gray-200">
+                      {separarPregunta(m.partes).partes.map((p, i) =>
                         p.tipo === "texto" ? (
                           <Formato key={i} texto={p.texto} onNavegar={onNavegar} />
                         ) : p.tarjeta.tipo === "opciones" ? null : (
@@ -147,6 +148,19 @@ export default function Conversacion({
                             <TarjetaVista t={p.tarjeta} onNavegar={onNavegar} leadEnviado={leadEnviado} />
                           </div>
                         ),
+                      )}
+                      {/* La pregunta, aparte y al final: entre la explicación y
+                          las tarjetas se perdía, y es lo único que la persona
+                          tiene que contestar. */}
+                      {preguntaDe(m.partes) && (
+                        <div className={`border-t border-white/[0.08] pt-4 ${nuevo(m.id) ? "opciones-entra" : ""}`}>
+                          <p className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#A99BFF]">
+                            Para seguir
+                          </p>
+                          <div className="mt-1.5 text-[15px] font-medium leading-snug text-white">
+                            <Formato texto={preguntaDe(m.partes)!} onNavegar={onNavegar} />
+                          </div>
+                        </div>
                       )}
                       {/* Las opciones van al final y sólo en la última respuesta:
                           contestada la pregunta, dejan de tener sentido. */}

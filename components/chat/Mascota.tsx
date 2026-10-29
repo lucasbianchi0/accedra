@@ -37,7 +37,10 @@ export function MascotaRetrato({ size = 132, className = "" }: { size?: number; 
         width={size}
         height={size}
         priority={false}
-        className="relative h-full w-full object-cover [mask-image:radial-gradient(circle_at_50%_45%,#000_52%,transparent_71%)]"
+        // `closest-side`: el fundido termina antes del borde del cuadro. Con el
+        // radio por defecto (la esquina más lejana) el fondo azul se cortaba
+        // en línea recta arriba y a los costados.
+        className="relative h-full w-full object-cover [mask-image:radial-gradient(circle_closest-side_at_50%_50%,#000_72%,transparent_100%)]"
       />
     </div>
   );
