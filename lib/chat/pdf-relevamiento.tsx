@@ -221,6 +221,7 @@ function Fondo() {
 function FotoPortada({ src }: { src: string }) {
   return (
     <View style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}>
+      {/* eslint-disable-next-line jsx-a11y/alt-text -- es el Image de react-pdf, no un <img>: no tiene alt. */}
       <Image src={src} style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, objectFit: "cover", opacity: 0.42 }} />
       <Svg style={{ position: "absolute", top: 0, left: 0, width: 595.28, height: 841.89 }} viewBox="0 0 595 842">
         <Defs>
@@ -456,6 +457,7 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
               const [valor, ...resto] = c.cifra.split(" ");
               return (
                 <View key={c.id} style={s.caso} wrap={false}>
+                  {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de react-pdf, sin alt. */}
                   {caso ? <Image src={`${origen}${caso.imagen}`} style={s.casoFoto} /> : null}
                   <View style={s.casoCuerpo}>
                     <Text style={s.casoCliente}>{c.cliente.toUpperCase()}</Text>
