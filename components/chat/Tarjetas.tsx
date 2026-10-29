@@ -334,7 +334,7 @@ export function Contacto({
       <button
         type="submit"
         disabled={estado === "enviando"}
-        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-accent-600 px-4 py-2.5 text-[13.5px] font-semibold text-white transition-all hover:bg-accent disabled:opacity-60"
+        className="enviar-ai mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-[13.5px] font-semibold text-white"
       >
         {estado === "enviando" ? <Loader2 size={15} className="animate-spin" /> : null}
         Enviar a un especialista

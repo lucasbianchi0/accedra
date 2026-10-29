@@ -51,13 +51,38 @@ export default function Conversacion({
   const lista = useRef<HTMLDivElement>(null);
   const campo = useRef<HTMLTextAreaElement>(null);
 
-  // Al fondo con cada novedad, salvo que la persona haya subido a releer.
+  // Pegada al final: cada vez que el contenido cambia de alto (llega texto, se
+  // carga la foto de un caso, aparecen las opciones, la hoja se abre y deja
+  // de medir cero) baja al fondo, salvo que la persona haya subido a releer.
+  // Con un ResizeObserver y no con un efecto sobre `mensajes`: el efecto corría
+  // antes de que la tarjeta midiera, y las opciones quedaban debajo del borde.
+  const pegada = useRef(true);
   useEffect(() => {
     const el = lista.current;
-    if (!el) return;
-    const cerca = el.scrollHeight - el.scrollTop - el.clientHeight < 160;
-    if (cerca || !enCurso) el.scrollTo({ top: el.scrollHeight, behavior: enCurso ? "auto" : "smooth" });
-  }, [mensajes, enCurso]);
+    const contenido = el?.firstElementChild;
+    if (!el || !contenido) return;
+    const onScroll = () => {
+      pegada.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    };
+    const ro = new ResizeObserver(() => {
+      if (pegada.current) el.scrollTop = el.scrollHeight;
+    });
+    ro.observe(contenido);
+    ro.observe(el);
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      ro.disconnect();
+      el.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
+  // Un mensaje propio siempre vuelve al fondo, aunque se haya subido a releer.
+  const cantidadPropios = mensajes.filter((m) => m.rol === "user").length;
+  useEffect(() => {
+    pegada.current = true;
+    const el = lista.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [cantidadPropios]);
 
   // El campo crece con el texto hasta cinco líneas.
   useEffect(() => {
@@ -82,9 +107,9 @@ export default function Conversacion({
       <div
         ref={lista}
         data-lenis-prevent
-        className="chat-scroll relative flex-1 overflow-y-auto overscroll-contain px-4 py-5"
+        className="chat-scroll chat-scroll-fundido relative flex-1 overflow-y-auto overscroll-contain px-4 py-5"
       >
-        <div className={`min-h-full ${ancho}`}>
+        <div className={`flex min-h-full flex-col ${ancho}`}>
           {vacio ? (
             inicio
           ) : (

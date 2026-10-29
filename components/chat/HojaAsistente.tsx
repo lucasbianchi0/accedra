@@ -131,7 +131,7 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
         // que termina de lavar lo que hay detrás. Márgenes laterales amplios:
         // en escritorio la hoja no pasa de ~1000 px de ancho.
         className={`chat-hoja fixed inset-x-0 bottom-0 z-[81] flex flex-col overflow-hidden rounded-t-[32px] border border-b-0 border-white/[0.13] bg-[linear-gradient(180deg,rgba(24,36,66,0.62)_0%,rgba(9,16,32,0.74)_100%)] shadow-[0_-40px_140px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-3xl backdrop-saturate-[1.6] sm:inset-x-[max(2rem,calc((100vw-1040px)/2))] ${
-          vacio ? "h-[88dvh] sm:h-[60dvh] sm:min-h-[480px] sm:max-h-[92dvh]" : "h-[92dvh] sm:h-[86dvh]"
+          vacio ? "h-[72dvh] sm:h-[60dvh] sm:min-h-[480px] sm:max-h-[92dvh]" : "h-[92dvh] sm:h-[86dvh]"
         }`}
       >
         {/* Filo de luz en el borde de arriba, en el degradé de la marca */}
@@ -144,7 +144,7 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
           }}
         />
         {/* Aurora: dos luces que se mueven lento detrás del logo */}
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-32 h-96 overflow-hidden">
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-32 h-[30rem] overflow-hidden [mask-image:linear-gradient(to_bottom,#000_45%,transparent)]">
           <div className="hoja-aurora hoja-aurora-1 absolute left-[28%] top-0 h-72 w-72 rounded-full bg-[#8B5CF6] opacity-40 blur-[90px]" />
           <div className="hoja-aurora hoja-aurora-2 absolute right-[26%] top-6 h-64 w-64 rounded-full bg-[#2B6FD4] opacity-40 blur-[90px]" />
         </div>
@@ -264,7 +264,7 @@ function Bienvenida({ solucion }: { solucion?: string }) {
     // `my-auto` y no `justify-center`: si el contenido no entra, justify-center
     // lo recorta arriba (donde no se puede scrollear); my-auto sólo centra
     // cuando sobra lugar.
-    <div className="flex min-h-full flex-col">
+    <div className="flex flex-1 flex-col">
       {/* `hoja-entra`: cada hijo entra escalonado cuando la hoja termina de subir. */}
       <div className="hoja-entra my-auto flex flex-col items-center pb-4 text-center">
         <LogoAccedraAI size={46} brillo />
@@ -276,7 +276,8 @@ function Bienvenida({ solucion }: { solucion?: string }) {
         <div
           role="radiogroup"
           aria-label="Tu industria"
-          className="no-scrollbar -mx-4 mt-6 flex max-w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0"
+          // En el teléfono se deslizan de costado; el fundido a la derecha avisa que hay más.
+          className="no-scrollbar -mx-4 mt-6 flex max-w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,#000_82%,transparent)] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none]"
         >
           {INDUSTRIAS.map((ind) => {
             const activa = industria?.id === ind.id;
