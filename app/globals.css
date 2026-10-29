@@ -401,8 +401,8 @@ h1, h2, h3, h4, .section-title, .gradient-text {
 }
 
 /* La primera entrada de los dos botones flotantes: después de los botones de
-   la portada (que terminan de entrar a ~1,2 s), WhatsApp y enseguida el
-   robotito. Antes estaban desde el primer cuadro, encima del título que
+   la portada (que terminan de entrar a ~1,2 s), WhatsApp y el robotito a la
+   vez. Antes estaban desde el primer cuadro, encima del título que
    todavía estaba apareciendo, y en el celular se veía todo a destiempo.
    `backwards` y no `both`: terminada la entrada no queda nada pegado, y el
    mostrar/ocultar por `data-shown` sigue funcionando con sus transiciones. */
@@ -411,7 +411,8 @@ h1, h2, h3, h4, .section-title, .gradient-text {
   to { opacity: 1; transform: none; }
 }
 .wa-bubble { animation: flotante-entra 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 1.25s backwards; }
-.chat-launcher { animation: flotante-entra 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 1.4s backwards; }
+/* Juntos: escalonados se leían como que uno cargaba tarde. */
+.chat-launcher { animation: flotante-entra 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 1.25s backwards; }
 
 /* whileHover / whileTap, en CSS. El `:active` va después del `:hover` a
    propósito: en desktop los dos se cumplen a la vez durante el click y gana el
