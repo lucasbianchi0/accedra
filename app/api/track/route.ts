@@ -1,5 +1,7 @@
 import type { NextRequest } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { bloqueDeRed, ipParaLimite } from "@/lib/contact/clientIp";
+import { consume } from "@/lib/contact/rateLimit";
 
 export const runtime = "nodejs";
 
@@ -9,6 +11,20 @@ const MAX_BODY = 4 * 1024;
 const MAX_LEN = 512;
 
 const TIPOS = new Set(["pageview", "click", "form", "popup", "salida", "interaccion"]);
+
+/**
+ * Cupos de escritura. Es el único endpoint que escribe en la base sin que la
+ * persona envíe nada, así que sin tope un script llenaba `events` y
+ * `sessions` a voluntad. Una visita real manda unos pocos eventos por página;
+ * los cupos alcanzan de sobra para una oficina entera detrás de la misma IP.
+ * Lo que se pasa se descarta en silencio, como cualquier entrada inválida.
+ */
+const LIMITE_IP = [
+  { suffix: "minute", limit: 120, windowSec: 60 },
+  { suffix: "day", limit: 3000, windowSec: 24 * 60 * 60 },
+] as const;
+const LIMITE_BLOQUE = [{ suffix: "day", limit: 8000, windowSec: 24 * 60 * 60 }] as const;
+const LIMITE_GLOBAL = [{ suffix: "hour", limit: 30_000, windowSec: 60 * 60 }] as const;
 
 /** Tope de permanencia que se acepta en un `salida`: seis horas. */
 const MAX_MS = 6 * 60 * 60 * 1000;
@@ -84,6 +100,13 @@ export async function POST(req: NextRequest) {
 
     const db = getSupabaseAdmin();
     if (!db) return nada;
+
+    const [porIp, porBloque] = await Promise.all([
+      consume("track", ipParaLimite(req), LIMITE_IP),
+      consume("track-bloque", bloqueDeRed(req), LIMITE_BLOQUE),
+    ]);
+    if (!porIp.allowed || !porBloque.allowed) return nada;
+    if (!(await consume("track-global", "todos", LIMITE_GLOBAL)).allowed) return nada;
 
     // Primer gesto humano de la visita. No es un evento de navegación: no se
     // guarda en `events`, sólo marca la sesión.
