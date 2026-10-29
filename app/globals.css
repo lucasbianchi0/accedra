@@ -1508,3 +1508,8 @@ dialog[data-brochure]::backdrop {
 /* Los campos del asistente ya marcan el foco con el borde de su contenedor
    (focus-within); el anillo global quedaba doble adentro de la pastilla. */
 .chat-campo:focus-visible { outline: none; }
+
+/* Cursor del ejemplo que se escribe solo en el asistente de la portada. */
+.hero-cursor { animation: hero-cursor 1s steps(1) infinite; }
+@keyframes hero-cursor { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .hero-cursor { animation: none; } }

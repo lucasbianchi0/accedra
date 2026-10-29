@@ -14,19 +14,12 @@ import { sugerenciasPara } from "@/lib/chat/sugerencias";
  * escribe abre el panel con ese mensaje ya mandado; la conversación no pasa
  * acá, así la portada no cambia de forma mientras alguien la usa.
  *
- * Debajo, una sola línea de ejemplos en texto: la invitación a contar el caso
- * sin sumar otra fila de botones. Son los de la solución de la página.
+ * Debajo, los atajos de la solución de la página: los mismos que en la
+ * tarjeta de escritorio.
  *
  * Mientras está a la vista, el robotito flotante se esconde: sería la misma
  * puerta dos veces.
  */
-
-const EJEMPLOS = [
-  "la red de los depósitos se cae…",
-  "queremos firmar sin papel…",
-  "los datos viven en Excel…",
-  "hay que cablear una planta…",
-];
 
 export default function HeroChat({
   solucion,
@@ -40,17 +33,8 @@ export default function HeroChat({
   const { abrir, precargar, setHeroVisible } = useChat();
   const { atajos } = sugerenciasPara(solucion);
   const [texto, setTexto] = useState("");
-  const [ejemplo, setEjemplo] = useState(0);
   const raiz = useRef<HTMLDivElement>(null);
   const origen = solucion ? `portada:${solucion}` : "portada";
-
-  // El ejemplo del placeholder rota: muestra el tipo de mensaje que funciona
-  // mejor (empresa + problema) sin un párrafo de instrucciones.
-  useEffect(() => {
-    if (texto) return;
-    const t = setInterval(() => setEjemplo((i) => (i + 1) % EJEMPLOS.length), 3800);
-    return () => clearInterval(t);
-  }, [texto]);
 
   useEffect(() => {
     const el = raiz.current;
@@ -94,7 +78,7 @@ export default function HeroChat({
           onFocus={precargar}
           maxLength={1200}
           autoComplete="off"
-          placeholder={`Contanos tu caso: ${EJEMPLOS[ejemplo]}`}
+          placeholder="Contanos tu caso…"
           className="chat-campo min-w-0 flex-1 bg-transparent text-[16px] text-white placeholder:text-gray-400 outline-none sm:text-[15px]"
         />
         <button
@@ -107,22 +91,21 @@ export default function HeroChat({
         </button>
       </form>
 
-      <p className="mt-3 flex flex-wrap items-center gap-x-1 gap-y-1 pl-5 text-[13px] text-gray-500">
-        <span className="mr-1">Por ejemplo:</span>
-        {atajos.map((a, i) => (
-          <span key={a.label} className="inline-flex items-center">
-            {i > 0 && <span aria-hidden className="mr-1 text-gray-600">·</span>}
-            <button
-              type="button"
-              onPointerEnter={precargar}
-              onClick={() => mandar(a.texto, `${origen}:atajo`)}
-              className="text-gray-400 underline decoration-white/15 underline-offset-4 transition-colors hover:text-white hover:decoration-white/50"
-            >
-              {a.label}
-            </button>
-          </span>
+      {/* Los mismos atajos que la tarjeta de escritorio, en una fila que se
+          desliza de costado en vez de partirse en renglones. */}
+      <div className="no-scrollbar -mx-5 mt-3 flex gap-2 overflow-x-auto px-5 sm:mx-0 sm:flex-wrap sm:px-0">
+        {atajos.map((a) => (
+          <button
+            key={a.label}
+            type="button"
+            onPointerEnter={precargar}
+            onClick={() => mandar(a.texto, `${origen}:atajo`)}
+            className="shrink-0 rounded-full border border-white/15 px-3.5 py-1.5 text-[13px] text-gray-300 transition-colors hover:border-white/35 hover:text-white"
+          >
+            {a.label}
+          </button>
         ))}
-      </p>
+      </div>
     </div>
   );
 }

@@ -8,9 +8,11 @@
  */
 
 export type Atajo = { label: string; texto: string };
-export type Sugerencias = { saludo: string; atajos: Atajo[] };
+/** `titulo`: la pregunta grande de la portada, corta. */
+export type Sugerencias = { titulo: string; saludo: string; atajos: Atajo[] };
 
 export const SUGERENCIAS_HOME: Sugerencias = {
+  titulo: "¿Qué está frenando tu operación?",
   saludo: "Contame qué está frenando tu operación y te digo cómo lo resolveríamos.",
   atajos: [
     { label: "Red lenta", texto: "La red se cae o anda lenta y nadie lo resuelve de fondo" },
@@ -21,6 +23,7 @@ export const SUGERENCIAS_HOME: Sugerencias = {
 
 const POR_SOLUCION: Record<string, Sugerencias> = {
   networking: {
+    titulo: "¿Qué le está fallando a tu red?",
     saludo: "Contame cómo es tu red hoy y qué te está fallando: te digo por dónde empezaríamos.",
     atajos: [
       { label: "Cortes en la red", texto: "Tenemos cortes y lentitud en la red y nadie lo resuelve de fondo" },
@@ -29,6 +32,7 @@ const POR_SOLUCION: Record<string, Sugerencias> = {
     ],
   },
   "firma-biometrica": {
+    titulo: "¿Cómo firman hoy en tu empresa?",
     saludo: "Contame qué documentos firman hoy y cómo: te digo cómo lo digitalizaríamos.",
     atajos: [
       { label: "Firmar sin papel", texto: "Queremos dejar de imprimir y firmar en papel en las sucursales" },
@@ -37,6 +41,7 @@ const POR_SOLUCION: Record<string, Sugerencias> = {
     ],
   },
   consultoria: {
+    titulo: "¿Qué números necesitás ver?",
     saludo: "Contame dónde viven tus datos y qué necesitás ver: te digo cómo lo armaríamos.",
     atajos: [
       { label: "Datos y tableros", texto: "Tenemos los datos en Excel y nadie ve los números a tiempo" },
@@ -45,6 +50,7 @@ const POR_SOLUCION: Record<string, Sugerencias> = {
     ],
   },
   seguridad: {
+    titulo: "¿Qué te preocupa de tu seguridad?",
     saludo: "Contame cómo está protegida tu empresa hoy: te digo qué priorizaríamos.",
     atajos: [
       { label: "Ransomware", texto: "Nos preocupa un ataque de ransomware" },
@@ -53,6 +59,7 @@ const POR_SOLUCION: Record<string, Sugerencias> = {
     ],
   },
   "software-ai": {
+    titulo: "¿Qué proceso querés automatizar?",
     saludo: "Contame qué proceso querés automatizar o qué probaron con IA: te digo cómo lo llevaríamos a producción.",
     atajos: [
       { label: "IA a producción", texto: "Probamos IA y funcionó en la demo, pero no llegó a producción" },
