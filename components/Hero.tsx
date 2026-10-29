@@ -3,11 +3,10 @@
 import type { CSSProperties } from "react";
 import { ArrowRight } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
-import CountUp from "@/components/CountUp";
 import HeroMedia from "@/components/HeroMedia";
 import { enter } from "@/components/Reveal";
-import HeroChat from "@/components/chat/HeroChat";
-import HeroChatCard from "@/components/chat/HeroChatCard";
+import HeroAsistente from "@/components/chat/HeroAsistente";
+import StatsPanel from "@/components/StatsPanel";
 
 const stats = ["17+", "400+", "26+", "100+"];
 
@@ -23,7 +22,7 @@ const ENTER = {
   title: { ...enter("40px", "1.3s", "0s", "12px"), "--enter-from": "0.01" } as CSSProperties,
   subtitle: enter("16px", "1.1s", "0.42s"),
   ctas: enter("16px", "1.1s", "0.66s"),
-  chat: enter("24px", "1.2s", "0.5s"),
+  chat: enter("24px", "1.2s", "0.75s"),
   stats: enter("30px", "1.2s", "0.9s"),
 };
 
@@ -44,11 +43,12 @@ export default function Hero() {
       {/* `px-5` en mobile como el resto del sitio: con `px-8` quedaban 296px
           útiles en un iPhone de 360 y el h1 no entraba. */}
       <div className="relative z-10 container-x pt-28 pb-20">
-        {/* Dos columnas desde `lg`: el título a la izquierda y el asistente a
-            la derecha, donde la persona cuenta su caso sin abrir nada. Abajo de
-            `lg` la tarjeta no entra al lado del título: queda el campo
-            compacto, que abre el chat a pantalla completa. */}
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(400px,470px)] lg:items-center lg:gap-12 xl:gap-16">
+        {/* Arriba, dos columnas desde `lg`: el título a la izquierda y los
+            números a la derecha. Abajo, a todo el ancho, el asistente: "contanos
+            tu caso" es la entrada principal de la portada.
+            En el teléfono el orden es título → asistente → números (con
+            `order`), así el campo queda a la vista sin scrollear. */}
+        <div className="flex flex-col lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(360px,420px)] lg:items-center lg:gap-x-14 xl:gap-x-20">
           <div className="max-w-3xl">
             {/* Headline — animado por CSS (.hero-enter), no por framer: es el
                 elemento LCP y con framer no se pintaba hasta después de hidratar.
@@ -72,23 +72,11 @@ export default function Hero() {
               <span className="text-gray-200 font-medium">{t.hero.subtitleStrong}</span>.
             </p>
 
-            {/* En el teléfono el asistente es la entrada principal ("contanos tu
-                problema" en vez de "elegí un servicio") y los CTA de siempre
-                quedan como links. En escritorio el chat está a la derecha y
-                vuelven los dos botones. */}
-            <div className="hero-enter lg:hidden" style={ENTER.ctas}>
-              <HeroChat />
-              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-                <a href="#contacto" className="group inline-flex items-center gap-1.5 font-semibold text-white transition-all hover:gap-2.5">
-                  {t.services.ctaButton}
-                  <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
-                </a>
-                <a href="#servicios" className="font-medium text-gray-400 transition-colors hover:text-white">
-                  {t.hero.ctaServices}
-                </a>
-              </div>
-            </div>
-            <div className="hero-enter hidden lg:flex gap-4" style={ENTER.ctas}>
+            {/* CTAs */}
+            <div
+              className="hero-enter flex flex-col sm:flex-row gap-4"
+              style={ENTER.ctas}
+            >
               <a
                 href="#contacto"
                 className="relative overflow-hidden shine inline-flex items-center justify-center gap-2 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 hover:-translate-y-0.5 hover:gap-3 group text-base"
@@ -106,41 +94,16 @@ export default function Hero() {
             </div>
           </div>
 
-          <div className="hero-enter" style={ENTER.chat}>
-            <HeroChatCard />
+          <StatsPanel
+            className="hero-enter order-3 mt-12 lg:order-none lg:mt-0"
+            style={ENTER.stats}
+            stats={stats.map((value, i) => ({ value, label: t.hero.stats[i] }))}
+          />
+
+          <div className="hero-enter order-2 mt-14 lg:order-none lg:col-span-2 lg:mt-20" style={ENTER.chat}>
+            <HeroAsistente />
           </div>
         </div>
-
-        {/* Stats bar — panel de vidrio (glassmorphism).
-            SIN backdrop-filter a propósito: el blur real es incompatible con un fade-in
-            (haría saltar el color). El look vidriado se logra con capa translúcida +
-            sheen + brillo interior, y así TODA la barra aparece junta (fade + slide) con
-            los números contando, sin ningún cambio de color. */}
-        <div
-          className="hero-enter relative mt-16 lg:mt-20 max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-px rounded-[20px] overflow-hidden border"
-          style={{
-            ...ENTER.stats,
-            borderColor: "rgba(255,255,255,0.18)",
-            background: "rgba(255,255,255,0.14)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), 0 24px 60px rgba(0,0,0,0.42)",
-          }}
-        >
-          <div className="absolute inset-x-0 top-0 h-px z-10 pointer-events-none"
-            style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)" }} />
-          {stats.map((s, i) => (
-            <div
-              key={i}
-              className="px-4 py-6 md:px-8 md:py-7 flex flex-col items-center text-center transition-colors duration-300 hover:bg-white/[0.04]"
-              style={{
-                background: "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%), rgba(14,26,46,0.42)",
-              }}
-            >
-              <CountUp value={s} className="font-display text-3xl md:text-4xl font-bold text-white mb-1.5 tracking-tight" />
-              <div className="text-xs text-gray-400 font-medium tracking-wide">{t.hero.stats[i]}</div>
-            </div>
-          ))}
-        </div>
-
       </div>
     </section>
   );

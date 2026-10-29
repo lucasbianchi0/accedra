@@ -8,12 +8,12 @@ import { INDUSTRIES } from "./industriesData";
 import { TECH_LOGOS } from "./techLogos";
 import Navbar from "@/components/Navbar";
 import Contact from "@/components/Contact";
-import CountUp from "@/components/CountUp";
 import CapabilitiesBento from "./CapabilitiesBento";
 import ProcessCardsRow from "./ProcessCardsRow";
 import CasesSection from "./CasesSection";
 import BrochureLink from "./BrochureLink";
-import HeroChatCard from "@/components/chat/HeroChatCard";
+import HeroAsistente from "@/components/chat/HeroAsistente";
+import StatsPanel from "@/components/StatsPanel";
 import IndustryContext from "./IndustryContext";
 import IndustryFaq from "./IndustryFaq";
 import { getIndustrySeo } from "./industrySeo";
@@ -34,7 +34,8 @@ import Image from "next/image";
 const ENTER = {
   block: enter("34px", "1.2s", "0s", "12px"),
   stats: enter("24px", "1.1s", "0.55s"),
-  brands: enter("0px", "1.0s", "0.8s"),
+  chat: enter("24px", "1.2s", "0.65s"),
+  brands: enter("0px", "1.0s", "0.9s"),
 };
 
 
@@ -183,11 +184,10 @@ export default function SolutionPage({ slug, industria, servicio }: { slug: stri
           {/* Entrada por CSS (.hero-enter), no por framer: el <h1> de acá es el
               elemento LCP y con framer no se pintaba hasta después de hidratar.
               Mismos valores que tenía la versión con motion. */}
-          {/* Dos columnas desde `lg`: el título a la izquierda y el asistente a
-              la derecha, con atajos de esta solución. Abajo de `lg` no hay
-              tarjeta: en el teléfono el botón principal sigue siendo WhatsApp
-              (ver el comentario de abajo) y el chat queda en el robotito. */}
-          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(400px,470px)] lg:items-center lg:gap-12 xl:gap-16">
+          {/* Arriba, dos columnas desde `lg`: el título a la izquierda y los
+              números a la derecha. Abajo, a todo el ancho, el asistente con la
+              pregunta y las acciones de esta solución. */}
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(360px,420px)] lg:items-center lg:gap-x-14 xl:gap-x-20">
             <div className="hero-enter max-w-2xl" style={ENTER.block}>
               {landing && (
                 <div className="inline-flex items-center gap-2 mb-5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] text-white/90"
@@ -264,40 +264,17 @@ export default function SolutionPage({ slug, industria, servicio }: { slug: stri
                   pareciéndose a las demás cards y no la miraba nadie. */}
               <BrochureLink slug={slug} name={data.name} accent={data.accent} t={st} />
             </div>
-            <div className="hero-enter" style={ENTER.stats}>
-              <HeroChatCard solucion={slug} accent={data.accent} />
-            </div>
+            <StatsPanel className="hero-enter mt-12 lg:mt-0" style={ENTER.stats} stats={STATS} />
           </div>
 
-          {/* Stats — panel de vidrio (glassmorphism) dentro de la portada.
-              SIN backdrop-filter a propósito: el blur real es incompatible con un
-              fade-in (haría saltar el color). El look vidriado se logra con capa
-              translúcida + sheen + brillo interior, y así TODA la barra aparece junta
-              (fade + slide) con los números contando, sin ningún cambio de color. */}
-          <div
-            className="hero-enter relative mt-14 lg:mt-16 mx-auto max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-px rounded-[20px] overflow-hidden border"
-            style={{
-              ...ENTER.stats,
-              borderColor: "rgba(255,255,255,0.18)",
-              background: "rgba(255,255,255,0.14)",
-              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.25), 0 24px 60px rgba(0,0,0,0.42)",
-            }}>
-            {/* sheen superior */}
-            <div className="absolute inset-x-0 top-0 h-px z-10 pointer-events-none"
-              style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent)" }} />
-            {STATS.map((s, i) => (
-              <div key={i}
-                className="group/stat px-4 py-6 flex flex-col items-center text-center transition-colors duration-300 hover:bg-white/[0.04]"
-                style={{
-                  background: "linear-gradient(180deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.03) 100%), rgba(14,26,46,0.42)",
-                }}>
-                <CountUp value={s.value} className="font-display text-2xl md:text-[30px] font-bold text-white leading-none tracking-tight" />
-                <span className="text-[11px] text-gray-400 font-medium mt-2 leading-tight">{s.label}</span>
-              </div>
-            ))}
+          {/* El asistente, donde antes iba la barra de números. No va en el
+              teléfono: ahí el botón principal es WhatsApp (ver el comentario de
+              los CTA) y el chat queda en el robotito flotante. */}
+          <div className="hero-enter mt-16 hidden md:block lg:mt-20" style={ENTER.chat}>
+            <HeroAsistente solucion={slug} accent={data.accent} />
           </div>
 
-          {/* Marcas con las que trabajamos — debajo de las stats */}
+          {/* Marcas con las que trabajamos — debajo del asistente */}
           <div
             className="hero-enter mt-10 lg:mt-12 max-w-3xl mx-auto"
             style={ENTER.brands}>
