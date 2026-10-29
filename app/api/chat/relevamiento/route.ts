@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   if (!permitido.allowed) return Response.json({ error: "Probá de nuevo en un rato." }, { status: 429 });
 
   try {
-    const pdf = await pdfRelevamiento(body.datos);
+    const pdf = await pdfRelevamiento(body.datos, new URL(req.url).origin);
     return new Response(new Uint8Array(pdf), {
       headers: {
         "Content-Type": "application/pdf",

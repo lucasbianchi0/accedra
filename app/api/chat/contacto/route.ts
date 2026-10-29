@@ -143,6 +143,7 @@ export async function POST(req: NextRequest) {
           "directo",
       },
       ip,
+      new URL(req.url).origin,
     ),
   ]);
 
@@ -195,10 +196,10 @@ async function guardar(
 }
 
 /** El PDF en base64 para Resend. Si falla, el mail sale igual: el lead importa más que el adjunto. */
-async function pdfAdjunto(relevamiento: Relevamiento | null) {
+async function pdfAdjunto(relevamiento: Relevamiento | null, origen: string) {
   if (!relevamiento) return [];
   try {
-    const pdf = await pdfRelevamiento(relevamiento);
+    const pdf = await pdfRelevamiento(relevamiento, origen);
     return [{ filename: nombreArchivo(relevamiento), content: pdf.toString("base64") }];
   } catch (e) {
     console.error("[chat lead] no se pudo generar el PDF:", (e as Error).message);
@@ -214,14 +215,14 @@ async function pdfAdjunto(relevamiento: Relevamiento | null) {
  * nuestro, no lo que alguien escribió en el formulario) y con un tope por
  * dirección: este endpoint no puede servir para mandarle correo a terceros.
  */
-async function avisar(lead: LeadAsistente, ip: string): Promise<boolean> {
+async function avisar(lead: LeadAsistente, ip: string, origen: string): Promise<boolean> {
   const to = process.env.CONTACT_TO;
   const from = process.env.CONTACT_FROM;
   const apiKey = process.env.RESEND_API_KEY;
   if (!to || !from || !apiKey) return false;
 
   const { email, nombre, relevamiento } = lead;
-  const adjunto = await pdfAdjunto(relevamiento);
+  const adjunto = await pdfAdjunto(relevamiento, origen);
   const resend = (cuerpo: Record<string, unknown>) =>
     fetch("https://api.resend.com/emails", {
       method: "POST",

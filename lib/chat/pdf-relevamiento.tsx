@@ -1,224 +1,270 @@
-import { Document, Font, Page, Path, Svg, Text, View, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
+import {
+  Defs,
+  Document,
+  Font,
+  Page,
+  Path,
+  RadialGradient,
+  Rect,
+  Stop,
+  StyleSheet,
+  Svg,
+  Text,
+  View,
+  renderToBuffer,
+} from "@react-pdf/renderer";
 import { ORG } from "@/lib/seo/site";
 import { WORDMARK_TRAZOS, WORDMARK_VIEWBOX } from "./logo-pdf";
 import type { Prioridad, Relevamiento } from "./tipos";
 
 /**
- * El PDF de relevamiento: lo que la persona se lleva de la conversación, y lo
- * que el equipo comercial recibe con el lead.
+ * El PDF de relevamiento, con el lenguaje de los brochures de Accedra.
  *
- * Diseño de informe de consultora y no de "hecho con IA": página blanca,
- * mucho aire, una sola tinta (navy) con el azul de marca de acento, líneas
- * finas en vez de cajas, y una grilla editorial —número y título de sección a
- * la izquierda, contenido a la derecha—. Nada de degradés, bandas oscuras ni
- * etiquetas espaciadas: es lo que delata una plantilla.
+ * Es la misma pieza que los brochures de solución (public/brochures): fondo
+ * azul noche con un resplandor arriba, títulos en Space Grotesk con la última
+ * parte en celeste, etiquetas chicas espaciadas en azul con su rayita, números
+ * de sección grandes en azul profundo, cifras con divisores finos y el pie con
+ * texto espaciado y la paginación "02 — 03". Quien ya recibió un brochure
+ * tiene que reconocer la marca al abrir esto.
  *
- * Contenido, en el orden en que lo lee un gerente: para quién es y de qué
- * trata; un resumen ejecutivo que se entiende sin leer nada más; la
- * situación; lo que identificamos con su prioridad; qué recomendamos y por
- * qué; antecedentes reales; próximos pasos; el alcance (es preliminar) y un
- * único siguiente paso con cómo pedirlo.
+ * Portada (para quién, el resumen y la ficha) y después el contenido: la
+ * situación, lo que identificamos con su prioridad, qué recomendamos, un caso
+ * real, los próximos pasos y el cierre con un único siguiente paso.
  *
- * Helvetica y Times de base (Times sólo en itálica, para los números de
- * sección y las entradas): cubren acentos y ñ, y no hay que cargar archivos.
+ * Las fuentes son las de la marca (public/fuentes) y se piden por URL al
+ * mismo sitio: en Vercel la carpeta public no está en el disco de la función,
+ * pero sí detrás del CDN.
  */
 
-// Sin cortar palabras con guion: "logís-tico" en un título se ve descuidado.
-Font.registerHyphenationCallback((palabra) => [palabra]);
-
-const TINTA = "#0b1626";
-const TEXTO = "#26354a";
-const GRIS = "#6b7a90";
-const TENUE = "#9aa8bd";
-const LINEA = "#dfe5ee";
+const FONDO = "#0a1424";
+const FONDO_HONDO = "#060d19";
+const BLANCO = "#ffffff";
+const TEXTO = "#b9c4d6";
+const GRIS = "#7d8aa1";
+const TENUE = "#56647c";
+const CELESTE = "#7fb3f8";
 const AZUL = "#2b6fd4";
+const NUMERO = "#1f3f7c";
+const LINEA = "#1c2a40";
 
-const COLOR_PRIORIDAD: Record<Prioridad, string> = { alta: "#b4471b", media: "#9a6a12", baja: GRIS };
-const NOMBRE_PRIORIDAD: Record<Prioridad, string> = {
-  alta: "Prioridad alta",
-  media: "Prioridad media",
-  baja: "Prioridad baja",
-};
+const COLOR_PRIORIDAD: Record<Prioridad, string> = { alta: "#f59a6b", media: "#e8c26a", baja: GRIS };
+
+let fuentesDe: string | null = null;
+
+/** Registra Space Grotesk e Inter desde el sitio. Una vez por instancia. */
+function registrarFuentes(origen: string) {
+  if (fuentesDe === origen) return;
+  fuentesDe = origen;
+  Font.register({ family: "Grotesk", src: `${origen}/fuentes/SpaceGrotesk-Bold.ttf`, fontWeight: 700 });
+  Font.register({
+    family: "Inter",
+    fonts: [
+      { src: `${origen}/fuentes/Inter-Regular.ttf`, fontWeight: 400 },
+      { src: `${origen}/fuentes/Inter-SemiBold.ttf`, fontWeight: 600 },
+      { src: `${origen}/fuentes/Inter-Bold.ttf`, fontWeight: 700 },
+    ],
+  });
+  // Sin cortar palabras con guion: "logís-tico" en un título se ve descuidado.
+  Font.registerHyphenationCallback((palabra) => [palabra]);
+}
 
 const s = StyleSheet.create({
-  pagina: {
-    fontFamily: "Helvetica",
-    fontSize: 9.5,
-    color: TEXTO,
-    paddingTop: 44,
-    paddingHorizontal: 52,
-    paddingBottom: 58,
-  },
-  cabecera: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" },
-  cabeceraDato: { fontSize: 8, color: GRIS, textAlign: "right", lineHeight: 1.45 },
-  cabeceraRef: { fontFamily: "Helvetica-Bold", color: TINTA },
-  regla: { borderBottomWidth: 0.6, borderBottomColor: LINEA, marginTop: 12 },
+  pagina: { fontFamily: "Inter", fontSize: 10, color: TEXTO, backgroundColor: FONDO, paddingHorizontal: 56 },
+  portada: { paddingTop: 58, paddingBottom: 54 },
+  contenido: { paddingTop: 64, paddingBottom: 72 },
 
-  paraQuien: { fontSize: 9, color: GRIS, marginTop: 34 },
-  empresa: {
-    fontFamily: "Helvetica-Bold",
-    fontSize: 30,
-    color: TINTA,
-    marginTop: 4,
-    letterSpacing: -0.6,
-    lineHeight: 1.1,
-  },
-  bajada: { fontFamily: "Times-Italic", fontSize: 14.5, color: GRIS, marginTop: 6 },
+  marca: { width: 128 },
+  itSolutions: { fontSize: 6.5, color: "#c9d3e3", letterSpacing: 3, marginTop: 7, fontWeight: 600 },
 
-  ficha: { flexDirection: "row", marginTop: 22, borderTopWidth: 0.6, borderTopColor: LINEA, paddingTop: 9 },
-  fichaCelda: { flex: 1, paddingRight: 10 },
-  fichaLabel: { fontSize: 7.5, color: TENUE, marginBottom: 2 },
-  fichaValor: { fontSize: 9, color: TINTA },
+  eyebrow: { fontSize: 7.5, color: CELESTE, letterSpacing: 2.4, fontWeight: 600 },
+  rayita: { width: 34, height: 1.5, backgroundColor: AZUL, marginTop: 9 },
 
-  resumen: { marginTop: 24, borderLeftWidth: 2, borderLeftColor: TINTA, paddingLeft: 14, paddingVertical: 2 },
-  resumenLabel: { fontFamily: "Times-Italic", fontSize: 11, color: GRIS, marginBottom: 4 },
-  resumenTexto: { fontSize: 11.5, color: TINTA, lineHeight: 1.5 },
+  titulo: { fontFamily: "Grotesk", fontSize: 38, color: BLANCO, lineHeight: 1.08, marginTop: 14, letterSpacing: -0.6 },
+  tituloCeleste: { color: CELESTE },
+  resumen: { fontSize: 11.5, color: "#dbe3ee", lineHeight: 1.65, marginTop: 22, maxWidth: 420 },
+  ficha: { fontSize: 7, color: GRIS, letterSpacing: 2, marginTop: 18, fontWeight: 600, lineHeight: 1.7 },
 
-  seccion: { flexDirection: "row", marginTop: 20, borderTopWidth: 0.6, borderTopColor: LINEA, paddingTop: 12 },
-  seccionLado: { width: 112, paddingRight: 12 },
-  seccionNumero: { fontFamily: "Times-Italic", fontSize: 18, color: TENUE, lineHeight: 1 },
-  seccionTitulo: { fontFamily: "Helvetica-Bold", fontSize: 10, color: TINTA, marginTop: 5 },
-  seccionCuerpo: { flex: 1 },
-  parrafo: { fontSize: 9.8, lineHeight: 1.55 },
-
-  hallazgo: { flexDirection: "row", paddingVertical: 5.5, borderBottomWidth: 0.4, borderBottomColor: LINEA },
-  hallazgoTexto: { flex: 1, fontSize: 9.6, lineHeight: 1.5, paddingRight: 14 },
-  hallazgoPrioridad: { width: 78, fontSize: 7.8, textAlign: "right", paddingTop: 1.5 },
-
-  area: { marginBottom: 12 },
-  areaCabeza: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
-  areaMarca: { width: 6, height: 6, marginRight: 7 },
-  areaNombre: { fontFamily: "Helvetica-Bold", fontSize: 11, color: TINTA },
-  areaFila: { flexDirection: "row", marginBottom: 4 },
-  areaLabel: { width: 74, fontFamily: "Times-Italic", fontSize: 10, color: GRIS },
-  areaTexto: { flex: 1, fontSize: 9.6, lineHeight: 1.5 },
-
-  caso: { flexDirection: "row", paddingVertical: 4 },
-  casoCliente: { width: 108, fontFamily: "Helvetica-Bold", fontSize: 9.6, color: TINTA },
-  casoTexto: { flex: 1, fontSize: 9.6, lineHeight: 1.45 },
-  casoCifra: { color: GRIS },
-
-  paso: { flexDirection: "row", paddingVertical: 4.5, borderBottomWidth: 0.4, borderBottomColor: LINEA },
-  pasoNumero: { width: 20, fontFamily: "Helvetica-Bold", fontSize: 9.6, color: AZUL },
-  pasoTexto: { flex: 1, fontSize: 9.6, lineHeight: 1.5 },
-
-  alcance: { fontSize: 8.6, color: GRIS, lineHeight: 1.5 },
-
-  cierre: { marginTop: 24, borderTopWidth: 1.4, borderTopColor: TINTA, paddingTop: 14, flexDirection: "row" },
-  cierreLado: { flex: 1, paddingRight: 24 },
-  cierreLabel: { fontFamily: "Times-Italic", fontSize: 11, color: GRIS },
-  cierreTitulo: { fontFamily: "Helvetica-Bold", fontSize: 15, color: TINTA, marginTop: 3, lineHeight: 1.25 },
-  cierreTexto: { fontSize: 9.4, marginTop: 6, lineHeight: 1.5 },
-  contactos: { width: 170 },
-  contacto: { flexDirection: "row", paddingVertical: 3.2, borderBottomWidth: 0.4, borderBottomColor: LINEA },
-  contactoLabel: { width: 58, fontSize: 8, color: TENUE, paddingTop: 1 },
-  contactoValor: { flex: 1, fontSize: 9, color: TINTA, fontFamily: "Helvetica-Bold" },
+  cifras: { flexDirection: "row", marginTop: "auto" },
+  cifra: { flex: 1, paddingRight: 12, borderLeftWidth: 0.6, borderLeftColor: "#2a3a55", paddingLeft: 12 },
+  cifraPrimera: { borderLeftWidth: 0, paddingLeft: 0 },
+  cifraValor: { fontFamily: "Grotesk", fontSize: 32, color: BLANCO, lineHeight: 1, letterSpacing: -0.8 },
+  cifraLabel: { fontSize: 6.5, color: GRIS, letterSpacing: 2, marginTop: 7, fontWeight: 600 },
 
   pie: {
     position: "absolute",
-    bottom: 26,
-    left: 52,
-    right: 52,
+    left: 56,
+    right: 56,
+    bottom: 30,
     flexDirection: "row",
     justifyContent: "space-between",
-    fontSize: 7.5,
-    color: TENUE,
+    borderTopWidth: 0.6,
+    borderTopColor: LINEA,
+    paddingTop: 12,
   },
+  pieTexto: { fontSize: 6.5, color: TENUE, letterSpacing: 2, fontWeight: 600 },
+
+  seccion: { flexDirection: "row", marginBottom: 24 },
+  numero: { fontFamily: "Grotesk", fontSize: 46, color: NUMERO, width: 112, lineHeight: 0.95, letterSpacing: -1.5 },
+  cuerpo: { flex: 1 },
+  seccionTitulo: { fontFamily: "Grotesk", fontSize: 17, color: BLANCO, marginTop: 6, marginBottom: 10 },
+  parrafo: { fontSize: 10, lineHeight: 1.65 },
+
+  hallazgo: { flexDirection: "row", paddingVertical: 7, borderBottomWidth: 0.6, borderBottomColor: LINEA },
+  hallazgoTexto: { flex: 1, fontSize: 10, lineHeight: 1.55, paddingRight: 16 },
+  prioridad: { width: 50, fontSize: 6.5, letterSpacing: 1.8, textAlign: "right", paddingTop: 3, fontWeight: 600 },
+
+  area: {
+    backgroundColor: "#0f1c31",
+    borderWidth: 0.6,
+    borderColor: "#22324d",
+    borderLeftWidth: 2,
+    borderRadius: 6,
+    padding: 13,
+    marginBottom: 8,
+  },
+  areaNombre: { fontFamily: "Grotesk", fontSize: 13, color: BLANCO, marginBottom: 9 },
+  etiqueta: { fontSize: 6.5, color: CELESTE, letterSpacing: 2, marginBottom: 3, fontWeight: 600 },
+  areaTexto: { fontSize: 9.6, lineHeight: 1.6, marginBottom: 8 },
+
+  caso: { backgroundColor: "#0f1c31", borderWidth: 0.6, borderColor: "#22324d", borderRadius: 6, padding: 14, marginBottom: 8 },
+  casoCliente: { fontSize: 6.5, color: CELESTE, letterSpacing: 2, fontWeight: 600 },
+  casoTitulo: { fontFamily: "Grotesk", fontSize: 13, color: BLANCO, marginTop: 6, lineHeight: 1.3 },
+  casoCifra: { fontSize: 9.6, color: TEXTO, marginTop: 6 },
+
+  paso: { flexDirection: "row", paddingVertical: 6, borderBottomWidth: 0.6, borderBottomColor: LINEA },
+  pasoNumero: { width: 26, fontFamily: "Grotesk", fontSize: 11, color: CELESTE },
+  pasoTexto: { flex: 1, fontSize: 10, lineHeight: 1.55 },
+
+  alcance: { fontSize: 7.8, color: TENUE, lineHeight: 1.6, marginTop: 14 },
+
+  cierre: { backgroundColor: "#0f1c31", borderWidth: 0.6, borderColor: "#25385a", borderRadius: 8, padding: 18, marginTop: 4 },
+  cierreTitulo: { fontFamily: "Grotesk", fontSize: 19, color: BLANCO, lineHeight: 1.2, marginTop: 10 },
+  cierreTexto: { fontSize: 9.8, lineHeight: 1.6, marginTop: 8, maxWidth: 400 },
+  contactos: { flexDirection: "row", marginTop: 14, borderTopWidth: 0.6, borderTopColor: "#25385a", paddingTop: 12 },
+  contacto: { flex: 1 },
+  contactoLabel: { fontSize: 6.5, color: GRIS, letterSpacing: 2, fontWeight: 600 },
+  contactoValor: { fontSize: 10, color: BLANCO, marginTop: 5, fontWeight: 600 },
 });
 
-/** El wordmark sobre blanco: el trazo blanco del original pasa a la tinta. */
-function Wordmark({ ancho }: { ancho: number }) {
-  const [, , w, h] = WORDMARK_VIEWBOX.split(" ").map(Number);
+/** El fondo de todas las páginas: azul noche con el resplandor de arriba. */
+function Fondo() {
   return (
-    <Svg viewBox={WORDMARK_VIEWBOX} style={{ width: ancho, height: (ancho * h) / w }}>
-      {WORDMARK_TRAZOS.map((t, i) => (
-        <Path key={i} d={t.d} fill={t.fill.toLowerCase() === "#ffffff" ? TINTA : t.fill} />
-      ))}
+    <Svg fixed style={{ position: "absolute", top: 0, left: 0, width: 595.28, height: 841.89 }} viewBox="0 0 595 842">
+      <Defs>
+        <RadialGradient id="resplandor" cx="0.62" cy="0.1" r="0.75">
+          <Stop offset="0" stopColor="#173867" stopOpacity="0.95" />
+          <Stop offset="0.45" stopColor={FONDO} stopOpacity="1" />
+          <Stop offset="1" stopColor={FONDO_HONDO} stopOpacity="1" />
+        </RadialGradient>
+      </Defs>
+      <Rect x="0" y="0" width="595" height="842" fill="url(#resplandor)" />
     </Svg>
   );
 }
 
-function Seccion({
-  n,
-  titulo,
-  children,
-  unida = true,
-}: {
-  n: number;
-  titulo: string;
-  children: React.ReactNode;
-  /** false si la sección puede partirse entre páginas (la de recomendaciones). */
-  unida?: boolean;
-}) {
+function Wordmark() {
+  const [, , w, h] = WORDMARK_VIEWBOX.split(" ").map(Number);
   return (
-    <View style={s.seccion} wrap={!unida}>
-      <View style={s.seccionLado}>
-        <Text style={s.seccionNumero}>{String(n).padStart(2, "0")}</Text>
-        <Text style={s.seccionTitulo}>{titulo}</Text>
-      </View>
-      <View style={s.seccionCuerpo}>{children}</View>
+    <View>
+      <Svg viewBox={WORDMARK_VIEWBOX} style={{ width: 128, height: (128 * h) / w }}>
+        {WORDMARK_TRAZOS.map((t, i) => (
+          <Path key={i} d={t.d} fill={t.fill} />
+        ))}
+      </Svg>
+      <Text style={s.itSolutions}>IT SOLUTIONS</Text>
     </View>
   );
 }
 
-const fechaLarga = (iso: string) =>
+function Eyebrow({ children }: { children: string }) {
+  return (
+    <View>
+      <Text style={s.eyebrow}>{children.toUpperCase()}</Text>
+      <View style={s.rayita} />
+    </View>
+  );
+}
+
+function Pie({ empresa }: { empresa: string }) {
+  return (
+    <View style={s.pie} fixed>
+      <Text style={s.pieTexto}>{`RELEVAMIENTO PRELIMINAR · ${empresa.toUpperCase()}`}</Text>
+      <Text
+        style={s.pieTexto}
+        render={({ pageNumber, totalPages }) =>
+          `${String(pageNumber).padStart(2, "0")} — ${String(totalPages).padStart(2, "0")}`
+        }
+      />
+    </View>
+  );
+}
+
+function Seccion({ n, titulo, children }: { n: number; titulo: string; children: React.ReactNode }) {
+  return (
+    <View style={s.seccion}>
+      <Text style={s.numero}>{String(n).padStart(2, "0")}</Text>
+      <View style={s.cuerpo}>
+        <Text style={s.seccionTitulo}>{titulo}</Text>
+        {children}
+      </View>
+    </View>
+  );
+}
+
+const fechaCorta = (iso: string) =>
   new Date(iso).toLocaleDateString("es-AR", {
     day: "numeric",
-    month: "long",
+    month: "short",
     year: "numeric",
     timeZone: "America/Argentina/Buenos_Aires",
   });
 
-/** "Diagnóstico preliminar · Conectividad Crítica y Seguridad IT". */
-function bajada(d: Relevamiento): string {
-  const temas = d.areas.map((a) => a.nombre);
-  const lista = temas.length > 1 ? `${temas.slice(0, -1).join(", ")} y ${temas[temas.length - 1]}` : temas[0];
-  return `Diagnóstico preliminar · ${lista}`;
-}
-
 function Documento({ d }: { d: Relevamiento }) {
+  // Cifras grandes como las del brochure; lo descriptivo (rubro, tamaño) va
+  // en la línea espaciada de abajo del resumen, que es donde entra.
+  const cifras = [
+    { valor: String(d.hallazgos.length).padStart(2, "0"), label: "HALLAZGOS" },
+    { valor: String(d.hallazgos.filter((h) => h.prioridad === "alta").length).padStart(2, "0"), label: "PRIORIDAD ALTA" },
+    { valor: String(d.areas.length).padStart(2, "0"), label: "ÁREAS DE MEJORA" },
+    { valor: String(d.casos.length).padStart(2, "0"), label: "CASOS SIMILARES" },
+  ];
+  const ficha = [d.industria, d.tamano, fechaCorta(d.fecha), d.referencia].filter(Boolean).join("  ·  ").toUpperCase();
   let n = 0;
-  const ficha = [
-    { label: "Industria", valor: d.industria || "—" },
-    { label: "Tamaño", valor: d.tamano || "—" },
-    { label: "Fecha", valor: fechaLarga(d.fecha) },
-    { label: "Preparado por", valor: "Accedra IT Solutions" },
-  ];
-  const contactos = [
-    { label: "WhatsApp", valor: "+54 11 3300-1233" },
-    { label: "Teléfono", valor: ORG.phoneDisplay },
-    { label: "Email", valor: ORG.email },
-    { label: "Web", valor: "accedra.com.ar" },
-  ];
 
   return (
     <Document title={`Relevamiento — ${d.empresa}`} author={ORG.name} creator="Accedra" producer="Accedra">
-      <Page size="A4" style={s.pagina}>
-        <View style={s.cabecera}>
-          <Wordmark ancho={112} />
-          <View>
-            <Text style={s.cabeceraDato}>Relevamiento preliminar</Text>
-            <Text style={[s.cabeceraDato, s.cabeceraRef]}>{d.referencia}</Text>
-          </View>
+      {/* ── Portada ── */}
+      <Page size="A4" style={[s.pagina, s.portada]}>
+        <Fondo />
+        <Wordmark />
+
+        <View style={{ marginTop: 150 }}>
+          <Eyebrow>Relevamiento preliminar</Eyebrow>
+          <Text style={s.titulo}>
+            Relevamiento para{"\n"}
+            <Text style={s.tituloCeleste}>{d.empresa}.</Text>
+          </Text>
+          <Text style={s.resumen}>{d.resumen}</Text>
+          <Text style={s.ficha}>{ficha}</Text>
         </View>
-        <View style={s.regla} />
 
-        <Text style={s.paraQuien}>Preparado para</Text>
-        <Text style={s.empresa}>{d.empresa}</Text>
-        <Text style={s.bajada}>{bajada(d)}</Text>
-
-        <View style={s.ficha}>
-          {ficha.map((f) => (
-            <View key={f.label} style={s.fichaCelda}>
-              <Text style={s.fichaLabel}>{f.label}</Text>
-              <Text style={s.fichaValor}>{f.valor}</Text>
+        <View style={s.cifras}>
+          {cifras.map((c, i) => (
+            <View key={c.label} style={[s.cifra, i === 0 ? s.cifraPrimera : {}]}>
+              <Text style={s.cifraValor}>{c.valor}</Text>
+              <Text style={s.cifraLabel}>{c.label}</Text>
             </View>
           ))}
         </View>
+        <Pie empresa={d.empresa} />
+      </Page>
 
-        <View style={s.resumen} wrap={false}>
-          <Text style={s.resumenLabel}>En resumen</Text>
-          <Text style={s.resumenTexto}>{d.resumen}</Text>
+      {/* ── Contenido ── */}
+      <Page size="A4" style={[s.pagina, s.contenido]}>
+        <Fondo />
+
+        <View style={{ marginBottom: 34 }}>
+          <Eyebrow>Diagnóstico</Eyebrow>
         </View>
 
         <Seccion n={++n} titulo="Situación actual">
@@ -227,43 +273,32 @@ function Documento({ d }: { d: Relevamiento }) {
 
         <Seccion n={++n} titulo="Lo que identificamos">
           {d.hallazgos.map((h, i) => (
-            <View key={i} style={[s.hallazgo, i === d.hallazgos.length - 1 ? { borderBottomWidth: 0 } : {}]}>
+            <View key={i} style={s.hallazgo} wrap={false}>
               <Text style={s.hallazgoTexto}>{h.texto}</Text>
-              <Text style={[s.hallazgoPrioridad, { color: COLOR_PRIORIDAD[h.prioridad] }]}>
-                {NOMBRE_PRIORIDAD[h.prioridad]}
-              </Text>
+              <Text style={[s.prioridad, { color: COLOR_PRIORIDAD[h.prioridad] }]}>{h.prioridad.toUpperCase()}</Text>
             </View>
           ))}
         </Seccion>
 
-        <Seccion n={++n} titulo="Qué recomendamos" unida={false}>
+        <Seccion n={++n} titulo="Qué recomendamos">
           {d.areas.map((a) => (
-            <View key={a.solucion} style={s.area} wrap={false}>
-              <View style={s.areaCabeza}>
-                <View style={[s.areaMarca, { backgroundColor: a.accent }]} />
-                <Text style={s.areaNombre}>{a.nombre}</Text>
-              </View>
-              <View style={s.areaFila}>
-                <Text style={s.areaLabel}>Por qué</Text>
-                <Text style={s.areaTexto}>{a.porque}</Text>
-              </View>
-              <View style={s.areaFila}>
-                <Text style={s.areaLabel}>Qué haríamos</Text>
-                <Text style={s.areaTexto}>{a.propuesta}</Text>
-              </View>
+            <View key={a.solucion} style={[s.area, { borderLeftColor: a.accent }]} wrap={false}>
+              <Text style={s.areaNombre}>{a.nombre}</Text>
+              <Text style={s.etiqueta}>POR QUÉ</Text>
+              <Text style={s.areaTexto}>{a.porque}</Text>
+              <Text style={s.etiqueta}>QUÉ HARÍAMOS</Text>
+              <Text style={[s.areaTexto, { marginBottom: 0 }]}>{a.propuesta}</Text>
             </View>
           ))}
         </Seccion>
 
         {d.casos.length > 0 && (
-          <Seccion n={++n} titulo="Antecedentes">
+          <Seccion n={++n} titulo="Ya lo resolvimos">
             {d.casos.map((c) => (
-              <View key={c.id} style={s.caso}>
-                <Text style={s.casoCliente}>{c.cliente}</Text>
-                <Text style={s.casoTexto}>
-                  {c.titulo}
-                  {c.cifra ? <Text style={s.casoCifra}>{` — ${c.cifra}.`}</Text> : "."}
-                </Text>
+              <View key={c.id} style={s.caso} wrap={false}>
+                <Text style={s.casoCliente}>{c.cliente.toUpperCase()}</Text>
+                <Text style={s.casoTitulo}>{c.titulo}</Text>
+                {c.cifra ? <Text style={s.casoCifra}>{c.cifra}</Text> : null}
               </View>
             ))}
           </Seccion>
@@ -271,73 +306,55 @@ function Documento({ d }: { d: Relevamiento }) {
 
         <Seccion n={++n} titulo="Próximos pasos">
           {d.proximosPasos.map((p, i) => (
-            <View key={i} style={[s.paso, i === d.proximosPasos.length - 1 ? { borderBottomWidth: 0 } : {}]}>
-              <Text style={s.pasoNumero}>{i + 1}.</Text>
+            <View key={i} style={s.paso} wrap={false}>
+              <Text style={s.pasoNumero}>{String(i + 1).padStart(2, "0")}</Text>
               <Text style={s.pasoTexto}>{p}</Text>
             </View>
           ))}
         </Seccion>
 
-        <Seccion n={++n} titulo="Alcance">
-          <Text style={s.alcance}>
-            Este relevamiento es preliminar: se arma con lo que nos contaste en la conversación con el asistente de
-            Accedra. Las recomendaciones, los plazos y el equipamiento se validan en el relevamiento técnico en sitio,
-            que no tiene costo ni compromiso.
-          </Text>
-        </Seccion>
-
-        <View style={s.cierre} wrap={false}>
-          <View style={s.cierreLado}>
-            <Text style={s.cierreLabel}>Siguiente paso</Text>
-            <Text style={s.cierreTitulo}>Relevamiento técnico en sitio, sin costo.</Text>
+        <View wrap={false}>
+          <View style={s.cierre}>
+            <Eyebrow>Siguiente paso</Eyebrow>
+            <Text style={s.cierreTitulo}>
+              Relevamiento técnico en sitio, <Text style={s.tituloCeleste}>sin costo.</Text>
+            </Text>
             <Text style={s.cierreTexto}>
-              Respondé este correo o escribinos y coordinamos la visita de un especialista. Con lo que releve, te
-              entregamos una propuesta con alcance, plazos y prioridades.
+              Coordinamos la visita de un especialista y, con lo que releve, te entregamos una propuesta con alcance,
+              plazos y prioridades.
+            </Text>
+            <View style={s.contactos}>
+              {[
+                { label: "WHATSAPP", valor: "+54 11 3300-1233" },
+                { label: "EMAIL", valor: ORG.email },
+                { label: "WEB", valor: "accedra.com.ar" },
+              ].map((c) => (
+                <View key={c.label} style={s.contacto}>
+                  <Text style={s.contactoLabel}>{c.label}</Text>
+                  <Text style={s.contactoValor}>{c.valor}</Text>
+                </View>
+              ))}
+            </View>
+            <Text style={s.alcance}>
+              Relevamiento preliminar, armado con lo que nos contaste en la conversación con el asistente de Accedra.
+              Las recomendaciones, los plazos y el equipamiento se validan en el relevamiento técnico en sitio.
             </Text>
           </View>
-          <View style={s.contactos}>
-            {contactos.map((c, i) => (
-              <View key={c.label} style={[s.contacto, i === contactos.length - 1 ? { borderBottomWidth: 0 } : {}]}>
-                <Text style={s.contactoLabel}>{c.label}</Text>
-                <Text style={s.contactoValor}>{c.valor}</Text>
-              </View>
-            ))}
-          </View>
         </View>
 
-        <View style={s.pie} fixed>
-          <Text>
-            {ORG.legalName} · {ORG.address.street}, CABA · accedra.com.ar
-          </Text>
-          <Text render={({ pageNumber, totalPages }) => `${d.referencia} · ${pageNumber}/${totalPages}`} />
-        </View>
+        <Pie empresa={d.empresa} />
       </Page>
     </Document>
   );
 }
 
-/**
- * Helvetica base sólo trae los caracteres de WinAnsi: una flecha o un emoji
- * salen como basura en el PDF. Se cambian por lo más parecido que sí existe.
- */
-function aWinAnsi(t: string): string {
-  return (
-    t
-      // "5→<1 caídas" se lee mejor dicho que con signos.
-      .replace(/(\d[\d.,]*)\s*(?:→|->)\s*<\s*(\d[\d.,]*)/g, "de $1 a menos de $2")
-      .replace(/(\d[\d.,]*)\s*(?:→|->)\s*(\d[\d.,]*)/g, "de $1 a $2")
-      .replace(/→|⟶|➝/g, "›")
-      .replace(/←/g, "‹")
-      .replace(/≤/g, "<=")
-      .replace(/≥/g, ">=")
-      .replace(/≈/g, "~")
-      .replace(/[​-‍﻿]/g, "")
-      .replace(/[^\u0000-ÿ–—‘’“”•…€‹›]/g, "")
-  );
+/** Saca lo que ninguna de las fuentes dibuja (emojis, caracteres invisibles). */
+function sinRaros(t: string): string {
+  return t.replace(/[​-‍﻿]/g, "").replace(/\p{Extended_Pictographic}/gu, "").trim();
 }
 
 function limpio(d: Relevamiento): Relevamiento {
-  const t = aWinAnsi;
+  const t = sinRaros;
   return {
     ...d,
     empresa: t(d.empresa),
@@ -352,7 +369,12 @@ function limpio(d: Relevamiento): Relevamiento {
   };
 }
 
-export function pdfRelevamiento(datos: Relevamiento): Promise<Buffer> {
+/**
+ * @param origen el sitio desde donde se piden las fuentes
+ *   ("https://accedra.com.ar"; en desarrollo, el localhost del pedido).
+ */
+export function pdfRelevamiento(datos: Relevamiento, origen: string): Promise<Buffer> {
+  registrarFuentes(origen);
   return renderToBuffer(<Documento d={limpio(datos)} />);
 }
 
