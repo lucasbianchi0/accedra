@@ -40,17 +40,19 @@ export function calcularPasos(mensajes: Mensaje[], leadEnviado: boolean): { paso
     relevamiento,
     leadEnviado,
   ];
-  // El actual es el primero sin hacer; los anteriores cuentan como hechos
-  // aunque la charla los haya salteado (llegó directo al diagnóstico).
-  const ultimoHecho = hechos.lastIndexOf(true);
-  const actual = Math.min(ultimoHecho + 1, PASOS.length - 1);
-  const terminado = leadEnviado;
+  // En orden estricto: el actual es el primero sin hacer, aunque alguno
+  // posterior ya se haya cumplido (un caso mostrado al primer mensaje no
+  // saltea el contexto). Así la barra nunca promete que falta menos.
+  const primeroPendiente = hechos.indexOf(false);
+  // Con los datos enviados, el recorrido está completo aunque no haya PDF.
+  const terminado = leadEnviado || primeroPendiente === -1;
+  const actual = terminado ? PASOS.length - 1 : primeroPendiente;
 
   return {
     actual,
     pasos: PASOS.map((p, i) => ({
       ...p,
-      estado: terminado || i <= ultimoHecho ? "hecho" : i === actual ? "actual" : "pendiente",
+      estado: terminado || i < actual ? "hecho" : i === actual ? "actual" : "pendiente",
     })),
   };
 }
@@ -151,13 +153,17 @@ export function ProgresoBarra({ mensajes, leadEnviado }: { mensajes: Mensaje[]; 
 export function PromesaPdf({ className = "" }: { className?: string }) {
   return (
     <p
-      className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-2 pr-3.5 text-[12.5px] text-gray-300 ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-2 pr-3.5 text-[11.5px] text-gray-300 sm:text-[12.5px] ${className}`}
     >
       <svg width="14" height="17" viewBox="0 0 38 46" aria-hidden>
         <path d="M6 1h19l12 12v26a6 6 0 0 1-6 6H6a6 6 0 0 1-6-6V7a6 6 0 0 1 6-6Z" fill="#9F8CFB" />
         <path d="M25 1v8a4 4 0 0 0 4 4h8" fill="#fff" fillOpacity="0.4" />
       </svg>
-      En 2 minutos te llevás un <span className="font-semibold text-white">relevamiento en PDF</span>, sin costo
+      {/* Un solo span: dentro del flex con gap, cada trozo de texto suelto
+          quedaba separado ("PDF , sin costo"). */}
+      <span>
+        En 2 minutos te llevás un <span className="font-semibold text-white">relevamiento en PDF</span>, sin costo
+      </span>
     </p>
   );
 }

@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { ArrowUp, ChevronDown, RotateCcw, X } from "lucide-react";
-import Robot from "./Robot";
+import { MascotaCara, MascotaRetrato } from "./Mascota";
+import { NombreAccedraAI } from "./AccedraAI";
 import Conversacion, { whatsappDeLaCharla } from "./Conversacion";
 import { ProgresoBarra, PromesaPdf } from "./Progreso";
 import { IconoWhatsApp } from "./Tarjetas";
@@ -85,14 +86,14 @@ export default function ChatPanel({ abierto, onCerrar }: { abierto: boolean; onC
       <div aria-hidden className="pointer-events-none absolute -top-24 left-1/2 h-56 w-[120%] -translate-x-1/2 rounded-full bg-accent/20 blur-3xl" />
 
       <header className="relative flex items-center gap-3 border-b border-white/[0.06] px-4 pb-3 pt-[max(12px,env(safe-area-inset-top))] sm:pt-3">
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 bg-gradient-to-br from-accent to-[#1c4f9c] text-white">
-          <Robot size={22} />
-        </span>
+        <MascotaCara size={36} className="ring-1 ring-white/15" />
         <div className="min-w-0 flex-1">
-          <p className="font-display text-[15px] font-semibold leading-tight text-white">Asistente Accedra</p>
+          <p className="font-display text-[15px] font-semibold leading-tight text-white">
+            <NombreAccedraAI />
+          </p>
           <p className="flex items-center gap-1.5 text-[11.5px] text-gray-400">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Responde al instante · un especialista sigue tu caso
+            En línea · responde al instante
           </p>
         </div>
         {!vacio && (
@@ -130,18 +131,20 @@ export default function ChatPanel({ abierto, onCerrar }: { abierto: boolean; onC
         placeholder={vacio ? "Ej.: somos una clínica y…" : "Escribí tu mensaje"}
         inicio={
           <div className="flex min-h-full flex-col">
-            <div className="mb-5">
-              <p className="font-display text-[22px] font-semibold leading-tight text-white">
-                Contanos qué está frenando tu operación.
+            {/* La misma bienvenida que la hoja, en angosto: el personaje, el
+                saludo, la pregunta por el problema y lo que se lleva. */}
+            <div className="hoja-entra mb-5 flex flex-col items-start">
+              <MascotaRetrato size={84} className="-ml-2" />
+              <p className="mt-1 text-[13px] text-gray-400">
+                Hola, soy el asistente de <NombreAccedraAI className="font-semibold text-white" />
               </p>
-              <p className="mt-2 text-[13.5px] leading-relaxed text-gray-400">
-                Te damos una primera devolución en el momento, te mostramos cómo lo resolvimos en empresas parecidas y,
-                si querés, un especialista analiza tu proceso sin costo.
+              <p className="font-display mt-1 text-[22px] font-semibold leading-tight text-white">
+                ¿Qué está frenando tu operación?
               </p>
-              <PromesaPdf className="mt-4" />
+              <PromesaPdf className="mt-3" />
             </div>
             <div className="space-y-2">
-              {SUGERENCIAS.map((s) => (
+              {SUGERENCIAS.slice(0, 3).map((s) => (
                 <button
                   key={s}
                   type="button"

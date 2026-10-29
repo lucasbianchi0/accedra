@@ -18,7 +18,10 @@ export type Atajo = { label: string; texto: string; icono: LucideIcon };
 export type Sugerencias = { titulo: string; atajos: Atajo[] };
 
 export const SUGERENCIAS_HOME: Sugerencias = {
-  titulo: "¿En qué te podemos ayudar hoy?",
+  // El problema y no "¿en qué te podemos ayudar?": la pregunta genérica trae
+  // "hola" o "quiero info"; esta invita a contar algo concreto, que es lo que
+  // el asistente necesita para diagnosticar y lo que califica al lead.
+  titulo: "¿Qué está frenando tu operación?",
   atajos: [
     { label: "La red se cae", icono: Wifi, texto: "La red se cae o anda lenta y nadie lo resuelve de fondo" },
     { label: "Firmar sin papel", icono: PenTool, texto: "Queremos dejar de imprimir y firmar en papel" },

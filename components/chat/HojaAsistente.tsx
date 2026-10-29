@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowUp, RotateCcw, X } from "lucide-react";
 import Conversacion, { whatsappDeLaCharla } from "./Conversacion";
-import { LogoAccedraAI, NombreAccedraAI } from "./AccedraAI";
+import { NombreAccedraAI } from "./AccedraAI";
+import { MascotaCara, MascotaRetrato } from "./Mascota";
 import { ProgresoBarra, ProgresoVertical, PromesaPdf } from "./Progreso";
 import { IconoWhatsApp } from "./Tarjetas";
 import { enviar, reiniciar, useConversacion } from "@/lib/chat/store";
@@ -63,15 +64,17 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
     };
   }, [abierto, onCerrar]);
 
-  // En el teléfono, la hoja del alto de lo que queda visible sobre el teclado.
+  // En celular y tablet la hoja es pantalla completa, del alto de lo que queda
+  // visible sobre el teclado: en iOS `100dvh` no se achica cuando aparece, y el
+  // campo de texto quedaría tapado.
   useEffect(() => {
-    if (!abierto || !window.matchMedia("(max-width: 639px)").matches) return;
+    if (!abierto || !window.matchMedia("(max-width: 1023px)").matches) return;
     const vv = window.visualViewport;
     const el = hoja.current;
     if (!vv || !el) return;
     const ajustar = () => {
-      el.style.maxHeight = `${vv.height - 12}px`;
-      el.style.bottom = `${Math.max(0, window.innerHeight - vv.height - vv.offsetTop)}px`;
+      el.style.height = `${vv.height}px`;
+      el.style.top = `${vv.offsetTop}px`;
     };
     ajustar();
     vv.addEventListener("resize", ajustar);
@@ -79,8 +82,8 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
     return () => {
       vv.removeEventListener("resize", ajustar);
       vv.removeEventListener("scroll", ajustar);
-      el.style.maxHeight = "";
-      el.style.bottom = "";
+      el.style.height = "";
+      el.style.top = "";
     };
   }, [abierto]);
 
@@ -129,10 +132,12 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
         aria-modal="true"
         aria-label="Accedra AI"
         // Vidrio: translúcida sobre la página ya desenfocada, con un blur propio
-        // que termina de lavar lo que hay detrás. Márgenes laterales amplios:
-        // en escritorio la hoja no pasa de ~1000 px de ancho.
-        className={`chat-hoja fixed inset-x-0 bottom-0 z-[81] flex flex-col overflow-hidden rounded-t-[32px] border border-b-0 border-white/[0.13] bg-[linear-gradient(180deg,rgba(24,36,66,0.62)_0%,rgba(9,16,32,0.74)_100%)] shadow-[0_-40px_140px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-3xl backdrop-saturate-[1.6] sm:inset-x-[max(2rem,calc((100vw-1120px)/2))] ${
-          vacio ? "h-[72dvh] sm:h-[60dvh] sm:min-h-[480px] sm:max-h-[92dvh]" : "h-[92dvh] sm:h-[86dvh]"
+        // que termina de lavar lo que hay detrás.
+        // Celular y tablet: pantalla completa (sube desde abajo igual).
+        // Escritorio: hoja que sube hasta el 60 %, con márgenes amplios —no
+        // pasa de ~1100 px de ancho— y al 86 % cuando hay conversación.
+        className={`chat-hoja fixed inset-x-0 top-0 z-[81] flex h-[100dvh] flex-col overflow-hidden bg-[linear-gradient(180deg,rgba(24,36,66,0.86)_0%,rgba(9,16,32,0.94)_100%)] backdrop-blur-3xl backdrop-saturate-[1.6] lg:top-auto lg:bottom-0 lg:inset-x-[max(2rem,calc((100vw-1120px)/2))] lg:rounded-t-[32px] lg:border lg:border-b-0 lg:border-white/[0.13] lg:bg-[linear-gradient(180deg,rgba(24,36,66,0.62)_0%,rgba(9,16,32,0.74)_100%)] lg:shadow-[0_-40px_140px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.16)] ${
+          vacio ? "lg:h-[62dvh] lg:min-h-[560px] lg:max-h-[92dvh]" : "lg:h-[86dvh]"
         }`}
       >
         {/* Filo de luz en el borde de arriba, en el degradé de la marca */}
@@ -161,13 +166,19 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
           onPointerMove={moverArrastre}
           onPointerUp={soltarArrastre}
           onPointerCancel={soltarArrastre}
-          className="relative flex touch-none items-center justify-between px-4 pb-1 pt-3 sm:px-6"
+          className="relative flex touch-none items-center justify-between px-4 pb-1 pt-[max(12px,env(safe-area-inset-top))] sm:px-6 lg:pt-3"
         >
-          <div className="flex min-w-0 items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2.5">
             {!vacio && (
               <>
-                <LogoAccedraAI size={24} />
-                <NombreAccedraAI className="font-display text-[15px] font-semibold text-white" />
+                <MascotaCara size={30} className="ring-1 ring-white/15" />
+                <div className="leading-tight">
+                  <NombreAccedraAI className="font-display text-[15px] font-semibold text-white" />
+                  <p className="flex items-center gap-1.5 text-[11px] text-gray-400">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                    En línea · responde al instante
+                  </p>
+                </div>
               </>
             )}
           </div>
@@ -281,8 +292,11 @@ function Bienvenida({ solucion }: { solucion?: string }) {
     <div className="flex flex-1 flex-col">
       {/* `hoja-entra`: cada hijo entra escalonado cuando la hoja termina de subir. */}
       <div className="hoja-entra my-auto flex flex-col items-center pb-4 text-center">
-        <LogoAccedraAI size={46} brillo />
-        <h2 className="font-display mt-5 text-[26px] font-semibold leading-tight tracking-[-0.015em] text-white sm:text-[34px]">
+        <MascotaRetrato size={112} className="lg:h-[96px] lg:w-[96px]" />
+        <p className="mt-1 text-[14px] text-gray-400">
+          Hola, soy el asistente de <NombreAccedraAI className="font-semibold text-white" />
+        </p>
+        <h2 className="font-display mt-1.5 text-[26px] font-semibold leading-tight tracking-[-0.015em] text-white sm:text-[34px]">
           {titulo}
         </h2>
         <PromesaPdf className="mt-4" />
@@ -292,7 +306,7 @@ function Bienvenida({ solucion }: { solucion?: string }) {
           role="radiogroup"
           aria-label="Tu industria"
           // En el teléfono se deslizan de costado; el fundido a la derecha avisa que hay más.
-          className="no-scrollbar -mx-4 mt-6 flex max-w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,#000_82%,transparent)] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none]"
+          className="no-scrollbar -mx-4 mt-6 flex max-w-[calc(100%+2rem)] gap-2 sm:gap-1.5 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,#000_82%,transparent)] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none]"
         >
           {INDUSTRIAS.map((ind) => {
             const activa = industria?.id === ind.id;
@@ -307,7 +321,7 @@ function Bienvenida({ solucion }: { solucion?: string }) {
                   setIndustria(activa ? null : ind);
                   track({ type: "click", name: "asistente_industria", target: ind.id });
                 }}
-                className="chip-ai inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12.5px] font-medium"
+                className="chip-ai inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[12px] font-medium sm:px-2.5"
                 data-activa={activa ? "true" : "false"}
               >
                 <Icono size={13} className="chip-ai-icono" />
@@ -359,7 +373,7 @@ function Bienvenida({ solucion }: { solucion?: string }) {
             </p>
           )}
           <div className="flex items-center gap-2 px-3 pb-3">
-            <span className="hidden pl-2 text-[11.5px] text-gray-500 sm:inline">
+            <span className="hidden pl-2 text-[11.5px] text-gray-500 lg:inline">
               <kbd className="rounded border border-white/15 px-1.5 py-px font-sans text-[10.5px] text-gray-400">
                 Tab
               </kbd>{" "}

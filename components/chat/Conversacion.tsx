@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowUp, Square } from "lucide-react";
-import Robot from "./Robot";
+import { MascotaCara } from "./Mascota";
 import Formato from "./Formato";
 import { Caso, Contacto, Humano, IconoWhatsApp, Opciones, Relevamiento, Solucion, enlaceWhatsApp } from "./Tarjetas";
 import { LIMITES_CHAT, type Tarjeta } from "@/lib/chat/tipos";
@@ -47,6 +47,10 @@ export default function Conversacion({
   campoAlInicio?: boolean;
 }) {
   const { mensajes, enCurso, leadEnviado } = useConversacion();
+  // Sólo se animan los mensajes que llegan con la conversación a la vista: al
+  // reabrir el chat, lo que ya estaba aparece quieto.
+  const [presentes] = useState(() => new Set(mensajes.map((m) => m.id)));
+  const nuevo = (id: string) => !presentes.has(id);
   const [texto, setTexto] = useState("");
   const lista = useRef<HTMLDivElement>(null);
   const campo = useRef<HTMLTextAreaElement>(null);
@@ -57,6 +61,11 @@ export default function Conversacion({
   // Con un ResizeObserver y no con un efecto sobre `mensajes`: el efecto corría
   // antes de que la tarjeta midiera, y las opciones quedaban debajo del borde.
   const pegada = useRef(true);
+  // Sin mensajes no hay "final": la bienvenida se lee desde arriba.
+  const sinMensajes = useRef(true);
+  useEffect(() => {
+    sinMensajes.current = mensajes.length === 0;
+  }, [mensajes.length]);
   useEffect(() => {
     const el = lista.current;
     const contenido = el?.firstElementChild;
@@ -65,7 +74,7 @@ export default function Conversacion({
       pegada.current = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
     };
     const ro = new ResizeObserver(() => {
-      if (pegada.current) el.scrollTop = el.scrollHeight;
+      if (pegada.current && !sinMensajes.current) el.scrollTop = el.scrollHeight;
     });
     ro.observe(contenido);
     ro.observe(el);
@@ -116,22 +125,27 @@ export default function Conversacion({
             <div className="space-y-5">
               {mensajes.map((m) =>
                 m.rol === "user" ? (
-                  <div key={m.id} className="flex justify-end">
+                  <div key={m.id} className={`flex justify-end ${nuevo(m.id) ? "msg-propio-entra" : ""}`}>
                     <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-[20px] rounded-br-md bg-accent-600 px-4 py-2.5 text-[14px] leading-relaxed text-white">
                       {textoDe(m)}
                     </div>
                   </div>
                 ) : (
-                  <div key={m.id} className="flex gap-2.5">
-                    <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/[0.06] text-accent-300">
-                      <Robot size={17} vivo={false} />
+                  <div key={m.id} className={`flex gap-2.5 ${nuevo(m.id) ? "msg-entra" : ""}`}>
+                    <span
+                      className={`mt-0.5 shrink-0 rounded-full ${m.id === ultimo?.id && enCurso ? "avatar-pensando" : ""}`}
+                    >
+                      <MascotaCara size={28} className="ring-1 ring-white/10" />
                     </span>
                     <div className="min-w-0 flex-1 space-y-3 text-[14px] leading-relaxed text-gray-200">
                       {m.partes.map((p, i) =>
                         p.tipo === "texto" ? (
                           <Formato key={i} texto={p.texto} onNavegar={onNavegar} />
                         ) : p.tarjeta.tipo === "opciones" ? null : (
-                          <TarjetaVista key={i} t={p.tarjeta} onNavegar={onNavegar} leadEnviado={leadEnviado} />
+                          // Cada tarjeta entra apenas llega, con su propio movimiento.
+                          <div key={i} className={nuevo(m.id) ? "tarjeta-entra" : undefined}>
+                            <TarjetaVista t={p.tarjeta} onNavegar={onNavegar} leadEnviado={leadEnviado} />
+                          </div>
                         ),
                       )}
                       {/* Las opciones van al final y sólo en la última respuesta:
@@ -140,19 +154,32 @@ export default function Conversacion({
                         !enCurso &&
                         m.partes.map((p, i) =>
                           p.tipo === "tarjeta" && p.tarjeta.tipo === "opciones" ? (
-                            <Opciones key={`o-${i}`} t={p.tarjeta} onElegir={(o) => void enviar(o, `${origen}:opcion`)} />
+                            <div key={`o-${i}`} className="opciones-entra">
+                              <Opciones t={p.tarjeta} onElegir={(o) => void enviar(o, `${origen}:opcion`)} />
+                            </div>
                           ) : null,
                         )}
                       {m.id === ultimo?.id && pensando && (
-                        <span className="chat-pensando inline-flex gap-1 py-2" aria-label="Escribiendo">
-                          <i />
-                          <i />
-                          <i />
+                        <span className="pensando-texto inline-block pt-1 text-[13.5px] font-medium" role="status">
+                          Analizando tu caso…
                         </span>
                       )}
                       {m.error && (
-                        <div className="rounded-xl border border-red-400/20 bg-red-400/[0.06] px-3 py-2 text-[13px] text-red-200">
-                          {m.error}
+                        // Nunca un callejón sin salida: si el asistente no puede
+                        // responder (límite, red, proveedor caído), la persona
+                        // sigue por WhatsApp con su caso ya escrito.
+                        <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3">
+                          <p className="text-[13px] text-gray-300">{m.error}</p>
+                          <a
+                            href={whatsappDeLaCharla(mensajes)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={() => track({ type: "click", name: "whatsapp", target: `chat_error:${origen}` })}
+                            className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-[#1fa855] px-3.5 py-1.5 text-[12.5px] font-semibold text-white transition-transform hover:-translate-y-px"
+                          >
+                            <IconoWhatsApp size={13} />
+                            Seguir por WhatsApp
+                          </a>
                         </div>
                       )}
                     </div>

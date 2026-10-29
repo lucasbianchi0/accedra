@@ -1429,7 +1429,7 @@ dialog[data-brochure]::backdrop {
 .chat-boton:hover { transform: translateY(-2px); }
 .chat-boton:active { transform: scale(0.94); }
 .chat-boton-halo {
-  background: radial-gradient(circle, rgba(43, 111, 212, 0.55) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(124, 108, 246, 0.6) 0%, rgba(43, 111, 212, 0.3) 45%, transparent 72%);
   filter: blur(8px);
   animation: chat-respira 3.6s ease-in-out infinite;
 }
@@ -1507,13 +1507,18 @@ dialog[data-brochure]::backdrop {
 .chat-hoja[data-arrastrando="true"] { transition: none; }
 
 /* El contenido de la bienvenida entra escalonado mientras la hoja se asienta. */
-.chat-hoja-raiz[data-open="true"] .hoja-entra > * {
+.chat-hoja-raiz[data-open="true"] .hoja-entra > *,
+.chat-panel[data-open="true"] .hoja-entra > * {
   animation: hoja-entra 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(1) { animation-delay: 0.16s; }
-.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(2) { animation-delay: 0.22s; }
-.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(3) { animation-delay: 0.28s; }
-.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(4) { animation-delay: 0.34s; }
+.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(1),
+.chat-panel[data-open="true"] .hoja-entra > :nth-child(1) { animation-delay: 0.16s; }
+.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(2),
+.chat-panel[data-open="true"] .hoja-entra > :nth-child(2) { animation-delay: 0.22s; }
+.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(3),
+.chat-panel[data-open="true"] .hoja-entra > :nth-child(3) { animation-delay: 0.28s; }
+.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(4),
+.chat-panel[data-open="true"] .hoja-entra > :nth-child(4) { animation-delay: 0.34s; }
 @keyframes hoja-entra {
   from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
   to { opacity: 1; transform: none; filter: blur(0); }
@@ -1596,6 +1601,62 @@ dialog[data-brochure]::backdrop {
 .progreso-entra { animation: hoja-entra 0.7s cubic-bezier(0.16, 1, 0.3, 1) both; }
 @media (prefers-reduced-motion: reduce) { .progreso-actual, .progreso-entra { animation: none; } }
 
+/* ── Accedra AI: la conversación en movimiento ─────────────────────────────
+   Cortas y con curva suave: acompañan, no hacen esperar. Sólo animan lo que
+   llega con el chat a la vista (ver `nuevo()` en Conversacion). */
+.msg-propio-entra { animation: msg-propio 0.38s cubic-bezier(0.16, 1, 0.3, 1) both; transform-origin: 100% 100%; }
+@keyframes msg-propio {
+  from { opacity: 0; transform: translate(14px, 8px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.msg-entra { animation: msg-entra 0.5s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes msg-entra {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+.tarjeta-entra { animation: tarjeta-entra 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes tarjeta-entra {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
+}
+/* Las opciones entran una tras otra. */
+.opciones-entra button { animation: msg-entra 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.opciones-entra button:nth-child(2) { animation-delay: 0.05s; }
+.opciones-entra button:nth-child(3) { animation-delay: 0.1s; }
+.opciones-entra button:nth-child(4) { animation-delay: 0.15s; }
+.opciones-entra button:nth-child(5) { animation-delay: 0.2s; }
+.opciones-entra button:nth-child(6) { animation-delay: 0.25s; }
+.opciones-entra button:nth-child(7) { animation-delay: 0.3s; }
+
+/* Pensando: el avatar late y el texto tiene un brillo que lo recorre. */
+.avatar-pensando { animation: avatar-late 1.6s ease-in-out infinite; }
+@keyframes avatar-late {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(159, 108, 246, 0.55); }
+  50% { box-shadow: 0 0 0 6px rgba(159, 108, 246, 0); }
+}
+.pensando-texto {
+  background: linear-gradient(90deg, #6b7a90 0%, #6b7a90 35%, #e6ecf5 50%, #6b7a90 65%, #6b7a90 100%);
+  background-size: 250% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: pensando-brillo 1.8s linear infinite;
+}
+@keyframes pensando-brillo { from { background-position: 100% 0; } to { background-position: -150% 0; } }
+
+/* El personaje de la bienvenida flota despacio, con un leve balanceo. */
+.mascota-flota { animation: mascota-flota 5s ease-in-out infinite; }
+@keyframes mascota-flota {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-6px) rotate(-1.5deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .msg-propio-entra, .msg-entra, .tarjeta-entra, .opciones-entra button,
+  .avatar-pensando, .pensando-texto, .mascota-flota { animation: none; }
+  .pensando-texto { color: #9aa8bd; background: none; }
+}
+
 /* "Preguntale a nuestro asistente": filo violeta de Accedra AI. */
 .boton-ai {
   box-shadow: inset 0 0 0 1px rgba(159, 140, 251, 0.18), 0 8px 28px rgba(124, 108, 246, 0.16);
@@ -1619,22 +1680,6 @@ dialog[data-brochure]::backdrop {
   40% { opacity: 1; transform: translateY(-3px); }
 }
 
-/* El robot: parpadea cada tanto y la antena late. */
-.robot-vivo .robot-ojos {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: robot-parpadea 5s ease-in-out infinite;
-}
-.robot-vivo .robot-antena { animation: robot-antena 2.4s ease-in-out infinite; }
-@keyframes robot-parpadea {
-  0%, 92%, 100% { transform: scaleY(1); }
-  95% { transform: scaleY(0.1); }
-}
-@keyframes robot-antena {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
-}
-
 .no-scrollbar { scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 
@@ -1644,7 +1689,7 @@ dialog[data-brochure]::backdrop {
   .chat-hoja { transition: opacity 0.2s linear, visibility 0s linear 0.2s; }
   .chat-hoja-raiz[data-open="false"] .chat-hoja { transform: none; opacity: 0; }
   .ai-logo-brillo, .hoja-aurora, .chat-hoja-raiz[data-open="true"] .hoja-entra > * { animation: none; }
-  .chat-boton-halo, .chat-globo, .chat-pensando i, .robot-vivo .robot-ojos, .robot-vivo .robot-antena { animation: none; }
+  .chat-boton-halo, .chat-globo, .chat-pensando i { animation: none; }
 }
 
 .chat-scroll { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.12) transparent; }

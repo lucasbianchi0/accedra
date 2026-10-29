@@ -1,4 +1,4 @@
-import { Code2, Factory, FlaskConical, Landmark, ShieldCheck, ShoppingBag, Truck, type LucideIcon } from "lucide-react";
+import { Code2, Factory, FlaskConical, Landmark, Pickaxe, ShieldCheck, ShoppingBag, Truck, type LucideIcon } from "lucide-react";
 
 /**
  * Las industrias de los chips de Accedra AI y los ejemplos que se escriben
@@ -51,6 +51,18 @@ export const INDUSTRIAS: Industria[] = [
     ejemplos: [
       "Tenemos 12 depósitos y el WiFi se cae cuando escanean…",
       "Abrimos un centro de distribución y hay que conectarlo…",
+    ],
+  },
+  {
+    // Minería va arriba: es donde Accedra tiene un caso propio (Finning) y la
+    // conectividad satelital que casi nadie más integra.
+    id: "mineria",
+    label: "Minería",
+    icono: Pickaxe,
+    frase: "Somos una empresa minera.",
+    ejemplos: [
+      "El yacimiento no tiene fibra y el enlace satelital se corta…",
+      "Necesitamos WiFi en el taller y en el playón de la mina…",
     ],
   },
   {

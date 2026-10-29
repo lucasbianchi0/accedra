@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
-import Robot from "./Robot";
+import { MascotaCara } from "./Mascota";
 import { useChat } from "./ChatProvider";
 import { track } from "@/lib/track";
 
@@ -95,28 +95,34 @@ export default function ChatLauncher() {
         onClick={() => {
           setGlobo(false);
           track({ type: "click", name: "chat", target: "flotante" });
-          // En el teléfono no hay "costado": el robotito despierta la misma
-          // hoja que el menú y la portada. En escritorio abre el chat clásico.
-          if (window.matchMedia("(max-width: 767px)").matches) abrirHoja(undefined, "flotante");
+          // En celular y tablet no hay "costado": el robotito despierta la misma
+          // hoja a pantalla completa que el menú y la portada. En escritorio
+          // abre el chat clásico de la derecha.
+          if (window.matchMedia("(max-width: 1023px)").matches) abrirHoja(undefined, "flotante");
           else abrir(undefined, "flotante");
         }}
         onPointerEnter={precargar}
         onFocus={precargar}
         onTouchStart={precargarHoja}
         aria-label="Abrir el asistente de Accedra"
-        className="chat-boton group relative grid h-[46px] w-[46px] place-items-center rounded-full text-white"
+        className="chat-boton group relative grid h-[52px] w-[52px] place-items-center rounded-full text-white"
       >
-        <span aria-hidden className="chat-boton-halo absolute -inset-1 rounded-full" />
+        <span aria-hidden className="chat-boton-halo absolute -inset-1.5 rounded-full" />
+        {/* La cara del personaje con un aro en el degradé de Accedra AI. */}
         <span
           aria-hidden
-          className="absolute inset-0 rounded-full border border-white/15"
+          className="absolute inset-0 rounded-full p-[2px]"
           style={{
-            background: "linear-gradient(145deg, #2f78e0 0%, #1c4f9c 100%)",
-            boxShadow: "0 8px 28px rgba(43,111,212,0.45), inset 0 1px 0 rgba(255,255,255,0.3)",
+            background: "linear-gradient(140deg, #B99CFB 0%, #7C6CF6 45%, #2B6FD4 100%)",
+            boxShadow: "0 10px 30px rgba(124,108,246,0.45)",
           }}
-        />
-        <span className="relative transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-110">
-          <Robot size={26} />
+        >
+          <span className="block h-full w-full overflow-hidden rounded-full bg-navy-900">
+            <MascotaCara
+              size={48}
+              className="h-full w-full transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3"
+            />
+          </span>
         </span>
       </button>
     </div>
