@@ -2,7 +2,6 @@ import type { NextRequest } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { bloqueDeRed, ipParaLimite } from "@/lib/contact/clientIp";
 import { consume } from "@/lib/contact/rateLimit";
-import { alertar } from "@/lib/chat/alertas";
 
 export const runtime = "nodejs";
 
@@ -106,14 +105,8 @@ export async function POST(req: NextRequest) {
       consume("track", ipParaLimite(req), LIMITE_IP),
       consume("track-bloque", bloqueDeRed(req), LIMITE_BLOQUE),
     ]);
-    if (!porIp.allowed || !porBloque.allowed) {
-      alertar(req, "limite-ip", `Una IP superó el tope de eventos de telemetría (${(porIp.allowed ? porBloque : porIp).rule}): alguien intenta llenar la base de analítica.`);
-      return nada;
-    }
-    if (!(await consume("track-global", "todos", LIMITE_GLOBAL)).allowed) {
-      alertar(req, "techo-global", "Se alcanzó el techo global de telemetría: se están descartando eventos de todos los visitantes.", "track");
-      return nada;
-    }
+    if (!porIp.allowed || !porBloque.allowed) return nada;
+    if (!(await consume("track-global", "todos", LIMITE_GLOBAL)).allowed) return nada;
 
     // Primer gesto humano de la visita. No es un evento de navegación: no se
     // guarda en `events`, sólo marca la sesión.

@@ -2,8 +2,6 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { checkBotId } from "botid/server";
 
-import { alertar } from "./alertas";
-
 /**
  * Las defensas que comparten los endpoints del asistente.
  *
@@ -61,23 +59,20 @@ export function mismoOrigen(req: NextRequest): boolean {
  * con un error en el log: los cupos y el presupuesto siguen en pie, y perder el
  * asistente entero por una caída de un tercero es peor.
  */
-export async function esBot(req: NextRequest): Promise<boolean> {
+export async function esBot(): Promise<boolean> {
   try {
     const v = await checkBotId();
     // Los bots "verificados" (buscadores, agentes de IA) también quedan
     // afuera: ninguno tiene por qué conversar con el asistente ni dejar un lead.
     if (typeof v?.isBot !== "boolean") {
       console.error("[guardia] BotID devolvió algo inesperado, se deja pasar — revisar la configuración");
-      alertar(req, "botid-falla", "BotID devolvió una respuesta inesperada y está dejando pasar todo.", "config");
       return false;
     }
-    if (v.isBot) alertar(req, "bot", "Un pedido sin el desafío de BotID resuelto (un script o un navegador automatizado) intentó usar el asistente.");
     return v.isBot;
   } catch (e) {
     // En producción esto suele ser configuración (falta OIDC en el proyecto de
     // Vercel): BotID queda apagado hasta arreglarlo. Tiene que verse.
     console.error("[guardia] BotID falló, se deja pasar — revisar la configuración:", (e as Error).message);
-    alertar(req, "botid-falla", `La verificación de BotID falló y está dejando pasar todo: ${(e as Error).message}`, "config");
     return false;
   }
 }

@@ -34,7 +34,6 @@ import { consume } from "@/lib/contact/rateLimit";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { verificar } from "@/lib/chat/relevamiento";
-import { alertar } from "@/lib/chat/alertas";
 import { esBot, firmaValida, leerJson, limpiarInvisibles, mismoOrigen, unaLinea } from "@/lib/chat/guardia";
 import { nombreArchivo, pdfRelevamiento } from "@/lib/chat/pdf-relevamiento";
 import type { Relevamiento } from "@/lib/chat/tipos";
@@ -77,17 +76,14 @@ function limpio(v: unknown, max: number): string {
   return typeof v === "string" ? limpiarInvisibles(v).replace(/\t/g, " ").trim().slice(0, max) : "";
 }
 
-/**
- * La tarjeta de contacto la emitió el asistente y no venció. "falsa" es una
- * firma que no corresponde: no la produce ningún navegador por accidente.
- */
-function tarjetaValida(resumen: unknown, solucion: unknown, emitido: unknown, firma: unknown): "ok" | "invalida" | "falsa" {
+/** La tarjeta de contacto la emitió el asistente y no venció. */
+function tarjetaValida(resumen: unknown, solucion: unknown, emitido: unknown, firma: unknown): boolean {
   if (typeof resumen !== "string" || (solucion !== null && typeof solucion !== "string") || typeof emitido !== "number") {
-    return "invalida";
+    return false;
   }
-  if (!firmaValida("contacto", JSON.stringify([resumen, solucion, emitido]), firma)) return "falsa";
   const edad = Date.now() - emitido;
-  return edad >= -60_000 && edad < VIGENCIA_TARJETA_MS ? "ok" : "invalida";
+  if (!(edad >= -60_000 && edad < VIGENCIA_TARJETA_MS)) return false;
+  return firmaValida("contacto", JSON.stringify([resumen, solucion, emitido]), firma);
 }
 
 function error(mensaje: string, status: number) {
@@ -96,26 +92,16 @@ function error(mensaje: string, status: number) {
 
 export async function POST(req: NextRequest) {
   if (!mismoOrigen(req)) return error("Pedido inválido", 403);
-  if (await esBot(req)) return error("No pudimos verificar el navegador. Escribinos por WhatsApp.", 403);
+  if (await esBot()) return error("No pudimos verificar el navegador. Escribinos por WhatsApp.", 403);
 
   const body = await leerJson(req, MAX_BODY);
-  if (body === "grande") {
-    alertar(req, "cuerpo-grande", "Llegó al formulario de contacto un pedido de más de 48 KB.");
-    return error("Pedido demasiado grande", 413);
-  }
+  if (body === "grande") return error("Pedido demasiado grande", 413);
   if (!body) return error("Pedido inválido", 400);
 
   // Honeypot, como en el formulario de contacto: se finge éxito.
-  if (typeof body.website === "string" && body.website.trim() !== "") {
-    alertar(req, "honeypot", "Se completó el campo invisible del formulario (sólo lo ve un bot). Se respondió OK y no se guardó nada.");
-    return Response.json({ ok: true });
-  }
+  if (typeof body.website === "string" && body.website.trim() !== "") return Response.json({ ok: true });
 
-  const tarjeta = tarjetaValida(body.resumen, body.solucion ?? null, body.emitido, body.firma);
-  if (tarjeta === "falsa") {
-    alertar(req, "firma-falsa", "Llegó un formulario de contacto con una tarjeta que no emitió el asistente (resumen o firma alterados): alguien intentó cargar un lead sin pasar por el chat.");
-  }
-  if (tarjeta !== "ok") {
+  if (!tarjetaValida(body.resumen, body.solucion ?? null, body.emitido, body.firma)) {
     return error("No pudimos validar el formulario. Reiniciá la conversación o escribinos por WhatsApp.", 400);
   }
 
@@ -136,24 +122,17 @@ export async function POST(req: NextRequest) {
   // La IP y la tarjeta antes que el global: si no, alguien bloqueado igual
   // sumaría al techo global hasta cerrarle el formulario a los clientes reales.
   const porIp = await consume("chat-lead", ipParaLimite(req), LIMITE_IP);
-  if (!porIp.allowed) {
-    alertar(req, "limite-ip", `Una IP superó el tope de envíos del formulario de contacto (${porIp.rule}).`);
-    return error("Ya recibimos tus datos. ¡Gracias!", 429);
-  }
+  if (!porIp.allowed) return error("Ya recibimos tus datos. ¡Gracias!", 429);
   // Por tarjeta y por teléfono: ni la misma tarjeta ni el mismo número sirven
   // para cargar leads repetidos desde muchas IPs.
   const [porTarjeta, porTelefono] = await Promise.all([
     consume("chat-lead-tarjeta", String(body.firma).slice(0, 64), LIMITE_TARJETA),
     consume("chat-lead-tel", createHash("sha256").update(digitos).digest("hex").slice(0, 32), LIMITE_TARJETA),
   ]);
-  if (!porTarjeta.allowed || !porTelefono.allowed) {
-    alertar(req, "limite-ip", `Se intentó cargar varias veces el mismo lead (${(porTarjeta.allowed ? porTelefono : porTarjeta).rule}).`);
-    return error("Ya recibimos tus datos. ¡Gracias!", 429);
-  }
+  if (!porTarjeta.allowed || !porTelefono.allowed) return error("Ya recibimos tus datos. ¡Gracias!", 429);
   const global = await consume("chat-lead-global", "todos", LIMITE_GLOBAL);
   if (!global.allowed) {
     console.error("[chat lead] techo global alcanzado");
-    alertar(req, "techo-global", "Se alcanzó el techo global de leads del asistente: el formulario quedó cerrado para todos.", "leads");
     return error("No pudimos guardar tus datos ahora. Escribinos por WhatsApp, así no se pierde nada.", 429);
   }
 

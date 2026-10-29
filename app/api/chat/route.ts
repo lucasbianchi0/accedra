@@ -7,7 +7,6 @@ import { systemPrompt } from "@/lib/chat/prompt";
 import { cargarNovedades, eventoPorSlug, notaPorSlug } from "@/lib/chat/novedades";
 import { LIMITES_CHAT, huella, notaDeTarjeta, type Entrada, type Tarjeta } from "@/lib/chat/tipos";
 import { armarRelevamiento } from "@/lib/chat/relevamiento";
-import { alertar } from "@/lib/chat/alertas";
 import { esBot, firmaValida, firmar, leerJson, limpiarInvisibles, mismoOrigen, sinEnlaces } from "@/lib/chat/guardia";
 import { bloqueDeRed, ipParaLimite } from "@/lib/contact/clientIp";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
@@ -345,7 +344,7 @@ function armarTarjeta(nombre: string, entrada: Record<string, unknown>): Tarjeta
   return null;
 }
 
-function leerHistorial(body: unknown, alFalsificar: () => void): Entrada[] | null {
+function leerHistorial(body: unknown): Entrada[] | null {
   const crudo = (body as { messages?: unknown } | null)?.messages;
   if (!Array.isArray(crudo) || crudo.length === 0 || crudo.length > LIMITES_CHAT.historial) return null;
 
@@ -365,9 +364,7 @@ function leerHistorial(body: unknown, alFalsificar: () => void): Entrada[] | nul
       limpio = limpiarInvisibles(limpio).trim();
     } else if (!firmaValida("turno", huella(limpio), firma)) {
       // No la escribió este servidor (o se cortó antes de firmarse): el modelo
-      // no la lee. Ver `huella`. Sin firma es un corte; con una firma que no
-      // corresponde, alguien editó la respuesta.
-      if (typeof firma === "string") alFalsificar();
+      // no la lee. Ver `huella`.
       limpio = RESPUESTA_NO_VERIFICADA;
     }
     if (!limpio) return null;
@@ -431,7 +428,7 @@ const reservaPara = (historial: Entrada[]) =>
 
 export async function POST(req: NextRequest) {
   if (!mismoOrigen(req)) return error("Pedido inválido", 403);
-  if (await esBot(req)) return error("No pudimos verificar el navegador. Escribinos por WhatsApp.", 403);
+  if (await esBot()) return error("No pudimos verificar el navegador. Escribinos por WhatsApp.", 403);
 
   if (!hayClaveClaude()) {
     console.error("[chat] falta OPENROUTER_API_KEY / ANTHROPIC_API_KEY");
@@ -439,18 +436,9 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await leerJson(req, MAX_BODY);
-  if (body === "grande") {
-    alertar(req, "cuerpo-grande", "Llegó al asistente un pedido más grande que cualquier conversación posible.");
-    return error("La conversación es demasiado larga.", 413);
-  }
+  if (body === "grande") return error("La conversación es demasiado larga.", 413);
   if (!body) return error("Pedido inválido", 400);
-  const historial = leerHistorial(body, () =>
-    alertar(
-      req,
-      "firma-falsa",
-      "Llegó una conversación con una respuesta del asistente editada (la firma no coincide): alguien intentó hacerle creer al modelo que ya había dicho otra cosa. El modelo no la leyó. Si justo hubo un deploy que cambió el formato del chat, puede ser una conversación vieja.",
-    ),
-  );
+  const historial = leerHistorial(body);
   if (!historial) return error("Pedido inválido", 400);
 
   // Primero la IP y sólo si pasa el global: si no, una sola IP bloqueada
@@ -464,14 +452,10 @@ export async function POST(req: NextRequest) {
   const [porIp, porBloque] = enDesarrollo
     ? [{ allowed: true }, { allowed: true }]
     : await Promise.all([consume("chat", ip, LIMITE_IP), consume("chat-bloque", bloqueDeRed(req), LIMITE_BLOQUE)]);
-  if (!porIp.allowed || !porBloque.allowed) {
-    alertar(req, "limite-ip", `Una IP superó el tope de mensajes del asistente (${(porIp.allowed ? porBloque : porIp).rule}).`);
-    return error(LIMITE_ALCANZADO, 429);
-  }
+  if (!porIp.allowed || !porBloque.allowed) return error(LIMITE_ALCANZADO, 429);
   const global = await consume("chat-global", "todos", LIMITE_GLOBAL);
   if (!global.allowed) {
     console.error("[chat] techo global de pedidos alcanzado");
-    alertar(req, "techo-global", "Se alcanzó el techo global de mensajes del asistente: quedó derivando a WhatsApp para todos.", "chat");
     return error(LIMITE_ALCANZADO, 429);
   }
 
@@ -491,17 +475,9 @@ export async function POST(req: NextRequest) {
         ]).catch(() => {})
       : Promise.resolve();
   if (!saldoIp.allowed || !saldoGlobal.allowed) {
-    if (!saldoGlobal.allowed) {
-      console.error("[chat] presupuesto global de tokens agotado");
-      alertar(req, "presupuesto-agotado", "Se agotó el presupuesto diario de tokens del asistente.", "global");
-    } else {
-      alertar(req, "presupuesto-ip", "Una IP agotó su presupuesto diario de tokens del asistente.");
-    }
+    if (!saldoGlobal.allowed) console.error("[chat] presupuesto global de tokens agotado");
     await devolver(reserva);
     return error(LIMITE_ALCANZADO, 429);
-  }
-  if ((saldoGlobal.fraccion ?? 0) >= 0.5) {
-    alertar(req, "presupuesto-mitad", `Se usó el ${Math.round((saldoGlobal.fraccion ?? 0) * 100)}% del presupuesto diario de tokens del asistente.`, "global");
   }
 
   const client = crearClienteClaude();
