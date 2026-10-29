@@ -44,7 +44,49 @@ export type TarjetaHumano = {
   resumen: string;
 };
 
-export type Tarjeta = TarjetaSolucion | TarjetaCaso | TarjetaContacto | TarjetaHumano;
+/**
+ * Opciones de respuesta: botones debajo de la pregunta para contestar con un
+ * toque (tamaño de la empresa, tipo de problema, urgencia…). Escribir sigue
+ * valiendo siempre.
+ */
+export type TarjetaOpciones = {
+  tipo: "opciones";
+  opciones: string[];
+  /** Se puede elegir más de una y confirmar. */
+  multiple: boolean;
+};
+
+/** Lo que va en el PDF de relevamiento. Lo arma el modelo; el servidor lo firma. */
+export type Relevamiento = {
+  empresa: string;
+  industria: string;
+  tamano: string;
+  situacion: string;
+  hallazgos: string[];
+  areas: { solucion: string; nombre: string; accent: string; porque: string; propuesta: string }[];
+  casos: { id: string; cliente: string; titulo: string; cifra: string }[];
+  proximosPasos: string[];
+  /** ISO, la fecha en que se armó. */
+  fecha: string;
+};
+
+export type TarjetaRelevamiento = {
+  tipo: "relevamiento";
+  datos: Relevamiento;
+  /**
+   * HMAC de `datos`. El PDF sale con la marca de Accedra: sin firma,
+   * cualquiera podría pedirle al endpoint un PDF con el texto que quiera.
+   */
+  firma: string;
+};
+
+export type Tarjeta =
+  | TarjetaSolucion
+  | TarjetaCaso
+  | TarjetaContacto
+  | TarjetaHumano
+  | TarjetaOpciones
+  | TarjetaRelevamiento;
 
 export type Parte = { tipo: "texto"; texto: string } | { tipo: "tarjeta"; tarjeta: Tarjeta };
 
@@ -85,5 +127,9 @@ export function notaDeTarjeta(t: Tarjeta): string {
       return "[Mostré el formulario para dejar los datos de contacto]";
     case "humano":
       return "[Mostré el botón para hablar por WhatsApp con una persona]";
+    case "opciones":
+      return `[Ofrecí opciones de respuesta: ${t.opciones.join(" / ")}]`;
+    case "relevamiento":
+      return "[Armé el relevamiento en PDF con lo identificado]";
   }
 }

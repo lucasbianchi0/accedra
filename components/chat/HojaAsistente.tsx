@@ -87,6 +87,32 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
   // que se vea adónde llevó. En escritorio también: la hoja es modal.
   const onNavegar = () => onCerrar();
 
+  // Arrastrar la barra de arriba hacia abajo cierra la hoja (sólo con el
+  // dedo: con mouse un arrastre accidental la cerraría sin querer).
+  const arrastre = useRef<{ y: number; dy: number } | null>(null);
+  const empezarArrastre = (e: React.PointerEvent) => {
+    if (e.pointerType !== "touch" || (e.target as HTMLElement).closest("button")) return;
+    arrastre.current = { y: e.clientY, dy: 0 };
+    hoja.current?.setAttribute("data-arrastrando", "true");
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const moverArrastre = (e: React.PointerEvent) => {
+    const a = arrastre.current;
+    const el = hoja.current;
+    if (!a || !el) return;
+    a.dy = Math.max(0, e.clientY - a.y);
+    el.style.transform = `translateY(${a.dy}px)`;
+  };
+  const soltarArrastre = () => {
+    const a = arrastre.current;
+    const el = hoja.current;
+    arrastre.current = null;
+    if (!a || !el) return;
+    el.removeAttribute("data-arrastrando");
+    el.style.transform = "";
+    if (a.dy > 110) onCerrar();
+  };
+
   return (
     <div className="chat-hoja-raiz" data-open={abierto ? "true" : "false"}>
       {/* Fondo: oscurece y desenfoca la página; un clic cierra. */}
@@ -129,7 +155,13 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
         />
 
         {/* Barra superior: manija, marca (con conversación), acciones */}
-        <div className="relative flex items-center justify-between px-4 pt-3 sm:px-6">
+        <div
+          onPointerDown={empezarArrastre}
+          onPointerMove={moverArrastre}
+          onPointerUp={soltarArrastre}
+          onPointerCancel={soltarArrastre}
+          className="relative flex touch-none items-center justify-between px-4 pb-1 pt-3 sm:px-6"
+        >
           <div className="flex min-w-0 items-center gap-2">
             {!vacio && (
               <>

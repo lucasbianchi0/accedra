@@ -25,6 +25,9 @@ import { consume } from "@/lib/contact/rateLimit";
 import { buildHtml, buildText } from "@/lib/contact/emailTemplate";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
+import { verificar } from "@/lib/chat/relevamiento";
+import { nombreArchivo, pdfRelevamiento } from "@/lib/chat/pdf-relevamiento";
+import type { Relevamiento } from "@/lib/chat/tipos";
 
 export const runtime = "nodejs";
 
@@ -46,7 +49,8 @@ const SERVICIO: Record<string, Service> = {
   "software-ai": "otro",
 };
 
-const MAX_BODY = 24 * 1024;
+// Con el relevamiento firmado adentro el cuerpo crece: hasta 48 KB.
+const MAX_BODY = 48 * 1024;
 const MAX_CONVERSACION = 6000;
 
 function limpio(v: unknown, max: number): string {
@@ -108,9 +112,20 @@ export async function POST(req: NextRequest) {
   };
   const attribution = extractAttribution(body);
 
+  // El relevamiento sólo se acepta firmado por el asistente: va adjunto al
+  // mail del equipo con la marca de Accedra.
+  const rel = body.relevamiento as { datos?: unknown; firma?: unknown } | null | undefined;
+  const relevamiento = rel && verificar(rel.datos, rel.firma) ? rel.datos : null;
+
   const [persistido, enviado] = await Promise.all([
-    guardar(datos, { telefono, solucion: SOLUTIONS[solucion] ? solucion : null, sinEmail: !email }, attribution, ip, req.headers.get("user-agent")),
-    avisar(datos, email, ip),
+    guardar(
+      datos,
+      { telefono, solucion: SOLUTIONS[solucion] ? solucion : null, sinEmail: !email, relevamiento: Boolean(relevamiento) },
+      attribution,
+      ip,
+      req.headers.get("user-agent"),
+    ),
+    avisar(datos, email, ip, relevamiento),
   ]);
 
   if (!persistido && !enviado) return error("No se pudo guardar. Probá de nuevo o escribinos por WhatsApp.", 502);
@@ -120,7 +135,7 @@ export async function POST(req: NextRequest) {
 
 async function guardar(
   datos: ContactData,
-  extra: { telefono: string; solucion: string | null; sinEmail: boolean },
+  extra: { telefono: string; solucion: string | null; sinEmail: boolean; relevamiento: boolean },
   attribution: ReturnType<typeof extractAttribution>,
   ip: string,
   userAgent: string | null,
@@ -146,7 +161,13 @@ async function guardar(
     ...attribution,
     ip: ip === "unknown" ? null : ip,
     user_agent: userAgent?.slice(0, 512) ?? null,
-    metadata: { tipo: "chatbot", telefono: extra.telefono, solucion: extra.solucion, sin_email: extra.sinEmail },
+    metadata: {
+      tipo: "chatbot",
+      telefono: extra.telefono,
+      solucion: extra.solucion,
+      sin_email: extra.sinEmail,
+      relevamiento: extra.relevamiento,
+    },
   });
   if (error) {
     console.error("[chat lead] no se pudo persistir:", error.message);
@@ -155,13 +176,22 @@ async function guardar(
   return true;
 }
 
-async function avisar(datos: ContactData, email: string, ip: string): Promise<boolean> {
+async function avisar(datos: ContactData, email: string, ip: string, relevamiento: Relevamiento | null): Promise<boolean> {
   const to = process.env.CONTACT_TO;
   const from = process.env.CONTACT_FROM;
   const apiKey = process.env.RESEND_API_KEY;
   if (!to || !from || !apiKey) return false;
 
   const meta = { ip, receivedAt: new Date() };
+  // Si el PDF falla, el mail sale igual: el lead importa más que el adjunto.
+  const adjunto = relevamiento
+    ? await pdfRelevamiento(relevamiento)
+        .then((pdf) => [{ filename: nombreArchivo(relevamiento), content: pdf.toString("base64") }])
+        .catch((e) => {
+          console.error("[chat lead] no se pudo generar el PDF:", (e as Error).message);
+          return [];
+        })
+    : [];
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -173,6 +203,7 @@ async function avisar(datos: ContactData, email: string, ip: string): Promise<bo
         subject: `Asistente web — ${datos.name}${datos.company ? ` (${datos.company})` : ""}`,
         text: buildText(datos, meta),
         html: buildHtml(datos, meta),
+        ...(adjunto.length ? { attachments: adjunto } : {}),
       }),
     });
     if (!res.ok) {

@@ -5,6 +5,7 @@ import { crearClienteClaude, hayClaveClaude } from "@/lib/chat/claude";
 import { IDS_CASO, SLUGS_SOLUCION, tarjetaCaso, tarjetaSolucion } from "@/lib/chat/conocimiento";
 import { systemPrompt } from "@/lib/chat/prompt";
 import { LIMITES_CHAT, type Entrada, type Tarjeta } from "@/lib/chat/tipos";
+import { armarRelevamiento } from "@/lib/chat/relevamiento";
 import { clientIp } from "@/lib/contact/clientIp";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { SUB_SERVICES } from "@/components/solutions/subServicesData";
@@ -90,6 +91,62 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "ofrecer_opciones",
+    description:
+      "Muestra botones de respuesta rápida debajo de tu pregunta (la persona igual puede escribir). Usala cuando la respuesta tiene alternativas típicas: tamaño de la empresa, cantidad de sedes, tipo de problema, urgencia, sí/no. Escribí la pregunta en el texto y llamá a esta herramienta en el mismo mensaje. Una sola vez por mensaje.",
+    input_schema: {
+      type: "object",
+      properties: {
+        opciones: {
+          type: "array",
+          items: { type: "string" },
+          minItems: 2,
+          maxItems: 6,
+          description: "De 2 a 6 opciones cortas (máx. 32 caracteres), en el orden natural.",
+        },
+        multiple: { type: "boolean", description: "true si tiene sentido elegir más de una (p. ej. varios problemas)." },
+      },
+      required: ["opciones"],
+    },
+  },
+  {
+    name: "armar_relevamiento",
+    description:
+      "Arma el relevamiento preliminar en PDF que la persona descarga: su situación, lo que identificaste, dónde ayuda Accedra, casos parecidos y próximos pasos. Usala UNA vez, cuando ya conocés industria, tamaño y el problema concreto (normalmente junto con pedir_contacto). Escribí en segunda persona hacia la empresa, concreto y sin relleno.",
+    input_schema: {
+      type: "object",
+      properties: {
+        empresa: { type: "string", description: "Nombre de la empresa, o una descripción si no lo dijo (\"Distribuidora con 8 depósitos\")." },
+        industria: { type: "string" },
+        tamano: { type: "string", description: "Empleados y/o sedes, como lo dijo la persona." },
+        situacion: { type: "string", description: "Lo que contó, en 2-3 oraciones." },
+        hallazgos: {
+          type: "array",
+          items: { type: "string" },
+          minItems: 2,
+          maxItems: 5,
+          description: "Lo que identificaste: causas probables, riesgos, lo que conviene y lo que no. Una oración cada uno.",
+        },
+        areas: {
+          type: "array",
+          maxItems: 3,
+          items: {
+            type: "object",
+            properties: {
+              solucion: { type: "string", enum: SLUGS_SOLUCION },
+              porque: { type: "string", description: "Por qué aplica a su caso, una oración." },
+              propuesta: { type: "string", description: "Qué haríamos, concreto, 1-2 oraciones." },
+            },
+            required: ["solucion", "porque", "propuesta"],
+          },
+        },
+        casos: { type: "array", items: { type: "string", enum: IDS_CASO }, maxItems: 2 },
+        proximos_pasos: { type: "array", items: { type: "string" }, maxItems: 4 },
+      },
+      required: ["empresa", "situacion", "hallazgos", "areas"],
+    },
+  },
+  {
     name: "derivar_a_persona",
     description:
       "Muestra el botón para seguir por WhatsApp con una persona del equipo, con el caso ya escrito. Usala apenas la persona pida hablar con alguien, esté apurada o el tema requiera a una persona.",
@@ -130,6 +187,15 @@ function armarTarjeta(nombre: string, entrada: Record<string, unknown>): Tarjeta
     }
     case "derivar_a_persona":
       return { tipo: "humano", resumen: texto(entrada.resumen, 600) };
+    case "ofrecer_opciones": {
+      const opciones = (Array.isArray(entrada.opciones) ? entrada.opciones : [])
+        .map((o) => texto(o, 40))
+        .filter(Boolean)
+        .slice(0, 6);
+      return opciones.length >= 2 ? { tipo: "opciones", opciones, multiple: entrada.multiple === true } : null;
+    }
+    case "armar_relevamiento":
+      return armarRelevamiento(entrada);
   }
   return null;
 }
@@ -235,6 +301,9 @@ export async function POST(req: NextRequest) {
       };
 
       let huboTexto = false;
+      // Una sola tanda de opciones y un solo relevamiento por respuesta: el
+      // modelo a veces los repite en la vuelta siguiente.
+      const yaMostradas = new Set<string>();
       const uso = { vueltas: 0, entrada: 0, lecturaCache: 0, salida: 0 };
       try {
         for (let vuelta = 0; vuelta < VUELTAS; vuelta++) {
@@ -244,7 +313,9 @@ export async function POST(req: NextRequest) {
           const respuesta = client.messages.stream(
             {
               model: MODELO,
-              max_tokens: 900,
+              // El relevamiento viaja como argumentos de herramienta: con 900
+              // se cortaba a la mitad.
+              max_tokens: 1800,
               system,
               messages: mensajes,
               tools: HERRAMIENTAS,
@@ -274,19 +345,30 @@ export async function POST(req: NextRequest) {
           mensajes.push({ role: "assistant", content: final.content });
 
           const resultados: Anthropic.ToolResultBlockParam[] = llamadas.map((l) => {
-            const tarjeta = armarTarjeta(l.name, (l.input ?? {}) as Record<string, unknown>);
+            const unica = l.name === "ofrecer_opciones" || l.name === "armar_relevamiento";
+            const repetida = unica && yaMostradas.has(l.name);
+            if (unica) yaMostradas.add(l.name);
+            const tarjeta = repetida ? null : armarTarjeta(l.name, (l.input ?? {}) as Record<string, unknown>);
             if (tarjeta) enviar("tarjeta", tarjeta);
             return {
               type: "tool_result",
               tool_use_id: l.id,
-              content: tarjeta
-                ? "Listo, la persona ya la está viendo. No repitas su contenido."
-                : "No existe: no la muestres ni la menciones.",
+              content: !tarjeta
+                ? "No se pudo mostrar: no lo menciones."
+                : tarjeta.tipo === "opciones"
+                  ? "Listo, las opciones están debajo de tu pregunta. No las repitas en texto y no escribas nada más."
+                  : tarjeta.tipo === "relevamiento"
+                    ? "Listo, la persona ya ve la tarjeta para descargar el PDF. Contalo en una oración, sin repetir el contenido."
+                    : "Listo, la persona ya la está viendo. No repitas su contenido.",
               is_error: !tarjeta,
             };
           });
           // Después de una tarjeta el texto vuelve a arrancar en otro párrafo.
           huboTexto = true;
+          // Las opciones cierran el turno: la pregunta ya está escrita y lo
+          // que sigue es la respuesta de la persona. Otra vuelta sólo
+          // agregaría relleno (o las repetiría).
+          if (llamadas.some((l) => l.name === "ofrecer_opciones")) break;
           mensajes.push({ role: "user", content: resultados });
         }
         enviar("fin", { ok: true });

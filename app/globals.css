@@ -1449,10 +1449,17 @@ dialog[data-brochure]::backdrop {
 .chat-panel {
   transform-origin: bottom right;
   transition:
-    opacity 0.28s ease,
-    translate 0.38s cubic-bezier(0.22, 1, 0.36, 1),
-    scale 0.38s cubic-bezier(0.22, 1, 0.36, 1),
-    visibility 0s linear 0.38s;
+    opacity 0.25s ease,
+    translate 0.3s cubic-bezier(0.7, 0, 0.84, 0),
+    scale 0.3s cubic-bezier(0.7, 0, 0.84, 0),
+    visibility 0s linear 0.3s;
+}
+.chat-panel[data-open="true"] {
+  transition:
+    opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    translate 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    scale 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s;
 }
 .chat-panel[data-open="false"] {
   opacity: 0;
@@ -1467,34 +1474,49 @@ dialog[data-brochure]::backdrop {
 
 /* La hoja de Accedra AI: sube desde abajo; el fondo oscurece y desenfoca.
    Queda montada y alterna `data-open`, así tiene animación de salida. */
+/* Abrir: curva expo (sale rápido y se asienta muy largo), desde apenas más
+   chica. Cerrar: acelera hacia abajo, sin rebote, más corta que la apertura —
+   lo que se va no tiene que hacerse esperar. */
 .chat-hoja-fondo {
-  transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.5s;
+  transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.55s;
 }
-/* La curva de las hojas de iOS: arranca rápido y se asienta largo, sin rebote. */
 .chat-hoja {
+  will-change: transform;
+  transform-origin: 50% 100%;
   transition:
-    transform 0.62s cubic-bezier(0.32, 0.72, 0, 1),
-    height 0.5s cubic-bezier(0.32, 0.72, 0, 1),
-    visibility 0s linear 0.62s;
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+    height 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 0.75s;
 }
 .chat-hoja-raiz[data-open="false"] .chat-hoja-fondo { opacity: 0; visibility: hidden; pointer-events: none; }
-.chat-hoja-raiz[data-open="false"] .chat-hoja { transform: translateY(100%); visibility: hidden; }
+.chat-hoja-raiz[data-open="false"] .chat-hoja { transform: translateY(100%) scale(0.97); opacity: 0.6; visibility: hidden; }
 .chat-hoja-raiz[data-open="true"] .chat-hoja-fondo,
 .chat-hoja-raiz[data-open="true"] .chat-hoja { transition-delay: 0s; }
-/* Al cerrar, la hoja baja un poco más rápido de lo que sube. */
-.chat-hoja-raiz[data-open="false"] .chat-hoja { transition-duration: 0.42s, 0.5s, 0s; transition-delay: 0s, 0s, 0.42s; }
+.chat-hoja-raiz[data-open="false"] .chat-hoja {
+  transition:
+    transform 0.4s cubic-bezier(0.7, 0, 0.84, 0),
+    opacity 0.4s cubic-bezier(0.7, 0, 0.84, 0),
+    height 0.4s ease,
+    visibility 0s linear 0.4s;
+}
+.chat-hoja-raiz[data-open="false"] .chat-hoja-fondo { transition: opacity 0.4s ease 0.05s, visibility 0s linear 0.45s; }
+/* Al cerrar, el contenido se apaga antes que la hoja termine de bajar. */
+.chat-hoja-raiz[data-open="false"] .hoja-entra > * { opacity: 0; transition: opacity 0.15s ease; }
+/* Mientras se arrastra con el dedo, la hoja sigue al dedo sin transición. */
+.chat-hoja[data-arrastrando="true"] { transition: none; }
 
 /* El contenido de la bienvenida entra escalonado mientras la hoja se asienta. */
 .chat-hoja-raiz[data-open="true"] .hoja-entra > * {
-  animation: hoja-entra 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: hoja-entra 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(1) { animation-delay: 0.12s; }
-.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(2) { animation-delay: 0.18s; }
-.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(3) { animation-delay: 0.24s; }
-.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(4) { animation-delay: 0.3s; }
+.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(1) { animation-delay: 0.16s; }
+.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(2) { animation-delay: 0.22s; }
+.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(3) { animation-delay: 0.28s; }
+.chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(4) { animation-delay: 0.34s; }
 @keyframes hoja-entra {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; transform: translateY(18px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: blur(0); }
 }
 
 /* El logo de Accedra AI en la hoja: un halo violeta que respira. */

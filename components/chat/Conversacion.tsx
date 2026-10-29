@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ArrowUp, Square } from "lucide-react";
 import Robot from "./Robot";
 import Formato from "./Formato";
-import { Caso, Contacto, Humano, IconoWhatsApp, Solucion, enlaceWhatsApp } from "./Tarjetas";
+import { Caso, Contacto, Humano, IconoWhatsApp, Opciones, Relevamiento, Solucion, enlaceWhatsApp } from "./Tarjetas";
 import { LIMITES_CHAT, type Tarjeta } from "@/lib/chat/tipos";
 import { conversacionEnTexto, detener, enviar, marcarLeadEnviado, textoDe, useConversacion } from "@/lib/chat/store";
 import { track } from "@/lib/track";
@@ -105,10 +105,19 @@ export default function Conversacion({
                       {m.partes.map((p, i) =>
                         p.tipo === "texto" ? (
                           <Formato key={i} texto={p.texto} onNavegar={onNavegar} />
-                        ) : (
+                        ) : p.tarjeta.tipo === "opciones" ? null : (
                           <TarjetaVista key={i} t={p.tarjeta} onNavegar={onNavegar} leadEnviado={leadEnviado} />
                         ),
                       )}
+                      {/* Las opciones van al final y sólo en la última respuesta:
+                          contestada la pregunta, dejan de tener sentido. */}
+                      {m.id === ultimo?.id &&
+                        !enCurso &&
+                        m.partes.map((p, i) =>
+                          p.tipo === "tarjeta" && p.tarjeta.tipo === "opciones" ? (
+                            <Opciones key={`o-${i}`} t={p.tarjeta} onElegir={(o) => void enviar(o, `${origen}:opcion`)} />
+                          ) : null,
+                        )}
                       {m.id === ultimo?.id && pensando && (
                         <span className="chat-pensando inline-flex gap-1 py-2" aria-label="Escribiendo">
                           <i />
@@ -206,5 +215,9 @@ function TarjetaVista({ t, onNavegar, leadEnviado }: { t: Tarjeta; onNavegar: ()
       return <Contacto t={t} conversacion={conversacionEnTexto} enviado={leadEnviado} onEnviado={marcarLeadEnviado} />;
     case "humano":
       return <Humano t={t} />;
+    case "relevamiento":
+      return <Relevamiento t={t} />;
+    case "opciones":
+      return null;
   }
 }

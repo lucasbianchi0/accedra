@@ -26,7 +26,7 @@ import { track } from "@/lib/track";
 const CLAVE_GLOBO = "accedra-chat-globo";
 
 export default function ChatLauncher() {
-  const { abierto, abrir, precargar, heroVisible } = useChat();
+  const { abierto, abrir, abrirHoja, precargar, precargarHoja, heroVisible } = useChat();
   const pathname = usePathname();
   const [tapada, setTapada] = useState(false);
   const [conWhatsApp, setConWhatsApp] = useState(true);
@@ -95,10 +95,14 @@ export default function ChatLauncher() {
         onClick={() => {
           setGlobo(false);
           track({ type: "click", name: "chat", target: "flotante" });
-          abrir(undefined, "flotante");
+          // En el teléfono no hay "costado": el robotito despierta la misma
+          // hoja que el menú y la portada. En escritorio abre el chat clásico.
+          if (window.matchMedia("(max-width: 767px)").matches) abrirHoja(undefined, "flotante");
+          else abrir(undefined, "flotante");
         }}
         onPointerEnter={precargar}
         onFocus={precargar}
+        onTouchStart={precargarHoja}
         aria-label="Abrir el asistente de Accedra"
         className="chat-boton group relative grid h-[46px] w-[46px] place-items-center rounded-full text-white"
       >

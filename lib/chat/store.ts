@@ -81,6 +81,16 @@ export const conversacionEnTexto = () =>
     .join("\n\n")
     .slice(-6000);
 
+/** El último relevamiento armado, para mandarlo con el lead. */
+export function ultimoRelevamiento(): { datos: unknown; firma: string } | null {
+  for (let i = estado.mensajes.length - 1; i >= 0; i--) {
+    for (const p of estado.mensajes[i].partes) {
+      if (p.tipo === "tarjeta" && p.tarjeta.tipo === "relevamiento") return { datos: p.tarjeta.datos, firma: p.tarjeta.firma };
+    }
+  }
+  return null;
+}
+
 /** El historial que va al servidor: los últimos mensajes con contenido. */
 function historial(mensajes: Mensaje[]): Entrada[] {
   const entradas = mensajes
@@ -119,14 +129,19 @@ export async function enviar(crudo: string, origen = "panel") {
 
   const ctrl = new AbortController();
   abortar = ctrl;
-  const agregarTexto = (t: string) =>
+  const agregarTexto = (crudo: string) => {
+    // Caracteres invisibles que a veces manda el modelo: un párrafo hecho
+    // sólo de eso se dibuja como un hueco.
+    const t = crudo.replace(/[\u200B-\u200D\uFEFF]/g, "");
+    if (!t) return;
     actualizar(respuesta.id, (m) => {
       const partes = [...m.partes];
       const ultima = partes[partes.length - 1];
       if (ultima?.tipo === "texto") partes[partes.length - 1] = { tipo: "texto", texto: ultima.texto + t };
-      else partes.push({ tipo: "texto", texto: t.replace(/^\s+/, "") });
+      else if (t.trim()) partes.push({ tipo: "texto", texto: t.replace(/^\s+/, "") });
       return { ...m, partes };
     });
+  };
   const agregarTarjeta = (tarjeta: Tarjeta) =>
     actualizar(respuesta.id, (m) => ({ ...m, partes: [...m.partes, { tipo: "tarjeta", tarjeta } as Parte] }));
   const fallar = (error: string) => actualizar(respuesta.id, (m) => ({ ...m, error }));

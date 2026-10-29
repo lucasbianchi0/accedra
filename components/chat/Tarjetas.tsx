@@ -3,11 +3,19 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Check, Loader2 } from "lucide-react";
-import type { TarjetaCaso, TarjetaContacto, TarjetaHumano, TarjetaSolucion } from "@/lib/chat/tipos";
+import { ArrowRight, Check, Download, Loader2 } from "lucide-react";
+import type {
+  TarjetaCaso,
+  TarjetaContacto,
+  TarjetaHumano,
+  TarjetaOpciones,
+  TarjetaRelevamiento,
+  TarjetaSolucion,
+} from "@/lib/chat/tipos";
 import { WHATSAPP_PHONE } from "@/lib/whatsapp";
 import { forSubmit } from "@/lib/attribution";
 import { currentSessionId, track } from "@/lib/track";
+import { ultimoRelevamiento } from "@/lib/chat/store";
 
 /**
  * Las tarjetas que el asistente muestra dentro de la conversación.
@@ -79,6 +87,125 @@ export function Caso({ t, onNavegar }: { t: TarjetaCaso; onNavegar: () => void }
         </span>
       </div>
     </Link>
+  );
+}
+
+/** Ícono de PDF en los colores de Accedra AI. */
+function IconoPdf() {
+  return (
+    <svg width="38" height="46" viewBox="0 0 38 46" fill="none" aria-hidden>
+      <defs>
+        <linearGradient id="pdf-hoja" x1="0" y1="0" x2="38" y2="46" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#C26CF5" />
+          <stop offset="0.55" stopColor="#7C6CF6" />
+          <stop offset="1" stopColor="#2B6FD4" />
+        </linearGradient>
+      </defs>
+      <path d="M6 1h19l12 12v26a6 6 0 0 1-6 6H6a6 6 0 0 1-6-6V7a6 6 0 0 1 6-6Z" fill="url(#pdf-hoja)" />
+      <path d="M25 1v8a4 4 0 0 0 4 4h8" fill="#fff" fillOpacity="0.35" />
+      <text x="18.5" y="34" textAnchor="middle" fontSize="10" fontWeight="700" fill="#fff" fontFamily="system-ui, sans-serif">
+        PDF
+      </text>
+    </svg>
+  );
+}
+
+/**
+ * El relevamiento: breve a propósito. Ícono, para quién es, cuánto encontramos
+ * y el botón. El contenido está en el PDF; acá sólo se anuncia.
+ */
+export function Relevamiento({ t }: { t: TarjetaRelevamiento }) {
+  const [estado, setEstado] = useState<"listo" | "bajando" | "error">("listo");
+
+  const descargar = async () => {
+    if (estado === "bajando") return;
+    setEstado("bajando");
+    track({ type: "click", name: "relevamiento_pdf" });
+    try {
+      const res = await fetch("/api/chat/relevamiento", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ datos: t.datos, firma: t.firma }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      const nombre = /filename="([^"]+)"/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "relevamiento.pdf";
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = nombre;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10_000);
+      setEstado("listo");
+    } catch {
+      setEstado("error");
+    }
+  };
+
+  const resumen = [
+    `${t.datos.hallazgos.length} hallazgos`,
+    `${t.datos.areas.length} ${t.datos.areas.length === 1 ? "área" : "áreas"} para ayudarte`,
+    t.datos.casos.length ? `${t.datos.casos.length} ${t.datos.casos.length === 1 ? "caso" : "casos"}` : "",
+  ].filter(Boolean);
+
+  return (
+    <div className="flex items-center gap-4 rounded-2xl border border-white/10 bg-gradient-to-br from-[#7C6CF6]/[0.12] to-[#2B6FD4]/[0.06] p-4">
+      <IconoPdf />
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#B9A5FB]">Relevamiento</p>
+        <p className="truncate text-[14px] font-semibold text-white">{t.datos.empresa}</p>
+        <p className="mt-0.5 text-[12px] text-gray-400">{resumen.join(" · ")}</p>
+        {estado === "error" && <p className="mt-1 text-[12px] text-red-300">No se pudo descargar. Probá de nuevo.</p>}
+      </div>
+      <button
+        type="button"
+        onClick={descargar}
+        disabled={estado === "bajando"}
+        className="enviar-ai inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-[12.5px] font-semibold text-white"
+      >
+        {estado === "bajando" ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
+        PDF
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Opciones de respuesta. Una: se manda al tocarla. Varias: se marcan y se
+ * confirman. Escribir sigue valiendo: las opciones no reemplazan al campo.
+ */
+export function Opciones({ t, onElegir }: { t: TarjetaOpciones; onElegir: (texto: string) => void }) {
+  const [elegidas, setElegidas] = useState<string[]>([]);
+  return (
+    <div className="flex flex-wrap gap-2">
+      {t.opciones.map((o) => {
+        const activa = elegidas.includes(o);
+        return (
+          <button
+            key={o}
+            type="button"
+            data-activa={activa ? "true" : "false"}
+            onClick={() => {
+              if (!t.multiple) return onElegir(o);
+              setElegidas((e) => (activa ? e.filter((x) => x !== o) : [...e, o]));
+            }}
+            className="chip-ai rounded-full px-3.5 py-1.5 text-[13px]"
+          >
+            {o}
+          </button>
+        );
+      })}
+      {t.multiple && elegidas.length > 0 && (
+        <button
+          type="button"
+          onClick={() => onElegir(elegidas.join(", "))}
+          className="enviar-ai inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[13px] font-semibold text-white"
+        >
+          Listo <ArrowRight size={13} />
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -165,6 +292,9 @@ export function Contacto({
           resumen: t.resumen,
           solucion: t.solucion,
           conversacion: conversacion(),
+          // Si el asistente armó el relevamiento, viaja firmado y le llega al
+          // equipo comercial como PDF adjunto.
+          relevamiento: ultimoRelevamiento(),
           website: trampa.current?.value ?? "",
           ...forSubmit(window.location.pathname),
           session_id: currentSessionId(),
