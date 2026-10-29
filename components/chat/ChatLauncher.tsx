@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { X } from "lucide-react";
 import { MascotaCara } from "./Mascota";
 import { useChat } from "./ChatProvider";
+import { useGuinos } from "./guinos";
 import { track } from "@/lib/track";
 
 /**
@@ -49,8 +50,12 @@ export default function ChatLauncher() {
     return () => clearTimeout(t);
   }, [pathname]);
 
+  // En la home saluda con los guiños de cada sección (ver guinos.ts); en las
+  // demás páginas queda el globo de siempre.
+  const enHome = pathname === "/";
+
   useEffect(() => {
-    if (!window.matchMedia("(min-width: 768px)").matches) return;
+    if (enHome || !window.matchMedia("(min-width: 768px)").matches) return;
     try {
       if (sessionStorage.getItem(CLAVE_GLOBO)) return;
     } catch {}
@@ -65,17 +70,45 @@ export default function ChatLauncher() {
       clearTimeout(mostrar);
       clearTimeout(ocultar);
     };
-  }, []);
+  }, [enHome]);
 
   // Con la tarjeta del chat de la portada en pantalla, el botón sobra.
   const visible = !abierto && !tapada && !heroVisible;
+  const { guino, soltar, descartar } = useGuinos(enHome, visible);
 
   return (
     <div
       className={`chat-launcher fixed right-5 z-50 flex items-center gap-3 ${conWhatsApp ? "bottom-[96px]" : "bottom-6"}`}
       data-shown={visible ? "true" : "false"}
+      data-guino={guino ? "true" : "false"}
     >
-      {globo && visible && (
+      {guino && (
+        <div
+          key={guino.id}
+          role="status"
+          className="chat-globo relative flex max-w-[300px] items-center gap-2 rounded-2xl border border-white/10 bg-navy-700/95 py-2.5 pl-4 pr-2 text-sm text-gray-200 shadow-[0_12px_40px_rgba(0,0,0,0.45)]"
+        >
+          <button
+            type="button"
+            onClick={() => {
+              soltar();
+              abrir(undefined, `guino:${guino.id}`);
+            }}
+            className="text-left leading-snug"
+          >
+            {guino.texto}
+          </button>
+          <button
+            type="button"
+            onClick={descartar}
+            aria-label="No mostrar más"
+            className="shrink-0 rounded-full p-1 text-gray-500 transition-colors hover:bg-white/5 hover:text-gray-300"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
+      {globo && visible && !guino && (
         <div className="chat-globo relative hidden md:flex items-center gap-2 rounded-2xl border border-white/10 bg-navy-700/95 py-2.5 pl-4 pr-2 text-sm text-gray-200 shadow-[0_12px_40px_rgba(0,0,0,0.45)]">
           <button type="button" onClick={() => { setGlobo(false); abrir(undefined, "globo"); }} className="text-left">
             ¿Me contás qué necesita tu operación?
