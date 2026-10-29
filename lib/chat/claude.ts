@@ -1,0 +1,39 @@
+import Anthropic from "@anthropic-ai/sdk";
+
+/**
+ * El cliente de Claude del asistente del sitio.
+ *
+ * Mismo esquema que el backoffice: con OPENROUTER_API_KEY todo va por
+ * OpenRouter (que habla el formato de mensajes de Anthropic); sin ella, directo
+ * a Anthropic con ANTHROPIC_API_KEY. OpenRouter nombra los modelos distinto
+ * ("anthropic/claude-sonnet-5.5"), así que el nombre se traduce al salir.
+ */
+const OPENROUTER_URL = "https://openrouter.ai/api";
+
+function modeloOpenRouter(modelo: string): string {
+  if (modelo.includes("/")) return modelo;
+  return `anthropic/${modelo.replace(/-(\d+)-(\d+)$/, "-$1.$2")}`;
+}
+
+const fetchOpenRouter: typeof fetch = async (url, init) => {
+  if (init?.body && typeof init.body === "string") {
+    try {
+      const cuerpo = JSON.parse(init.body);
+      if (typeof cuerpo.model === "string") cuerpo.model = modeloOpenRouter(cuerpo.model);
+      init = { ...init, body: JSON.stringify(cuerpo) };
+    } catch {
+      // No es JSON: va tal cual.
+    }
+  }
+  return fetch(url, init);
+};
+
+export function crearClienteClaude(): Anthropic {
+  const claveOpenRouter = process.env.OPENROUTER_API_KEY;
+  if (claveOpenRouter) {
+    return new Anthropic({ apiKey: claveOpenRouter, baseURL: OPENROUTER_URL, fetch: fetchOpenRouter });
+  }
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
+
+export const hayClaveClaude = () => Boolean(process.env.OPENROUTER_API_KEY || process.env.ANTHROPIC_API_KEY);

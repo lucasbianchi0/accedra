@@ -6,6 +6,7 @@ import SmoothScroll from "@/components/SmoothScroll";
 import JsonLd from "@/components/seo/JsonLd";
 import Attribution from "@/components/Attribution";
 import SitePopup from "@/components/popup/SitePopup";
+import ChatProvider from "@/components/chat/ChatProvider";
 import { organizationLd, websiteLd } from "@/lib/seo/jsonLd";
 import { SITE_URL, DEFAULT_TITLE, DEFAULT_DESCRIPTION, ORG } from "@/lib/seo/site";
 
@@ -127,7 +128,11 @@ export default function RootLayout({
             (Lenis en desktop, nativo en el resto): el de Lenis necesita el
             contexto de la librería y por eso no puede vivir acá afuera. */}
         <SmoothScroll>
-          <LangProvider>{children}</LangProvider>
+          <LangProvider>
+            {/* El asistente: el botón flotante en todas las páginas y el campo
+                de la portada comparten este contexto. */}
+            <ChatProvider>{children}</ChatProvider>
+          </LangProvider>
         </SmoothScroll>
         {/* El popup que se configura desde el backoffice: un evento, un aviso,
             una novedad. Va último y fuera de SmoothScroll a propósito —es una

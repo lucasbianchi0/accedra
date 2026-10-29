@@ -1405,3 +1405,106 @@ dialog[data-brochure]::backdrop {
   border-radius: 999px;
 }
 .lista-desvanecida:hover::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.24); }
+
+/* ── Asistente ────────────────────────────────────────────────────────────
+   Todo por CSS, como la burbuja de WhatsApp: el botón y el campo de la
+   portada están en el bundle de arranque y no pueden traer un runtime de
+   animación. */
+
+.chat-launcher {
+  transition:
+    opacity 0.42s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1),
+    visibility 0s linear 0.42s;
+}
+.chat-launcher[data-shown="false"] {
+  opacity: 0;
+  transform: translateY(16px) scale(0.6);
+  visibility: hidden;
+  pointer-events: none;
+}
+.chat-launcher[data-shown="true"] { transition-delay: 0s; }
+
+.chat-boton { transition: transform 0.2s ease; }
+.chat-boton:hover { transform: translateY(-2px); }
+.chat-boton:active { transform: scale(0.94); }
+.chat-boton-halo {
+  background: radial-gradient(circle, rgba(43, 111, 212, 0.55) 0%, transparent 70%);
+  filter: blur(8px);
+  animation: chat-respira 3.6s ease-in-out infinite;
+}
+@keyframes chat-respira {
+  0%, 100% { opacity: 0.45; transform: scale(0.92); }
+  50% { opacity: 0.9; transform: scale(1.08); }
+}
+
+.chat-globo { animation: chat-globo-entra 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes chat-globo-entra {
+  from { opacity: 0; transform: translateX(12px) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+
+/* El panel: en el teléfono sube desde abajo; en escritorio crece desde la
+   esquina donde está el botón. */
+.chat-panel {
+  transform-origin: bottom right;
+  transition:
+    opacity 0.28s ease,
+    translate 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    scale 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    visibility 0s linear 0.38s;
+}
+.chat-panel[data-open="false"] {
+  opacity: 0;
+  translate: 0 24px;
+  visibility: hidden;
+  pointer-events: none;
+}
+@media (min-width: 640px) {
+  .chat-panel[data-open="false"] { translate: 0 12px; scale: 0.96; }
+}
+.chat-panel[data-open="true"] { transition-delay: 0s; }
+
+.chat-pensando i {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-accent-300);
+  animation: chat-punto 1.2s ease-in-out infinite;
+}
+.chat-pensando i:nth-child(2) { animation-delay: 0.15s; }
+.chat-pensando i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes chat-punto {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-3px); }
+}
+
+/* El robot: parpadea cada tanto y la antena late. */
+.robot-vivo .robot-ojos {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: robot-parpadea 5s ease-in-out infinite;
+}
+.robot-vivo .robot-antena { animation: robot-antena 2.4s ease-in-out infinite; }
+@keyframes robot-parpadea {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+@keyframes robot-antena {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-launcher, .chat-panel { transition: opacity 0.2s linear, visibility 0s linear 0.2s; }
+  .chat-launcher[data-shown="false"], .chat-panel[data-open="false"] { transform: none; translate: none; scale: none; }
+  .chat-boton-halo, .chat-globo, .chat-pensando i, .robot-vivo .robot-ojos, .robot-vivo .robot-antena { animation: none; }
+}
+
+.chat-scroll { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.12) transparent; }
+/* Los campos del asistente ya marcan el foco con el borde de su contenedor
+   (focus-within); el anillo global quedaba doble adentro de la pastilla. */
+.chat-campo:focus-visible { outline: none; }

@@ -6,6 +6,7 @@ import { useT } from "@/lib/i18n/useT";
 import CountUp from "@/components/CountUp";
 import HeroMedia from "@/components/HeroMedia";
 import { enter } from "@/components/Reveal";
+import HeroChat from "@/components/chat/HeroChat";
 
 const stats = ["17+", "400+", "26+", "100+"];
 
@@ -64,25 +65,20 @@ export default function Hero() {
             <span className="text-gray-200 font-medium">{t.hero.subtitleStrong}</span>.
           </p>
 
-          {/* CTAs */}
-          <div
-            className="hero-enter flex flex-col sm:flex-row gap-4"
-            style={ENTER.ctas}
-          >
-            <a
-              href="#contacto"
-              className="relative overflow-hidden shine inline-flex items-center justify-center gap-2 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 hover:-translate-y-0.5 hover:gap-3 group text-base"
-              style={{ background: "#2560BC", boxShadow: "0 8px 28px rgba(43,111,212,0.35)" }}
-            >
-              {t.services.ctaButton}
-              <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
-            </a>
-            <a
-              href="#servicios"
-              className="inline-flex items-center justify-center gap-2 border border-white/20 hover:border-white/40 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 hover:bg-white/5 text-base"
-            >
-              {t.hero.ctaServices}
-            </a>
+          {/* El asistente es la entrada principal: "contanos tu problema" en
+              vez de "elegí un servicio". Los dos CTA de antes quedan como
+              salida secundaria para quien ya sabe adónde va. */}
+          <div className="hero-enter" style={ENTER.ctas}>
+            <HeroChat />
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+              <a href="#contacto" className="group inline-flex items-center gap-1.5 font-semibold text-white transition-all hover:gap-2.5">
+                {t.services.ctaButton}
+                <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+              </a>
+              <a href="#servicios" className="font-medium text-gray-400 transition-colors hover:text-white">
+                {t.hero.ctaServices}
+              </a>
+            </div>
           </div>
         </div>
 
