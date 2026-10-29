@@ -2,7 +2,6 @@ import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import ClientsBar from "@/components/ClientsBar";
 import Services from "@/components/Services";
-import SeccionAsistente from "@/components/chat/SeccionAsistente";
 import WhyUs from "@/components/WhyUs";
 import Partners from "@/components/Partners";
 import EventosLateral from "@/components/EventosLateral";
@@ -37,8 +36,6 @@ export default function Home() {
       <div className="relative z-10">
         <Hero />
         <ClientsBar />
-        {/* El asistente con su propia sección: la portada queda como estaba. */}
-        <SeccionAsistente />
         <Services />
         <Partners />
         <WhyUs />

@@ -13,7 +13,7 @@ import CapabilitiesBento from "./CapabilitiesBento";
 import ProcessCardsRow from "./ProcessCardsRow";
 import CasesSection from "./CasesSection";
 import BrochureLink from "./BrochureLink";
-import SeccionAsistente from "@/components/chat/SeccionAsistente";
+import ChatPortada from "@/components/chat/ChatPortada";
 import IndustryContext from "./IndustryContext";
 import IndustryFaq from "./IndustryFaq";
 import { getIndustrySeo } from "./industrySeo";
@@ -33,6 +33,7 @@ import Image from "next/image";
 /* Cascada de entrada de la portada — mismos valores que tenía con framer. */
 const ENTER = {
   block: enter("34px", "1.2s", "0s", "12px"),
+  chat: enter("24px", "1.2s", "0.35s"),
   stats: enter("24px", "1.1s", "0.55s"),
   brands: enter("0px", "1.0s", "0.8s"),
 };
@@ -183,81 +184,91 @@ export default function SolutionPage({ slug, industria, servicio }: { slug: stri
           {/* Entrada por CSS (.hero-enter), no por framer: el <h1> de acá es el
               elemento LCP y con framer no se pintaba hasta después de hidratar.
               Mismos valores que tenía la versión con motion. */}
-          <div className="hero-enter max-w-2xl" style={ENTER.block}>
-            {landing && (
-              <div className="inline-flex items-center gap-2 mb-5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] text-white/90"
-                style={{ background: `rgba(var(--accent-rgb,43,111,212),0.18)`, border: `1px solid rgba(var(--accent-rgb,43,111,212),0.4)` }}>
-                {sub ? sub.badge : `Solución ${industry?.forLabel}`}
-              </div>
-            )}
-            {/* La línea "para <industria>" va DENTRO del h1, no en un <p> aparte.
-                Visualmente es idéntico (mismos tamaños y separaciones que antes),
-                pero hace que el encabezado principal sea distinto en cada landing:
-                si no, las 6 industrias de una solución comparten h1 exacto — que es
-                la señal que Google lee como página duplicada. */}
-            <h1 className={`text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] ${industry ? "mb-7" : "mb-6"}`}>
-              {data.title}{" "}
-              <span style={accentHighlight}>{data.highlight}</span>
-              {industry && (
-                <span className="block text-2xl md:text-3xl lg:text-[34px] leading-tight mt-4">
-                  <span className="text-white/55">para </span>
-                  <span style={accentHighlight}>{industry.name}</span>
-                </span>
+          {/* Dos columnas desde `lg`: el título a la izquierda y el chat a la
+              derecha, con la pregunta y los casos de esta solución. En el
+              teléfono no hay chat en la portada: el botón principal sigue
+              siendo WhatsApp (ver el comentario de abajo) y queda el robotito. */}
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(400px,440px)] lg:items-center lg:gap-14 xl:gap-20">
+            <div className="hero-enter max-w-2xl" style={ENTER.block}>
+              {landing && (
+                <div className="inline-flex items-center gap-2 mb-5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] text-white/90"
+                  style={{ background: `rgba(var(--accent-rgb,43,111,212),0.18)`, border: `1px solid rgba(var(--accent-rgb,43,111,212),0.4)` }}>
+                  {sub ? sub.badge : `Solución ${industry?.forLabel}`}
+                </div>
               )}
-            </h1>
-            <p className="text-gray-300 text-lg leading-relaxed max-w-xl mb-9">{subtitle}</p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* ── EN CELULAR EL BOTON PRINCIPAL ES WHATSAPP ──────────────────
-                  No es una preferencia de diseño: es lo único que la medición
-                  respalda. En un año de campañas, las 6 conversiones de la
-                  cuenta salieron de 9 clics al botón de WhatsApp del anuncio, y
-                  el formulario de este sitio lleva 0 en toda su historia. En
-                  móvil el rebote del tráfico pago es 89%: la gente llega, no
-                  encuentra nada que pueda hacer en el momento, y se va.
+              {/* La línea "para <industria>" va DENTRO del h1, no en un <p> aparte.
+                  Visualmente es idéntico (mismos tamaños y separaciones que antes),
+                  pero hace que el encabezado principal sea distinto en cada landing:
+                  si no, las 6 industrias de una solución comparten h1 exacto — que es
+                  la señal que Google lee como página duplicada. */}
+              <h1 className={`text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] ${industry ? "mb-7" : "mb-6"}`}>
+                {data.title}{" "}
+                <span style={accentHighlight}>{data.highlight}</span>
+                {industry && (
+                  <span className="block text-2xl md:text-3xl lg:text-[34px] leading-tight mt-4">
+                    <span className="text-white/55">para </span>
+                    <span style={accentHighlight}>{industry.name}</span>
+                  </span>
+                )}
+              </h1>
+              <p className="text-gray-300 text-lg leading-relaxed max-w-xl mb-9">{subtitle}</p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* ── EN CELULAR EL BOTON PRINCIPAL ES WHATSAPP ──────────────────
+                    No es una preferencia de diseño: es lo único que la medición
+                    respalda. En un año de campañas, las 6 conversiones de la
+                    cuenta salieron de 9 clics al botón de WhatsApp del anuncio, y
+                    el formulario de este sitio lleva 0 en toda su historia. En
+                    móvil el rebote del tráfico pago es 89%: la gente llega, no
+                    encuentra nada que pueda hacer en el momento, y se va.
 
-                  Va como REEMPLAZO del botón de contacto en móvil, no como un
-                  tercer botón — ver el comentario del brochure más abajo: en
-                  esta portada un botón de más le come la atención al principal.
-                  En escritorio se mantiene el formulario, que es donde el
-                  visitante sí navega (1,9 páginas por visita contra 1,2).
+                    Va como REEMPLAZO del botón de contacto en móvil, no como un
+                    tercer botón — ver el comentario del brochure más abajo: en
+                    esta portada un botón de más le come la atención al principal.
+                    En escritorio se mantiene el formulario, que es donde el
+                    visitante sí navega (1,9 páginas por visita contra 1,2).
 
-                  El verde es el de WhatsApp y no el acento de la solución a
-                  propósito: acá importa que se reconozca de un vistazo, no que
-                  combine. */}
-              <a
-                href={whatsappLink(data.name)}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => track({ type: "click", name: "whatsapp", target: `hero:${sub ? `${slug}/${sub.slug}` : slug}` })}
-                className="sm:hidden relative overflow-hidden shine inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white transition-all duration-200 hover:gap-3 hover:-translate-y-0.5"
-                style={{
-                  background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
-                  boxShadow: "0 8px 28px rgba(37,211,102,0.4)",
-                }}
-              >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="white" className="flex-shrink-0" aria-hidden>
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                </svg>
-                {st.ctaWhatsapp}
-              </a>
+                    El verde es el de WhatsApp y no el acento de la solución a
+                    propósito: acá importa que se reconozca de un vistazo, no que
+                    combine. */}
+                <a
+                  href={whatsappLink(data.name)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => track({ type: "click", name: "whatsapp", target: `hero:${sub ? `${slug}/${sub.slug}` : slug}` })}
+                  className="sm:hidden relative overflow-hidden shine inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white transition-all duration-200 hover:gap-3 hover:-translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(135deg, #25D366 0%, #128C7E 100%)",
+                    boxShadow: "0 8px 28px rgba(37,211,102,0.4)",
+                  }}
+                >
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="white" className="flex-shrink-0" aria-hidden>
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                  </svg>
+                  {st.ctaWhatsapp}
+                </a>
 
-              <Link href="#contacto"
-                className="hidden sm:inline-flex relative overflow-hidden shine items-center justify-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white transition-all duration-200 hover:gap-3 hover:-translate-y-0.5"
-                style={{ background: data.accent, boxShadow: `0 8px 28px rgba(var(--accent-rgb,43,111,212),0.4)` }}>
-                {sub?.cta ?? st.ctaPrimary} <ArrowRight size={17} />
-              </Link>
-              <a href="#capacidades"
-                className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white border border-white/15 hover:bg-white/5 hover:gap-3 transition-all">
-                {st.ctaSeeSolution}
-              </a>
+                <Link href="#contacto"
+                  className="hidden sm:inline-flex relative overflow-hidden shine items-center justify-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white transition-all duration-200 hover:gap-3 hover:-translate-y-0.5"
+                  style={{ background: data.accent, boxShadow: `0 8px 28px rgba(var(--accent-rgb,43,111,212),0.4)` }}>
+                  {sub?.cta ?? st.ctaPrimary} <ArrowRight size={17} />
+                </Link>
+                <a href="#capacidades"
+                  className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-full text-[15px] font-semibold text-white border border-white/15 hover:bg-white/5 hover:gap-3 transition-all">
+                  {st.ctaSeeSolution}
+                </a>
+              </div>
+
+              {/* Brochure. Los PDF ya existían en /public/brochures pero no estaban
+                  enlazados desde ninguna página. Va acá como link y no como bloque
+                  aparte: un tercer botón le competiría la atención al CTA
+                  principal, y una sección propia a mitad de página terminaba
+                  pareciéndose a las demás cards y no la miraba nadie. */}
+              <BrochureLink slug={slug} name={data.name} accent={data.accent} t={st} />
             </div>
 
-            {/* Brochure. Los PDF ya existían en /public/brochures pero no estaban
-                enlazados desde ninguna página. Va acá como link y no como bloque
-                aparte: un tercer botón le competiría la atención al CTA
-                principal, y una sección propia a mitad de página terminaba
-                pareciéndose a las demás cards y no la miraba nadie. */}
-            <BrochureLink slug={slug} name={data.name} accent={data.accent} t={st} />
+            <div className="hero-enter" style={ENTER.chat}>
+              <ChatPortada solucion={slug} />
+            </div>
           </div>
 
           {/* Stats — panel de vidrio (glassmorphism) dentro de la portada.
@@ -266,7 +277,7 @@ export default function SolutionPage({ slug, industria, servicio }: { slug: stri
               translúcida + sheen + brillo interior, y así TODA la barra aparece junta
               (fade + slide) con los números contando, sin ningún cambio de color. */}
           <div
-            className="hero-enter relative mt-14 lg:mt-16 mx-auto max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-px rounded-[20px] overflow-hidden border"
+            className="hero-enter relative mt-14 lg:mt-28 mx-auto max-w-3xl grid grid-cols-2 sm:grid-cols-4 gap-px rounded-[20px] overflow-hidden border"
             style={{
               ...ENTER.stats,
               borderColor: "rgba(255,255,255,0.18)",
@@ -340,9 +351,6 @@ export default function SolutionPage({ slug, industria, servicio }: { slug: stri
           </div>
         </div>
       </section>
-
-      {/* ── El asistente, con la pregunta y los casos de esta solución ── */}
-      <SeccionAsistente solucion={slug} accent={data.accent} />
 
       {/* ── Contexto de la industria (sólo landings) ──
           Va inmediatamente después de la portada, antes de las capacidades: es el
