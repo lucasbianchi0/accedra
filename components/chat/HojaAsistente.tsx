@@ -7,6 +7,7 @@ import { LogoAccedraAI, NombreAccedraAI } from "./AccedraAI";
 import { IconoWhatsApp } from "./Tarjetas";
 import { enviar, reiniciar, useConversacion } from "@/lib/chat/store";
 import { sugerenciasPara } from "@/lib/chat/sugerencias";
+import { EJEMPLOS_MEZCLADOS, INDUSTRIAS, type Industria } from "@/lib/chat/industrias";
 import { track } from "@/lib/track";
 
 /**
@@ -92,7 +93,7 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
       <div
         aria-hidden
         onClick={onCerrar}
-        className="chat-hoja-fondo fixed inset-0 z-[80] bg-[rgba(4,8,18,0.55)] backdrop-blur-[10px]"
+        className="chat-hoja-fondo fixed inset-0 z-[80] bg-[rgba(3,6,14,0.58)] backdrop-blur-xl backdrop-saturate-[1.2]"
       />
 
       <div
@@ -103,17 +104,28 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
         // Vidrio: translúcida sobre la página ya desenfocada, con un blur propio
         // que termina de lavar lo que hay detrás. Márgenes laterales amplios:
         // en escritorio la hoja no pasa de ~1000 px de ancho.
-        className={`chat-hoja fixed inset-x-0 bottom-0 z-[81] flex flex-col overflow-hidden rounded-t-[32px] border border-b-0 border-white/[0.14] bg-[rgba(14,26,46,0.58)] shadow-[0_-30px_120px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-2xl backdrop-saturate-150 sm:inset-x-[max(2rem,calc((100vw-1040px)/2))] ${
+        className={`chat-hoja fixed inset-x-0 bottom-0 z-[81] flex flex-col overflow-hidden rounded-t-[32px] border border-b-0 border-white/[0.13] bg-[linear-gradient(180deg,rgba(24,36,66,0.62)_0%,rgba(9,16,32,0.74)_100%)] shadow-[0_-40px_140px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-3xl backdrop-saturate-[1.6] sm:inset-x-[max(2rem,calc((100vw-1040px)/2))] ${
           vacio ? "h-[88dvh] sm:h-[60dvh] sm:min-h-[480px] sm:max-h-[92dvh]" : "h-[92dvh] sm:h-[86dvh]"
         }`}
       >
-        {/* Luz de la marca desde arriba */}
+        {/* Filo de luz en el borde de arriba, en el degradé de la marca */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-44 left-1/2 h-80 w-[min(760px,120%)] -translate-x-1/2 rounded-full opacity-40 blur-3xl"
+          className="pointer-events-none absolute inset-x-[12%] top-0 h-px"
           style={{
-            background: "radial-gradient(closest-side, rgba(124,108,246,0.55), rgba(43,111,212,0.25), transparent)",
+            background:
+              "linear-gradient(90deg, transparent, rgba(185,165,251,0.75), rgba(127,179,248,0.75), transparent)",
           }}
+        />
+        {/* Aurora: dos luces que se mueven lento detrás del logo */}
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 -top-32 h-96 overflow-hidden">
+          <div className="hoja-aurora hoja-aurora-1 absolute left-[28%] top-0 h-72 w-72 rounded-full bg-[#8B5CF6] opacity-40 blur-[90px]" />
+          <div className="hoja-aurora hoja-aurora-2 absolute right-[26%] top-6 h-64 w-64 rounded-full bg-[#2B6FD4] opacity-40 blur-[90px]" />
+        </div>
+        {/* Grano muy fino: le saca lo plástico al vidrio */}
+        <div
+          aria-hidden
+          className="hoja-grano pointer-events-none absolute inset-0 opacity-[0.035] mix-blend-overlay"
         />
 
         {/* Barra superior: manija, marca (con conversación), acciones */}
@@ -155,31 +167,64 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
           onNavegar={onNavegar}
           ancho="mx-auto w-full max-w-[760px]"
           campoAlInicio={false}
-          inicio={<Bienvenida solucion={solucion} abierto={abierto} />}
+          inicio={<Bienvenida solucion={solucion} />}
         />
       </div>
     </div>
   );
 }
 
-/** Lo que se ve antes del primer mensaje, como en la referencia. */
-function Bienvenida({ solucion, abierto }: { solucion?: string; abierto: boolean }) {
-  const { mensajes } = useConversacion();
-  const { titulo, atajos } = sugerenciasPara(solucion);
-  const [texto, setTexto] = useState("");
-  const campo = useRef<HTMLTextAreaElement>(null);
-  const origen = solucion ? `hoja:${solucion}` : "hoja";
+/** El ejemplo del campo se escribe solo, uno tras otro. */
+function useMaquina(frases: string[], activa: boolean): string {
+  const [e, setE] = useState({ i: 0, n: 0, borrando: false, pausa: 0 });
 
-  // En escritorio el foco va al campo al abrir.
+  // Con otra lista (se eligió una industria) arranca de cero.
+  const [lista, setLista] = useState(frases);
+  if (lista !== frases) {
+    setLista(frases);
+    setE({ i: 0, n: 0, borrando: false, pausa: 4 });
+  }
+
   useEffect(() => {
-    if (!abierto || !window.matchMedia("(min-width: 640px)").matches) return;
-    const t = setTimeout(() => campo.current?.focus({ preventScroll: true }), 350);
-    return () => clearTimeout(t);
-  }, [abierto]);
+    if (!activa || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const t = setInterval(() => {
+      setE((s) => {
+        const frase = frases[s.i % frases.length];
+        if (s.pausa > 0) return { ...s, pausa: s.pausa - 1 };
+        if (!s.borrando) return s.n < frase.length ? { ...s, n: s.n + 1 } : { ...s, borrando: true, pausa: 48 };
+        return s.n > 0 ? { ...s, n: Math.max(0, s.n - 3) } : { i: s.i + 1, n: 0, borrando: false, pausa: 8 };
+      });
+    }, 38);
+    return () => clearInterval(t);
+  }, [activa, frases]);
 
-  const mandar = (t: string, de = origen) => {
+  const frase = frases[e.i % frases.length];
+  return activa ? frase.slice(0, e.n) : frase;
+}
+
+/**
+ * Lo que se ve antes del primer mensaje: el logo, la pregunta, las industrias
+ * y el campo que escribe ejemplos solo.
+ *
+ * El campo NO toma el foco al abrir: si lo tomara, el ejemplo dejaría de
+ * escribirse (y en el teléfono saltaría el teclado tapando la hoja).
+ */
+function Bienvenida({ solucion }: { solucion?: string }) {
+  const { mensajes } = useConversacion();
+  const { titulo } = sugerenciasPara(solucion);
+  const [texto, setTexto] = useState("");
+  const [enfocado, setEnfocado] = useState(false);
+  const [industria, setIndustria] = useState<Industria | null>(null);
+  const origen = solucion ? `hoja:${solucion}` : "hoja";
+  const frases = industria ? industria.ejemplos : EJEMPLOS_MEZCLADOS;
+  const escribiendo = useMaquina(frases, !texto && !enfocado);
+
+  const mandar = (t: string) => {
     if (!t.trim()) return;
-    void enviar(t, de);
+    // Con una industria elegida, el asistente arranca sabiendo el rubro.
+    const conRubro =
+      industria && !t.toLowerCase().includes(industria.label.toLowerCase()) ? `${industria.frase} ${t}` : t;
+    void enviar(conRubro, industria ? `${origen}:${industria.id}` : origen);
     setTexto("");
   };
 
@@ -190,35 +235,88 @@ function Bienvenida({ solucion, abierto }: { solucion?: string; abierto: boolean
     <div className="flex min-h-full flex-col">
       {/* `hoja-entra`: cada hijo entra escalonado cuando la hoja termina de subir. */}
       <div className="hoja-entra my-auto flex flex-col items-center pb-4 text-center">
-        <LogoAccedraAI size={44} brillo />
-        <h2 className="font-display mt-5 text-[26px] font-semibold leading-tight tracking-[-0.01em] text-white sm:text-[32px]">
+        <LogoAccedraAI size={46} brillo />
+        <h2 className="font-display mt-5 text-[26px] font-semibold leading-tight tracking-[-0.015em] text-white sm:text-[34px]">
           {titulo}
         </h2>
+
+        {/* Industrias: elegir una cambia los ejemplos y le dice el rubro al asistente. */}
+        <div
+          role="radiogroup"
+          aria-label="Tu industria"
+          className="no-scrollbar -mx-4 mt-6 flex max-w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0"
+        >
+          {INDUSTRIAS.map((ind) => {
+            const activa = industria?.id === ind.id;
+            const Icono = ind.icono;
+            return (
+              <button
+                key={ind.id}
+                type="button"
+                role="radio"
+                aria-checked={activa}
+                onClick={() => {
+                  setIndustria(activa ? null : ind);
+                  track({ type: "click", name: "asistente_industria", target: ind.id });
+                }}
+                className="chip-ai inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12.5px] font-medium"
+                data-activa={activa ? "true" : "false"}
+              >
+                <Icono size={13} className="chip-ai-icono" />
+                {ind.label}
+              </button>
+            );
+          })}
+        </div>
 
         <form
           onSubmit={(e) => {
             e.preventDefault();
             mandar(texto);
           }}
-          className="mt-7 w-full rounded-[22px] border border-white/[0.12] bg-white/[0.05] text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors focus-within:border-[#9F8CFB]/45 focus-within:bg-white/[0.07]"
+          className="campo-ai relative mt-4 w-full rounded-[22px] text-left"
         >
           <textarea
-            ref={campo}
             rows={2}
             value={texto}
             maxLength={1200}
             onChange={(e) => setTexto(e.target.value)}
+            onFocus={() => setEnfocado(true)}
+            onBlur={() => setEnfocado(false)}
             onKeyDown={(e) => {
+              // Tab con el campo vacío usa el ejemplo que se está mostrando.
+              if (e.key === "Tab" && !texto && !e.shiftKey) {
+                e.preventDefault();
+                setTexto(frases.find((f) => f.startsWith(escribiendo)) ?? escribiendo);
+                return;
+              }
               if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                 e.preventDefault();
                 mandar(texto);
               }
             }}
-            placeholder="Contanos tu caso…"
+            placeholder={enfocado ? "Contanos tu caso…" : undefined}
             aria-label="Contanos tu caso"
-            className="chat-campo block w-full resize-none bg-transparent px-5 pt-4 text-[16px] leading-relaxed text-white placeholder:text-gray-500 outline-none"
+            className="chat-campo relative block w-full resize-none bg-transparent px-5 pt-4 text-[16px] leading-relaxed text-white placeholder:text-gray-500 outline-none"
           />
-          <div className="flex items-center justify-end gap-2 px-3 pb-3">
+          {/* El ejemplo va encima y no como placeholder: uno que cambia cada
+              40 ms lo releen los lectores de pantalla en cada cambio. */}
+          {!texto && !enfocado && (
+            <p
+              aria-hidden
+              className="pointer-events-none absolute inset-x-5 top-4 text-[16px] leading-relaxed text-gray-400"
+            >
+              {escribiendo}
+              <span className="hero-cursor ml-0.5 inline-block h-[1.05em] w-[2px] translate-y-[3px] rounded-full bg-[#B9A5FB]" />
+            </p>
+          )}
+          <div className="flex items-center gap-2 px-3 pb-3">
+            <span className="hidden pl-2 text-[11.5px] text-gray-500 sm:inline">
+              <kbd className="rounded border border-white/15 px-1.5 py-px font-sans text-[10.5px] text-gray-400">
+                Tab
+              </kbd>{" "}
+              usa el ejemplo
+            </span>
             <a
               href={whatsappDeLaCharla(mensajes)}
               target="_blank"
@@ -226,7 +324,7 @@ function Bienvenida({ solucion, abierto }: { solucion?: string; abierto: boolean
               onClick={() => track({ type: "click", name: "whatsapp", target: origen })}
               aria-label="Hablar con una persona por WhatsApp"
               title="Hablar con una persona"
-              className="grid h-9 w-9 place-items-center rounded-full text-gray-400 transition-colors hover:bg-white/5 hover:text-[#25D366]"
+              className="ml-auto grid h-9 w-9 place-items-center rounded-full text-gray-400 transition-colors hover:bg-white/5 hover:text-[#25D366]"
             >
               <IconoWhatsApp size={16} />
             </a>
@@ -234,28 +332,12 @@ function Bienvenida({ solucion, abierto }: { solucion?: string; abierto: boolean
               type="submit"
               disabled={!texto.trim()}
               aria-label="Enviar"
-              className="grid h-9 w-9 place-items-center rounded-full text-white transition-all hover:-translate-y-0.5 disabled:opacity-35 disabled:hover:translate-y-0"
-              style={{ background: "linear-gradient(135deg, #9F6CF6 0%, #2B6FD4 100%)" }}
+              className="enviar-ai grid h-9 w-9 place-items-center rounded-full text-white"
             >
               <ArrowUp size={17} />
             </button>
           </div>
         </form>
-
-        <div className="mt-4 flex flex-wrap justify-center gap-2">
-          {atajos.slice(0, 3).map(({ label, texto: t, icono: Icono }) => (
-            <button
-              key={label}
-              type="button"
-              onClick={() => mandar(t, `${origen}:atajo`)}
-              title={t}
-              className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.03] px-3.5 py-2 text-[13px] text-gray-300 transition-all hover:border-[#9F8CFB]/40 hover:bg-white/[0.06] hover:text-white"
-            >
-              <Icono size={14} className="text-[#B9A5FB]" />
-              {label}
-            </button>
-          ))}
-        </div>
       </div>
     </div>
   );
