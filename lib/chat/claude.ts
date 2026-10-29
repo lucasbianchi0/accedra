@@ -20,6 +20,11 @@ const fetchOpenRouter: typeof fetch = async (url, init) => {
     try {
       const cuerpo = JSON.parse(init.body);
       if (typeof cuerpo.model === "string") cuerpo.model = modeloOpenRouter(cuerpo.model);
+      // OpenRouter reparte Claude entre varios proveedores y la caché de uno
+      // no le sirve a otro: un mensaje que cae en otro proveedor vuelve a
+      // escribir el prompt entero, que cuesta más que diez respuestas.
+      // Siempre Anthropic primero; los demás sólo si se cae.
+      cuerpo.provider ??= { order: ["anthropic"], allow_fallbacks: true };
       init = { ...init, body: JSON.stringify(cuerpo) };
     } catch {
       // No es JSON: va tal cual.

@@ -444,7 +444,7 @@ export async function POST(req: NextRequest) {
       // Una sola tanda de opciones y un solo relevamiento por respuesta: el
       // modelo a veces los repite en la vuelta siguiente.
       const yaMostradas = new Set<string>();
-      const uso = { vueltas: 0, entrada: 0, lecturaCache: 0, salida: 0, unidades: 0 };
+      const uso = { vueltas: 0, entrada: 0, escrituraCache: 0, lecturaCache: 0, salida: 0, unidades: 0 };
       try {
         for (let vuelta = 0; vuelta < VUELTAS; vuelta++) {
           const ultima = vuelta === VUELTAS - 1;
@@ -457,10 +457,20 @@ export async function POST(req: NextRequest) {
               // el texto, la solución, el caso y el formulario: con 1800 se
               // cortaba y las herramientas llegaban truncadas (se descartan).
               max_tokens: MAX_TOKENS,
+              // Es una charla, no un problema difícil: en "high" (el default)
+              // piensa antes de cada respuesta, hasta de un saludo, y el
+              // pensamiento se cobra como salida. En "low" piensa sólo cuando
+              // hace falta. Fijo: cambiarlo entre pedidos invalida la caché.
+              output_config: { effort: "low" },
               system,
               messages: mensajes,
               tools: HERRAMIENTAS,
               tool_choice: ultima ? { type: "none" } : { type: "auto" },
+              // La conversación también se cachea (5 minutos, lo que tarda en
+              // contestar una persona): la marca va sola al último bloque, así
+              // que la vuelta siguiente y el próximo mensaje leen todo lo
+              // anterior a un décimo del precio en vez de pagarlo entero.
+              cache_control: { type: "ephemeral" },
             },
             { signal: senal },
           );
@@ -478,6 +488,7 @@ export async function POST(req: NextRequest) {
           const final = await respuesta.finalMessage();
           uso.vueltas++;
           uso.entrada += final.usage.input_tokens;
+          uso.escrituraCache += final.usage.cache_creation_input_tokens ?? 0;
           uso.lecturaCache += final.usage.cache_read_input_tokens ?? 0;
           uso.salida += final.usage.output_tokens;
           uso.unidades += unidades(final.usage);
@@ -487,6 +498,12 @@ export async function POST(req: NextRequest) {
           const llamadas = final.content.filter((b): b is Anthropic.ToolUseBlock => b.type === "tool_use");
           mensajes.push({ role: "assistant", content: final.content });
 
+          // Si ya escribió su mensaje antes de las tarjetas, la vuelta que
+          // sigue tiende a repetirlo con otras palabras: sólo le queda cerrar
+          // con la pregunta, si le faltaba (y si no, sale casi gratis).
+          const cierre = final.content.some((b) => b.type === "text" && b.text.trim())
+            ? " Ya escribiste tu mensaje: no agregues nada, salvo la pregunta final si todavía no la hiciste."
+            : "";
           const resultados: Anthropic.ToolResultBlockParam[] = llamadas.map((l) => {
             const unica = l.name === "ofrecer_opciones" || l.name === "armar_relevamiento";
             const repetida = unica && yaMostradas.has(l.name);
@@ -505,7 +522,7 @@ export async function POST(req: NextRequest) {
                   ? "Listo, las opciones están debajo de tu pregunta. No las repitas en texto y no escribas nada más."
                   : tarjeta.tipo === "relevamiento"
                     ? "Listo, la persona ya ve la tarjeta para descargar el PDF. Contalo en una oración, sin repetir el contenido."
-                    : "Listo, la persona ya la está viendo. No repitas su contenido.",
+                    : `Listo, la persona ya la está viendo. No repitas su contenido.${cierre}`,
               is_error: !tarjeta,
             };
           });
