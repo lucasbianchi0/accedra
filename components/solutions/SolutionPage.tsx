@@ -187,7 +187,7 @@ export default function SolutionPage({ slug, industria, servicio }: { slug: stri
               la derecha, con atajos de esta solución. Abajo de `lg` no hay
               tarjeta: en el teléfono el botón principal sigue siendo WhatsApp
               (ver el comentario de abajo) y el chat queda en el robotito. */}
-          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(380px,420px)] lg:items-center lg:gap-12 xl:gap-16">
+          <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(400px,470px)] lg:items-center lg:gap-12 xl:gap-16">
             <div className="hero-enter max-w-2xl" style={ENTER.block}>
               {landing && (
                 <div className="inline-flex items-center gap-2 mb-5 px-3.5 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-[0.14em] text-white/90"

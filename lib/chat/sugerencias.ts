@@ -1,19 +1,21 @@
 /**
  * Los atajos de la tarjeta del chat en cada portada.
  *
- * En primera persona porque se mandan tal cual como mensaje: son lo que diría
- * quien llega a esa página, no un menú de servicios. Las landings de industria
- * y de servicio usan los de su solución madre.
+ * El `texto` va en primera persona porque se manda tal cual como mensaje: es
+ * lo que diría quien llega a esa página, no un menú de servicios. La `label`
+ * es lo que se ve en el chip, corta para que entren tres en una fila. Las
+ * landings de industria y de servicio usan los de su solución madre.
  */
 
-export type Sugerencias = { saludo: string; atajos: string[] };
+export type Atajo = { label: string; texto: string };
+export type Sugerencias = { saludo: string; atajos: Atajo[] };
 
 export const SUGERENCIAS_HOME: Sugerencias = {
   saludo: "Contame qué está frenando tu operación y te digo cómo lo resolveríamos.",
   atajos: [
-    "La red se cae o anda lenta y nadie lo resuelve de fondo",
-    "Queremos dejar de imprimir y firmar en papel",
-    "Tenemos los datos en Excel y nadie ve los números a tiempo",
+    { label: "Red lenta", texto: "La red se cae o anda lenta y nadie lo resuelve de fondo" },
+    { label: "Firmar sin papel", texto: "Queremos dejar de imprimir y firmar en papel" },
+    { label: "Datos y tableros", texto: "Tenemos los datos en Excel y nadie ve los números a tiempo" },
   ],
 };
 
@@ -21,41 +23,41 @@ const POR_SOLUCION: Record<string, Sugerencias> = {
   networking: {
     saludo: "Contame cómo es tu red hoy y qué te está fallando: te digo por dónde empezaríamos.",
     atajos: [
-      "Tenemos cortes y lentitud en la red y nadie lo resuelve de fondo",
-      "Sumamos sucursales y cada una tiene una red distinta",
-      "Necesitamos conectividad en un sitio remoto sin fibra",
+      { label: "Cortes en la red", texto: "Tenemos cortes y lentitud en la red y nadie lo resuelve de fondo" },
+      { label: "Sucursales", texto: "Sumamos sucursales y cada una tiene una red distinta" },
+      { label: "Sitio remoto", texto: "Necesitamos conectividad en un sitio remoto sin fibra" },
     ],
   },
   "firma-biometrica": {
     saludo: "Contame qué documentos firman hoy y cómo: te digo cómo lo digitalizaríamos.",
     atajos: [
-      "Queremos dejar de imprimir y firmar en papel en las sucursales",
-      "Necesitamos que los clientes firmen desde el celular",
-      "¿Qué validez legal tiene la firma biométrica?",
+      { label: "Firmar sin papel", texto: "Queremos dejar de imprimir y firmar en papel en las sucursales" },
+      { label: "Firma desde el celular", texto: "Necesitamos que los clientes firmen desde el celular" },
+      { label: "Validez legal", texto: "¿Qué validez legal tiene la firma biométrica?" },
     ],
   },
   consultoria: {
     saludo: "Contame dónde viven tus datos y qué necesitás ver: te digo cómo lo armaríamos.",
     atajos: [
-      "Tenemos los datos en Excel y nadie ve los números a tiempo",
-      "Queremos tableros de Power BI para la dirección",
-      "Necesitamos ordenar las licencias de Microsoft 365",
+      { label: "Datos y tableros", texto: "Tenemos los datos en Excel y nadie ve los números a tiempo" },
+      { label: "Power BI", texto: "Queremos tableros de Power BI para la dirección" },
+      { label: "Microsoft 365", texto: "Necesitamos ordenar las licencias de Microsoft 365" },
     ],
   },
   seguridad: {
     saludo: "Contame cómo está protegida tu empresa hoy: te digo qué priorizaríamos.",
     atajos: [
-      "Nos preocupa un ataque de ransomware",
-      "No sabemos qué tan expuestos estamos",
-      "Tenemos gente trabajando remoto sin control de accesos",
+      { label: "Ransomware", texto: "Nos preocupa un ataque de ransomware" },
+      { label: "Nivel de exposición", texto: "No sabemos qué tan expuestos estamos" },
+      { label: "Acceso remoto", texto: "Tenemos gente trabajando remoto sin control de accesos" },
     ],
   },
   "software-ai": {
     saludo: "Contame qué proceso querés automatizar o qué probaron con IA: te digo cómo lo llevaríamos a producción.",
     atajos: [
-      "Probamos IA y funcionó en la demo, pero no llegó a producción",
-      "Tenemos procesos manuales en planillas que ya no escalan",
-      "Queremos un asistente con IA conectado a nuestros sistemas",
+      { label: "IA a producción", texto: "Probamos IA y funcionó en la demo, pero no llegó a producción" },
+      { label: "Automatizar procesos", texto: "Tenemos procesos manuales en planillas que ya no escalan" },
+      { label: "Asistente con IA", texto: "Queremos un asistente con IA conectado a nuestros sistemas" },
     ],
   },
 };

@@ -48,7 +48,7 @@ export default function Hero() {
             la derecha, donde la persona cuenta su caso sin abrir nada. Abajo de
             `lg` la tarjeta no entra al lado del título: queda el campo
             compacto, que abre el chat a pantalla completa. */}
-        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(380px,420px)] lg:items-center lg:gap-12 xl:gap-16">
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(400px,470px)] lg:items-center lg:gap-12 xl:gap-16">
           <div className="max-w-3xl">
             {/* Headline — animado por CSS (.hero-enter), no por framer: es el
                 elemento LCP y con framer no se pintaba hasta después de hidratar.

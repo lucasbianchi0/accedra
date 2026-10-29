@@ -2,8 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, RotateCcw } from "lucide-react";
-import Robot from "./Robot";
+import { ArrowUp, RotateCcw, Sparkles } from "lucide-react";
 import { useChat } from "./ChatProvider";
 import { enviar, reiniciar, useConversacion } from "@/lib/chat/store";
 import { sugerenciasPara } from "@/lib/chat/sugerencias";
@@ -43,9 +42,14 @@ export default function HeroChatCard({ solucion, accent = "#2560BC" }: { solucio
   useEffect(() => {
     const el = tarjeta.current;
     if (!el) return;
-    const io = new IntersectionObserver(([e]) => setHeroVisible(e.isIntersecting && e.boundingClientRect.width > 0), {
-      threshold: 0.25,
-    });
+    // Oculta (en el teléfono) mide 0 de ancho y no opina: si no, le pisaría el
+    // aviso al campo compacto de la portada, que en ese tamaño sí se ve.
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (e.boundingClientRect.width > 0) setHeroVisible(e.isIntersecting);
+      },
+      { threshold: 0.25 },
+    );
     io.observe(el);
     return () => {
       io.disconnect();
@@ -66,106 +70,147 @@ export default function HeroChatCard({ solucion, accent = "#2560BC" }: { solucio
     <div
       ref={tarjeta}
       onPointerEnter={precargar}
-      className="relative hidden h-[clamp(440px,calc(100svh-220px),540px)] w-full flex-col overflow-hidden rounded-[28px] border border-white/[0.12] lg:flex"
-      style={{
-        background: "linear-gradient(180deg, rgba(17,34,64,0.88) 0%, rgba(7,16,29,0.92) 100%)",
-        boxShadow: "inset 0 1px 0 rgba(255,255,255,0.14), 0 40px 100px rgba(0,0,0,0.5)",
-      }}
+      // Sin conversación no hay caja: la esfera, el título y el campo flotan
+      // sobre la portada como un elemento más de ella. El marco aparece recién
+      // cuando hay mensajes que contener.
+      className={`relative hidden h-[clamp(460px,calc(100svh-220px),560px)] w-full flex-col rounded-[28px] border transition-[background-color,border-color,box-shadow] duration-500 lg:flex ${
+        vacio ? "border-transparent" : "overflow-hidden border-white/10"
+      }`}
+      style={
+        vacio
+          ? undefined
+          : {
+              background: "radial-gradient(120% 70% at 50% 0%, rgba(37,96,188,0.16) 0%, rgba(7,14,26,0) 60%), rgba(7,14,26,0.82)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 40px 100px rgba(0,0,0,0.5)",
+            }
+      }
     >
-      {/* Brillo superior en el color de la página */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-28 left-1/2 h-56 w-[130%] -translate-x-1/2 rounded-full opacity-30 blur-3xl"
-        style={{ background: accent }}
-      />
-
-      <header className="relative flex items-center gap-3 border-b border-white/[0.06] px-5 py-4">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 bg-gradient-to-br from-accent to-[#1c4f9c] text-white">
-          <Robot size={24} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="font-display text-[15px] font-semibold leading-tight text-white">Asistente Accedra</p>
-          <p className="flex items-center gap-1.5 text-[11.5px] text-gray-400">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            En línea · un especialista sigue tu caso
-          </p>
-        </div>
-        {!vacio && (
-          <button
-            type="button"
-            onClick={reiniciar}
-            aria-label="Empezar de nuevo"
-            title="Empezar de nuevo"
-            className="rounded-full p-2 text-gray-400 transition-colors hover:bg-white/5 hover:text-white"
-          >
-            <RotateCcw size={16} />
-          </button>
-        )}
-      </header>
-
       {vacio ? (
         <>
-          <div className="relative flex flex-1 flex-col px-5 py-5">
-            <div className="flex gap-2.5">
-              <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/[0.06] text-accent-300">
-                <Robot size={17} vivo={false} />
-              </span>
-              <div className="rounded-[20px] rounded-tl-md bg-white/[0.06] px-4 py-3 text-[14px] leading-relaxed text-gray-200">
-                <p>Hola 👋 {saludo}</p>
-                <p className="mt-1.5 text-[12.5px] text-gray-400">
-                  Te muestro casos parecidos y, si querés, un especialista analiza tu proceso sin costo.
-                </p>
-              </div>
-            </div>
-            <div className="mt-auto space-y-2">
-              <p className="px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-500">Por ejemplo</p>
-              {atajos.map((a) => (
-                <button
-                  key={a}
-                  type="button"
-                  onClick={() => mandar(a)}
-                  className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-2.5 text-left text-[13px] text-gray-300 transition-all hover:border-white/20 hover:bg-white/[0.06] hover:text-white"
-                >
-                  {a}
-                  <ArrowUp size={14} className="shrink-0 rotate-45 text-gray-600 transition-colors group-hover:text-white" />
-                </button>
-              ))}
-            </div>
+          {/* Sombra fuerte detrás del texto: va sobre el video de la portada, sin caja. */}
+          <div
+            className="flex flex-1 flex-col items-center justify-center px-8 text-center"
+            style={{ textShadow: "0 2px 18px rgba(0,0,0,0.85), 0 1px 3px rgba(0,0,0,0.6)" }}
+          >
+            <Esfera accent={accent} />
+            <p className="mt-6 text-[15px] font-medium text-gray-400">Asistente Accedra</p>
+            <h2 className="font-display mt-1 text-[26px] font-semibold leading-tight tracking-tight text-white">
+              ¿En qué podemos ayudarte?
+            </h2>
+            <p className="mt-3 max-w-[36ch] text-[13.5px] leading-relaxed text-gray-300">{saludo}</p>
           </div>
-          <div className="relative border-t border-white/[0.06] px-3 pb-3 pt-3">
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                mandar(texto);
-              }}
-              className="flex items-center gap-2 rounded-[22px] border border-white/10 bg-white/[0.04] py-1.5 pl-4 pr-1.5 transition-colors focus-within:border-accent-300/40"
-            >
-              <input
-                value={texto}
-                onChange={(e) => setTexto(e.target.value)}
-                onFocus={precargar}
-                maxLength={1200}
-                autoComplete="off"
-                placeholder="Contanos tu caso…"
-                aria-label="Contale tu caso al asistente"
-                className="chat-campo min-w-0 flex-1 bg-transparent py-2 text-[14px] text-white placeholder:text-gray-500 outline-none"
-              />
-              <button
-                type="submit"
-                disabled={!texto.trim()}
-                aria-label="Enviar"
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white transition-all disabled:opacity-40"
-                style={{ background: accent }}
+
+          <div className="px-4 pb-4">
+            <div className="rounded-[20px] border border-white/10 bg-white/[0.04]">
+              <p className="flex items-center gap-1.5 px-4 py-2 text-[11.5px] text-gray-400">
+                <Sparkles size={12} style={{ color: accent }} />
+                Un especialista sigue tu caso, sin costo
+              </p>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  mandar(texto);
+                }}
+                className="rounded-[18px] border border-white/10 bg-[#060c17]/85 px-4 pb-3 pt-3.5 shadow-[0_24px_60px_rgba(0,0,0,0.45)] transition-colors focus-within:border-white/20"
               >
-                <ArrowUp size={17} />
-              </button>
-            </form>
-            <p className="mt-2 px-1 text-[11px] text-gray-600">Asistente con IA · puede equivocarse</p>
+                <input
+                  value={texto}
+                  onChange={(e) => setTexto(e.target.value)}
+                  onFocus={precargar}
+                  maxLength={1200}
+                  autoComplete="off"
+                  placeholder="Contanos tu caso…"
+                  aria-label="Contale tu caso al asistente"
+                  className="chat-campo w-full bg-transparent text-[14px] text-white placeholder:text-gray-500 outline-none"
+                />
+                <div className="mt-4 flex items-center gap-2">
+                  <div className="flex min-w-0 flex-1 flex-wrap gap-1.5">
+                    {atajos.map((a) => (
+                      <button
+                        key={a.label}
+                        type="button"
+                        onClick={() => mandar(a.texto)}
+                        title={a.texto}
+                        className="rounded-full border border-white/10 px-3 py-1.5 text-[12px] text-gray-300 transition-colors hover:border-white/25 hover:text-white"
+                      >
+                        {a.label}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={!texto.trim()}
+                    aria-label="Enviar"
+                    className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white transition-opacity disabled:opacity-40"
+                    style={{ background: accent }}
+                  >
+                    <ArrowUp size={17} />
+                  </button>
+                </div>
+              </form>
+            </div>
+            <p className="mt-2.5 text-center text-[11px] text-gray-600">Asistente con IA · puede equivocarse</p>
           </div>
         </>
       ) : (
-        <Conversacion origen={origen} onNavegar={() => {}} />
+        <>
+          <header className="flex items-center justify-between border-b border-white/[0.07] px-5 py-3">
+            <p className="flex items-center gap-2 text-[13px] font-medium text-white">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              Asistente Accedra
+            </p>
+            <button
+              type="button"
+              onClick={reiniciar}
+              aria-label="Empezar de nuevo"
+              title="Empezar de nuevo"
+              className="rounded-full p-2 text-gray-500 transition-colors hover:bg-white/5 hover:text-white"
+            >
+              <RotateCcw size={15} />
+            </button>
+          </header>
+          <Conversacion origen={origen} onNavegar={() => {}} />
+        </>
       )}
+    </div>
+  );
+}
+
+/**
+ * La esfera del asistente: un degradé cónico en los colores de la página que
+ * gira despacio, con un brillo encima para que se lea como volumen y no como un
+ * círculo plano. Sin animación si la persona pidió menos movimiento.
+ */
+function Esfera({ accent }: { accent: string }) {
+  return (
+    <div aria-hidden className="relative h-[92px] w-[92px]">
+      <div className="absolute -inset-8 rounded-full opacity-60 blur-3xl" style={{ background: accent }} />
+      {/* clip-path y no sólo overflow-hidden: Chrome deja escapar el blur por las esquinas. */}
+      <div className="absolute inset-0 overflow-hidden rounded-full bg-[#0b1630]" style={{ clipPath: "circle(50%)" }}>
+        <div
+          className="absolute -inset-1/4 motion-safe:animate-[spin_12s_linear_infinite]"
+          style={{
+            background: `conic-gradient(from 0deg, ${accent}, #5fb4ff, #c084fc, #f0abfc, #38bdf8, #1e3a8a, ${accent})`,
+            filter: "blur(6px)",
+          }}
+        />
+        <div
+          className="absolute -inset-1/4 mix-blend-screen motion-safe:animate-[spin_9s_linear_infinite_reverse]"
+          style={{
+            background:
+              "conic-gradient(from 120deg, transparent 0deg, rgba(255,255,255,0.55) 40deg, transparent 90deg, transparent 200deg, rgba(125,211,252,0.6) 240deg, transparent 300deg)",
+            filter: "blur(8px)",
+          }}
+        />
+      </div>
+      <div
+        className="absolute inset-0 rounded-full"
+        style={{
+          background:
+            "radial-gradient(circle at 32% 26%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 30%), radial-gradient(circle at 50% 90%, rgba(3,8,20,0.6) 0%, rgba(3,8,20,0) 55%)",
+          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.18), inset 0 -10px 24px rgba(0,0,0,0.35)",
+        }}
+      />
     </div>
   );
 }
