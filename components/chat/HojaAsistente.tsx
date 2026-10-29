@@ -279,8 +279,13 @@ function Bienvenida({ solucion }: { solucion?: string }) {
   const mandar = (t: string) => {
     if (!t.trim()) return;
     // Con una industria elegida, el asistente arranca sabiendo el rubro.
-    const conRubro =
-      industria && !t.toLowerCase().includes(industria.label.toLowerCase()) ? `${industria.frase} ${t}` : t;
+    // Sin repetirla si ya la escribió ("minera" no contiene "Minería").
+    const minus = t.toLowerCase();
+    const yaDicho =
+      !industria ||
+      minus.includes(industria.frase.toLowerCase()) ||
+      minus.includes(industria.label.toLowerCase());
+    const conRubro = yaDicho ? t : `${industria.frase} ${t}`;
     void enviar(conRubro, industria ? `${origen}:${industria.id}` : origen);
     setTexto("");
   };
