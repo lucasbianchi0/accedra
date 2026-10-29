@@ -160,8 +160,7 @@ const s = StyleSheet.create({
   casoCuerpo: { flex: 1, padding: 16 },
   casoCliente: { fontSize: 6.5, color: CELESTE, letterSpacing: 2, fontWeight: 600 },
   casoTitulo: { fontFamily: "Grotesk", fontSize: 14, color: BLANCO, marginTop: 6, lineHeight: 1.25 },
-  casoCifraValor: { fontFamily: "Grotesk", fontSize: 22, color: CELESTE, marginTop: 10, letterSpacing: -0.4 },
-  casoCifraLabel: { fontSize: 8.5, color: TEXTO, marginTop: 2 },
+  casoLogro: { fontFamily: "Grotesk", fontSize: 12.5, color: CELESTE, marginTop: 10, lineHeight: 1.35 },
   boton: {
     alignSelf: "flex-start",
     backgroundColor: AZUL,
@@ -454,7 +453,10 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
           <Seccion n={++n} titulo="Ya lo resolvimos">
             {d.casos.map((c) => {
               const caso = tarjetaCaso(c.id);
-              const [valor, ...resto] = c.cifra.split(" ");
+              // La frase del caso ("Las caídas pasaron de 5 por semana a menos de
+              // 1 por mes."), también para relevamientos armados antes de que
+              // existiera: esos traen la cifra con símbolos.
+              const logro = caso?.logro || c.cifra;
               return (
                 <View key={c.id} style={s.caso} wrap={false}>
                   {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de react-pdf, sin alt. */}
@@ -462,12 +464,7 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
                   <View style={s.casoCuerpo}>
                     <Text style={s.casoCliente}>{c.cliente.toUpperCase()}</Text>
                     <Text style={s.casoTitulo}>{c.titulo}</Text>
-                    {c.cifra ? (
-                      <>
-                        <Text style={s.casoCifraValor}>{valor}</Text>
-                        <Text style={s.casoCifraLabel}>{resto.join(" ")}</Text>
-                      </>
-                    ) : null}
+                    {logro ? <Text style={s.casoLogro}>{logro}</Text> : null}
                     {caso ? (
                       <Link src={`${SITE_URL}${caso.href}`} style={s.boton}>
                         Ver caso completo →

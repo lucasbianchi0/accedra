@@ -25,6 +25,8 @@ export type TarjetaCaso = {
   titulo: string;
   imagen: string;
   cifras: { value: string; label: string }[];
+  /** El resultado como frase, sin símbolos: "Las caídas pasaron de 5 a menos de 1 por mes." */
+  logro: string;
   href: string;
   accent: string;
 };

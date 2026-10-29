@@ -75,12 +75,7 @@ export function Caso({ t, onNavegar }: { t: TarjetaCaso; onNavegar: () => void }
           Caso de éxito · {t.industria}
         </p>
         <p className="mt-1 text-[13.5px] font-semibold leading-snug text-white">{t.titulo}</p>
-        {t.cifras[0] && (
-          <p className="mt-2 text-[12px] text-gray-400">
-            <span className="font-display text-[17px] font-bold text-white">{t.cifras[0].value}</span>{" "}
-            {t.cifras[0].label}
-          </p>
-        )}
+        {(t.logro ?? "") && <p className="mt-2 text-[12.5px] leading-snug text-gray-300">{t.logro}</p>}
         <span className={`${pastilla} mt-2.5`} style={{ background: t.accent }}>
           Ver caso
           <ArrowRight size={13} />

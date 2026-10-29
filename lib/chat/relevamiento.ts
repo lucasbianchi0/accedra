@@ -92,7 +92,8 @@ export function armarRelevamiento(entrada: Record<string, unknown>): TarjetaRele
       id: c.id,
       cliente: c.cliente,
       titulo: c.titulo,
-      cifra: c.cifras[0] ? `${c.cifras[0].value} ${c.cifras[0].label}` : "",
+      // La frase y no "5→<1 caídas": en el PDF se lee como resultado.
+      cifra: c.logro,
     }));
 
   const datos: Relevamiento = {

@@ -46,6 +46,25 @@ export function tarjetaSolucion(slug: string, motivo: string): TarjetaSolucion |
   };
 }
 
+/**
+ * Una cifra del caso dicha en palabras, para los casos que no traen su
+ * `logro` escrito: "+4.400 dispositivos" → "Más de 4.400 dispositivos.",
+ * "5→<1 caídas" → "De 5 a menos de 1 caídas.". Las flechas y los signos se
+ * leen como planilla, no como un resultado.
+ */
+export function enPalabras(m?: { value: string; label: string }): string {
+  if (!m) return "";
+  const valor = m.value
+    .replace(/^\s*(\d[\d.,]*)\s*(?:→|->)\s*<\s*(\d[\d.,]*)\s*$/, "de $1 a menos de $2")
+    .replace(/^\s*(\d[\d.,]*)\s*(?:→|->)\s*(\d[\d.,]*)\s*$/, "de $1 a $2")
+    .replace(/^\+\s*/, "más de ")
+    .replace(/^<\s*/, "menos de ")
+    .replace(/^>\s*/, "más de ")
+    .replace(/→|->/g, "a");
+  const frase = `${valor} ${m.label}`.trim();
+  return `${frase.charAt(0).toUpperCase()}${frase.slice(1)}.`;
+}
+
 export function tarjetaCaso(id: string): TarjetaCaso | null {
   const [slug, n] = id.split(":");
   const s = SOLUTIONS[slug];
@@ -59,6 +78,7 @@ export function tarjetaCaso(id: string): TarjetaCaso | null {
     titulo: c.result,
     imagen: c.image ?? imgFor(c.industry),
     cifras: (c.metrics ?? []).slice(0, 3),
+    logro: c.logro ?? enPalabras(c.metrics?.[0]),
     href: `/casos/${slug}/${n}`,
     accent: s.accent,
   };
@@ -105,7 +125,7 @@ export function conocimiento(): string {
           `### Caso ${id} — ${CLIENTE_DE_CASO[id] ?? c.industry} (${c.industry}, solución ${s.name})`,
           `Desafío: ${c.challenge}`,
           `Qué hicimos: ${c.solution}`,
-          `Resultado: ${c.result}${cifras ? `. Cifras: ${cifras}` : ""}`,
+          `Resultado: ${c.result}. ${c.logro ?? enPalabras(c.metrics?.[0])}${cifras ? ` (cifras: ${cifras})` : ""}`,
           ...(c.body ?? []),
         ].join("\n");
       }),
