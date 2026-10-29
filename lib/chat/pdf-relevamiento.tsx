@@ -21,7 +21,7 @@ import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { ORG, SITE_URL } from "@/lib/seo/site";
 import { WORDMARK_TRAZOS, WORDMARK_VIEWBOX } from "./logo-pdf";
 import { tarjetaCaso } from "./conocimiento";
-import type { Prioridad, Relevamiento } from "./tipos";
+import { nivelDe, type Prioridad, type Relevamiento } from "./tipos";
 
 /**
  * El PDF de relevamiento, con el lenguaje de los brochures de Accedra.
@@ -198,7 +198,41 @@ const s = StyleSheet.create({
   alcance: { fontSize: 7.6, color: TENUE, lineHeight: 1.6, marginTop: 14 },
   respaldo: { flexDirection: "row", marginTop: 26 },
   respaldoLabel: { fontSize: 6.5, color: GRIS, letterSpacing: 2, fontWeight: 600, marginBottom: 12 },
+
+  nivel: { backgroundColor: TARJETA, borderWidth: 0.6, borderColor: BORDE, borderRadius: 8, padding: 14 },
+  nivelCabeza: { flexDirection: "row", alignItems: "baseline", justifyContent: "space-between" },
+  nivelNombre: { fontFamily: "Grotesk", fontSize: 15, color: BLANCO },
+  nivelPorcentaje: { fontFamily: "Grotesk", fontSize: 15, color: CELESTE },
+  nivelBarra: { height: 5, borderRadius: 3, backgroundColor: "#1a2a44", marginTop: 9, overflow: "hidden" },
+  nivelTexto: { fontSize: 8.6, lineHeight: 1.55, marginTop: 9, color: GRIS },
+  datos: { flexDirection: "row", gap: 16, marginTop: 12 },
+  dato: { flexDirection: "row", paddingVertical: 5, borderBottomWidth: 0.6, borderBottomColor: LINEA },
+  datoNombre: { width: 92, fontSize: 8.4, color: GRIS, paddingRight: 8 },
+  datoValor: { flex: 1, fontSize: 8.8, color: "#e1e8f2", lineHeight: 1.45 },
+  faltante: { flexDirection: "row", paddingVertical: 5, borderBottomWidth: 0.6, borderBottomColor: LINEA },
+  faltanteMarca: { width: 14, fontSize: 9, color: "#f5b056" },
+  faltanteTexto: { flex: 1, fontSize: 8.8, lineHeight: 1.45 },
+
+  enfoque: { flexDirection: "row", backgroundColor: TARJETA, borderWidth: 0.6, borderColor: BORDE, borderRadius: 8, padding: 14, marginBottom: 8 },
+  enfoqueLetra: { width: 28, fontFamily: "Grotesk", fontSize: 16, color: CELESTE },
+  enfoqueTitulo: { fontFamily: "Grotesk", fontSize: 12, color: BLANCO },
+  enfoqueTexto: { fontSize: 9.2, lineHeight: 1.55, marginTop: 4 },
+
+  lectura: { backgroundColor: TARJETA, borderWidth: 0.6, borderColor: BORDE, borderRadius: 8, padding: 14, marginBottom: 8 },
+  lecturaTipo: { fontSize: 6.5, color: CELESTE, letterSpacing: 2, fontWeight: 600 },
+  lecturaTitulo: { fontFamily: "Grotesk", fontSize: 12.5, color: BLANCO, marginTop: 5, lineHeight: 1.3 },
+  lecturaTexto: { fontSize: 8.8, lineHeight: 1.5, marginTop: 4 },
 });
+
+/** El nivel del relevamiento, explicado para quien lo lee (no es una nota a la empresa). */
+const NIVEL_TEXTO: Record<ReturnType<typeof nivelDe>, string> = {
+  Inicial:
+    "Tenemos una primera idea del problema. Con los datos que faltan, el especialista puede pasar del diagnóstico a una propuesta con números.",
+  Intermedio:
+    "Tenemos lo central del caso. Con los datos que faltan, la propuesta sale con alcance y costos ajustados.",
+  Completo:
+    "Tenemos lo necesario para preparar una propuesta preliminar. El relevamiento técnico confirma cantidades y detalles en sitio.",
+};
 
 /** El fondo de todas las páginas: azul noche con el resplandor de arriba. */
 function Fondo() {
@@ -263,7 +297,9 @@ function Eyebrow({ children }: { children: string }) {
 function Pie({ empresa }: { empresa: string }) {
   return (
     <View style={s.pie} fixed>
-      <Text style={s.pieTexto}>{`RELEVAMIENTO PRELIMINAR · ${empresa.toUpperCase()}`}</Text>
+      {/* Recortado: con una empresa descripta ("Empresa minera con yacimientos
+          en…") el texto se montaba sobre el número de página. */}
+      <Text style={s.pieTexto}>{`RELEVAMIENTO PRELIMINAR · ${(empresa.length > 38 ? `${empresa.slice(0, 37).trimEnd()}…` : empresa).toUpperCase()}`}</Text>
       <Text
         style={s.pieTexto}
         render={({ pageNumber, totalPages }) =>
@@ -425,6 +461,49 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
           ))}
         </Seccion>
 
+        {d.datosCotizacion && d.datosCotizacion.length > 0 && d.puntaje != null && (
+          <Seccion n={++n} titulo="Lo que sabemos y lo que falta">
+            <View style={s.nivel} wrap={false}>
+              <View style={s.nivelCabeza}>
+                <Text style={s.nivelNombre}>Relevamiento {nivelDe(d.puntaje).toLowerCase()}</Text>
+                <Text style={s.nivelPorcentaje}>{d.puntaje}%</Text>
+              </View>
+              <View style={s.nivelBarra}>
+                <View style={{ width: `${Math.max(d.puntaje, 4)}%`, height: 5, backgroundColor: AZUL, borderRadius: 3 }} />
+              </View>
+              <Text style={s.nivelTexto}>{NIVEL_TEXTO[nivelDe(d.puntaje)]}</Text>
+            </View>
+            <View style={s.datos} wrap={false}>
+              <View style={{ flex: 1 }}>
+                <Text style={s.etiqueta}>YA RELEVADO</Text>
+                {d.datosCotizacion
+                  .filter((x) => x.valor)
+                  .map((x, i) => (
+                    <View key={i} style={s.dato}>
+                      <Text style={s.datoNombre}>{x.dato}</Text>
+                      <Text style={s.datoValor}>{x.valor}</Text>
+                    </View>
+                  ))}
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={s.etiqueta}>PARA COTIZAR NOS FALTA</Text>
+                {d.datosCotizacion.some((x) => !x.valor) ? (
+                  d.datosCotizacion
+                    .filter((x) => !x.valor)
+                    .map((x, i) => (
+                      <View key={i} style={s.faltante}>
+                        <Text style={s.faltanteMarca}>·</Text>
+                        <Text style={s.faltanteTexto}>{x.dato}</Text>
+                      </View>
+                    ))
+                ) : (
+                  <Text style={[s.faltanteTexto, { marginTop: 5 }]}>Nada para arrancar: lo confirmamos en sitio.</Text>
+                )}
+              </View>
+            </View>
+          </Seccion>
+        )}
+
         <Seccion n={++n} titulo="Qué recomendamos">
           {d.areas.map((a) => (
             <View key={a.solucion} style={[s.area, { borderTopWidth: 2, borderTopColor: a.accent }]} wrap={false}>
@@ -448,6 +527,20 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
             </View>
           ))}
         </Seccion>
+
+        {d.enfoques && d.enfoques.length > 0 && (
+          <Seccion n={++n} titulo="Cómo se suele resolver">
+            {d.enfoques.map((e, i) => (
+              <View key={i} style={s.enfoque} wrap={false}>
+                <Text style={s.enfoqueLetra}>{String.fromCharCode(65 + i)}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.enfoqueTitulo}>{e.titulo}</Text>
+                  <Text style={s.enfoqueTexto}>{e.detalle}</Text>
+                </View>
+              </View>
+            ))}
+          </Seccion>
+        )}
 
         {d.casos.length > 0 && (
           <Seccion n={++n} titulo="Ya lo resolvimos">
@@ -474,6 +567,31 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
                 </View>
               );
             })}
+          </Seccion>
+        )}
+
+        {((d.lecturas?.length ?? 0) > 0 || d.evento) && (
+          <Seccion n={++n} titulo="Para profundizar">
+            {(d.lecturas ?? []).map((l) => (
+              <View key={l.slug} style={s.lectura} wrap={false}>
+                <Text style={s.lecturaTipo}>DEL BLOG DE ACCEDRA</Text>
+                <Text style={s.lecturaTitulo}>{l.titulo}</Text>
+                {l.resumen ? <Text style={s.lecturaTexto}>{l.resumen}</Text> : null}
+                <Link src={`${SITE_URL}/blog/${l.slug}`} style={s.boton}>
+                  Leer nota →
+                </Link>
+              </View>
+            ))}
+            {d.evento ? (
+              <View style={s.lectura} wrap={false}>
+                <Text style={s.lecturaTipo}>{`PRÓXIMO EVENTO · ${d.evento.modalidad.toUpperCase()}`}</Text>
+                <Text style={s.lecturaTitulo}>{d.evento.titulo}</Text>
+                <Text style={[s.lecturaTexto, { textTransform: "capitalize" }]}>{d.evento.fecha}</Text>
+                <Link src={`${SITE_URL}/eventos/${d.evento.slug}`} style={s.boton}>
+                  Quiero ir →
+                </Link>
+              </View>
+            ) : null}
           </Seccion>
         )}
 
@@ -557,6 +675,10 @@ function limpio(d: Relevamiento): Relevamiento {
     areas: d.areas.map((a) => ({ ...a, nombre: t(a.nombre), porque: t(a.porque), propuesta: t(a.propuesta) })),
     casos: d.casos.map((c) => ({ ...c, cliente: t(c.cliente), titulo: t(c.titulo), cifra: t(c.cifra) })),
     proximosPasos: d.proximosPasos.map(t),
+    datosCotizacion: d.datosCotizacion?.map((x) => ({ dato: t(x.dato), valor: t(x.valor) })),
+    enfoques: d.enfoques?.map((e) => ({ titulo: t(e.titulo), detalle: t(e.detalle) })),
+    lecturas: d.lecturas?.map((l) => ({ ...l, titulo: t(l.titulo), resumen: t(l.resumen) })),
+    evento: d.evento ? { ...d.evento, titulo: t(d.evento.titulo) } : null,
   };
 }
 

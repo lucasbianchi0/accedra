@@ -1,5 +1,5 @@
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
-import type { Relevamiento } from "./tipos";
+import { nivelDe, type Relevamiento } from "./tipos";
 
 /**
  * El mail que le llega al equipo comercial cuando alguien deja sus datos en
@@ -43,9 +43,13 @@ function whatsapp(tel: string): string {
   return `549${d.replace(/^0/, "").replace(/^15/, "")}`;
 }
 
+/** Lo que el asistente no llegó a saber: lo primero que tiene que preguntar el comercial. */
+const faltantes = (r: Relevamiento | null) => (r?.datosCotizacion ?? []).filter((d) => !d.valor).map((d) => d.dato);
+
 export function asuntoEquipo(l: LeadAsistente): string {
   const sol = l.solucion && SOLUTIONS[l.solucion] ? ` · ${SOLUTIONS[l.solucion].name}` : "";
-  return `Lead del asistente — ${l.empresa || l.nombre}${sol}`;
+  const nivel = l.relevamiento?.puntaje != null ? ` · Relevamiento ${nivelDe(l.relevamiento.puntaje).toLowerCase()}` : "";
+  return `Lead del asistente — ${l.empresa || l.nombre}${sol}${nivel}`;
 }
 
 export function textoEquipo(l: LeadAsistente): string {
@@ -59,6 +63,8 @@ export function textoEquipo(l: LeadAsistente): string {
     `Email:     ${l.email || "— (no dejó)"}`,
     l.solucion && SOLUTIONS[l.solucion] ? `Solución:  ${SOLUTIONS[l.solucion].name}` : "",
     r ? `Relevamiento: ${r.referencia} (PDF adjunto)` : "Relevamiento: no se llegó a armar",
+    r?.puntaje != null ? `Nivel:     ${nivelDe(r.puntaje)} (${r.puntaje}%)` : "",
+    faltantes(r).length ? `Falta para cotizar: ${faltantes(r).join(", ")}` : "",
     `Origen:    ${l.origen}`,
     ``,
     `— El caso —`,
@@ -100,6 +106,8 @@ export function htmlEquipo(l: LeadAsistente): string {
       ${fila("Email", l.email ? esc(l.email) : '<span style="color:#9aa8bd">No dejó</span>')}
       ${r ? fila("Industria", esc(r.industria || "—")) : ""}
       ${r ? fila("Tamaño", esc(r.tamano || "—")) : ""}
+      ${r?.puntaje != null ? fila("Relevamiento", `<b>${nivelDe(r.puntaje)}</b> · ${r.puntaje}% de los datos para cotizar`) : ""}
+      ${faltantes(r).length ? fila("Preguntale", esc(faltantes(r).join(", "))) : ""}
       ${fila("Origen", esc(l.origen))}
     </table>
   </div>

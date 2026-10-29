@@ -87,6 +87,18 @@ export type Relevamiento = {
   areas: { solucion: string; nombre: string; accent: string; porque: string; propuesta: string }[];
   casos: { id: string; cliente: string; titulo: string; cifra: string }[];
   proximosPasos: string[];
+  /**
+   * Lo que hace falta para cotizar y cuánto se sabe. `valor` vacío: falta.
+   * Opcionales los cuatro: los relevamientos firmados antes no los traen.
+   */
+  datosCotizacion?: { dato: string; valor: string }[];
+  /** 0–100, calculado por el servidor sobre `datosCotizacion` (ver `puntaje`). */
+  puntaje?: number;
+  /** "Cómo se suele resolver": las alternativas, con lo que conviene de cada una. */
+  enfoques?: { titulo: string; detalle: string }[];
+  /** Notas del blog para profundizar y, si hay, el próximo evento del tema. */
+  lecturas?: { slug: string; titulo: string; resumen: string }[];
+  evento?: { slug: string; titulo: string; fecha: string; modalidad: string } | null;
   /** ISO, la fecha en que se armó. */
   fecha: string;
 };
@@ -101,7 +113,34 @@ export type TarjetaRelevamiento = {
   firma: string;
 };
 
+/** Una nota del blog, de las que publica el backoffice. */
+export type TarjetaNota = {
+  tipo: "nota";
+  slug: string;
+  titulo: string;
+  resumen: string;
+  categoria: string | null;
+  href: string;
+};
+
+/** Un evento próximo: workshop, webinar o charla. */
+export type TarjetaEvento = {
+  tipo: "evento";
+  slug: string;
+  titulo: string;
+  resumen: string;
+  categoria: string | null;
+  /** "jueves 12 de noviembre, 10:00", ya en hora argentina. */
+  fecha: string;
+  inicio: string;
+  modalidad: string;
+  lugar: string;
+  href: string;
+};
+
 export type Tarjeta =
+  | TarjetaNota
+  | TarjetaEvento
   | TarjetaSolucion
   | TarjetaCaso
   | TarjetaContacto
@@ -137,6 +176,11 @@ export type Entrada = { role: "user" | "assistant"; content: string; firma?: str
  */
 export const huella = (texto: string) => texto.replace(/[\s\u200B-\u200D\uFEFF]/g, "");
 
+/** El puntaje del relevamiento en palabras: lo leen la tarjeta, el PDF y el mail. */
+export function nivelDe(puntaje: number): "Inicial" | "Intermedio" | "Completo" {
+  return puntaje >= 75 ? "Completo" : puntaje >= 40 ? "Intermedio" : "Inicial";
+}
+
 export const LIMITES_CHAT = {
   /** Lo que puede escribir la persona en un mensaje. */
   mensaje: 1200,
@@ -167,6 +211,10 @@ export function notaDeTarjeta(t: Tarjeta): string {
     case "opciones":
       return `[${t.pregunta ? `Pregunté: ${t.pregunta} ` : ""}Ofrecí opciones de respuesta: ${t.opciones.join(" / ")}]`;
     case "relevamiento":
-      return "[Armé el relevamiento en PDF con lo identificado]";
+      return `[Armé el relevamiento en PDF con lo identificado${t.datos.puntaje != null ? ` (nivel ${t.datos.puntaje}%)` : ""}]`;
+    case "nota":
+      return `[Mostré la nota del blog "${t.titulo}"]`;
+    case "evento":
+      return `[Invité al evento "${t.titulo}" del ${t.fecha}]`;
   }
 }

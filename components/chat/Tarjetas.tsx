@@ -3,9 +3,12 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Check, Download, Loader2 } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, Check, Download, Loader2 } from "lucide-react";
+import { nivelDe } from "@/lib/chat/tipos";
 import type {
   TarjetaCaso,
+  TarjetaEvento,
+  TarjetaNota,
   TarjetaContacto,
   TarjetaHumano,
   TarjetaOpciones,
@@ -16,6 +19,7 @@ import { WHATSAPP_PHONE } from "@/lib/whatsapp";
 import { forSubmit } from "@/lib/attribution";
 import { currentSessionId, track } from "@/lib/track";
 import { ultimoRelevamiento } from "@/lib/chat/store";
+import { CATEGORIA_COLOR, type Categoria } from "@/lib/eventos";
 
 /**
  * Las tarjetas que el asistente muestra dentro de la conversación.
@@ -86,6 +90,71 @@ export function Caso({ t, onNavegar }: { t: TarjetaCaso; onNavegar: () => void }
 }
 
 /** Ícono de PDF en los colores de Accedra AI. */
+const colorDe = (c: string | null) => CATEGORIA_COLOR[c as Categoria] ?? "#7FB3F8";
+
+/** Una nota del blog: para profundizar después de la devolución. */
+export function Nota({ t, onNavegar }: { t: TarjetaNota; onNavegar: () => void }) {
+  const color = colorDe(t.categoria);
+  return (
+    <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+      <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color }}>
+        <BookOpen size={12} />
+        Del blog
+      </div>
+      <p className="font-display text-[15px] font-semibold leading-snug text-white">{t.titulo}</p>
+      {t.resumen && <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-gray-400">{t.resumen}</p>}
+      <Link
+        href={t.href}
+        onClick={() => {
+          track({ type: "click", name: "chat_nota", target: t.slug });
+          onNavegar();
+        }}
+        className={`${pastilla} mt-3 border border-white/15 bg-white/[0.06] hover:bg-white/[0.1]`}
+      >
+        Leer nota
+        <ArrowRight size={13} />
+      </Link>
+    </div>
+  );
+}
+
+/** Un evento próximo: la otra puerta para quien todavía está explorando. */
+export function Evento({ t, onNavegar }: { t: TarjetaEvento; onNavegar: () => void }) {
+  const color = colorDe(t.categoria);
+  return (
+    <div className="flex gap-4 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+      <div
+        className="grid h-12 w-12 shrink-0 place-items-center rounded-xl"
+        style={{ background: `${color}22`, color }}
+      >
+        <CalendarDays size={20} />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color }}>
+          Próximo evento · {t.modalidad}
+        </p>
+        <p className="font-display mt-0.5 text-[15px] font-semibold leading-snug text-white">{t.titulo}</p>
+        <p className="mt-1 text-[12.5px] capitalize text-gray-400">
+          {t.fecha}
+          {t.lugar ? ` · ${t.lugar}` : ""}
+        </p>
+        <Link
+          href={t.href}
+          onClick={() => {
+            track({ type: "click", name: "chat_evento", target: t.slug });
+            onNavegar();
+          }}
+          className={`${pastilla} mt-3`}
+          style={{ background: color }}
+        >
+          Quiero ir
+          <ArrowRight size={13} />
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function IconoPdf() {
   return (
     <svg width="38" height="46" viewBox="0 0 38 46" fill="none" aria-hidden>
@@ -139,6 +208,7 @@ export function Relevamiento({ t }: { t: TarjetaRelevamiento }) {
   };
 
   const resumen = [
+    t.datos.puntaje != null ? `Nivel ${nivelDe(t.datos.puntaje).toLowerCase()}` : "",
     `${t.datos.hallazgos.length} hallazgos`,
     `${t.datos.areas.length} ${t.datos.areas.length === 1 ? "área" : "áreas"} para ayudarte`,
     t.datos.casos.length ? `${t.datos.casos.length} ${t.datos.casos.length === 1 ? "caso" : "casos"}` : "",

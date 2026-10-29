@@ -5,7 +5,18 @@ import { ArrowUp, Square } from "lucide-react";
 import { MascotaCara } from "./Mascota";
 import { preguntaDe, separarPregunta } from "@/lib/chat/pregunta";
 import Formato from "./Formato";
-import { Caso, Contacto, Humano, IconoWhatsApp, Opciones, Relevamiento, Solucion, enlaceWhatsApp } from "./Tarjetas";
+import {
+  Caso,
+  Contacto,
+  Evento,
+  Humano,
+  IconoWhatsApp,
+  Nota,
+  Opciones,
+  Relevamiento,
+  Solucion,
+  enlaceWhatsApp,
+} from "./Tarjetas";
 import { LIMITES_CHAT, type Tarjeta } from "@/lib/chat/tipos";
 import { conversacionEnTexto, detener, enviar, marcarLeadEnviado, textoDe, useConversacion } from "@/lib/chat/store";
 import { track } from "@/lib/track";
@@ -283,6 +294,10 @@ function TarjetaVista({ t, onNavegar, leadEnviado }: { t: Tarjeta; onNavegar: ()
       return <Humano t={t} />;
     case "relevamiento":
       return <Relevamiento t={t} />;
+    case "nota":
+      return <Nota t={t} onNavegar={onNavegar} />;
+    case "evento":
+      return <Evento t={t} onNavegar={onNavegar} />;
     case "opciones":
       return null;
   }

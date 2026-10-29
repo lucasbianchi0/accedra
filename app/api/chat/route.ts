@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import { crearClienteClaude, hayClaveClaude } from "@/lib/chat/claude";
 import { IDS_CASO, SLUGS_SOLUCION, tarjetaCaso, tarjetaSolucion } from "@/lib/chat/conocimiento";
 import { systemPrompt } from "@/lib/chat/prompt";
+import { cargarNovedades, eventoPorSlug, notaPorSlug } from "@/lib/chat/novedades";
 import { LIMITES_CHAT, huella, notaDeTarjeta, type Entrada, type Tarjeta } from "@/lib/chat/tipos";
 import { armarRelevamiento } from "@/lib/chat/relevamiento";
 import { esBot, firmaValida, firmar, leerJson, limpiarInvisibles, mismoOrigen, sinEnlaces } from "@/lib/chat/guardia";
@@ -162,6 +163,26 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
     },
   },
   {
+    name: "mostrar_nota",
+    description:
+      "Muestra una nota del blog de Accedra para profundizar. Sólo una de la lista 'Notas del blog', sólo si trata lo mismo que contó la persona, y nunca antes de entender su caso. Una por mensaje como mucho.",
+    input_schema: {
+      type: "object",
+      properties: { id: { type: "string", description: "El id de la nota, tal como figura en la lista." } },
+      required: ["id"],
+    },
+  },
+  {
+    name: "mostrar_evento",
+    description:
+      "Invita a un evento próximo de Accedra (workshop, webinar, charla). Sólo uno de la lista 'Próximos eventos' y sólo si es del mismo tema que el caso. Sirve sobre todo para quien todavía está explorando.",
+    input_schema: {
+      type: "object",
+      properties: { id: { type: "string", description: "El id del evento, tal como figura en la lista." } },
+      required: ["id"],
+    },
+  },
+  {
     name: "armar_relevamiento",
     description:
       "Arma el relevamiento preliminar en PDF que la persona descarga: su situación, lo que identificaste, dónde ayuda Accedra, casos parecidos y próximos pasos. Usala UNA vez, cuando ya conocés industria, tamaño y el problema concreto (normalmente junto con pedir_contacto). Escribí en segunda persona hacia la empresa, concreto y sin relleno.",
@@ -211,8 +232,44 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
         },
         casos: { type: "array", items: { type: "string", enum: IDS_CASO }, maxItems: 2 },
         proximos_pasos: { type: "array", items: { type: "string" }, maxItems: 4 },
+        datos_cotizacion: {
+          type: "array",
+          minItems: 4,
+          maxItems: 10,
+          description:
+            "Los datos que un especialista necesita para cotizar ESTE tipo de trabajo (p. ej. redes: cantidad de sedes, puestos de red por sede, usuarios, tipo de enlace actual, equipamiento actual, plazo). Con valor si la persona lo dijo; con valor vacío si falta. No inventes valores.",
+          items: {
+            type: "object",
+            properties: {
+              dato: { type: "string", description: "Qué dato es, corto: 'Sedes con el problema'." },
+              valor: { type: "string", description: "Lo que dijo la persona, o vacío si no se sabe." },
+            },
+            required: ["dato", "valor"],
+          },
+        },
+        enfoques: {
+          type: "array",
+          maxItems: 3,
+          description:
+            "Cómo se suele resolver este tipo de trabajo, con las soluciones de Accedra: 2 o 3 alternativas o etapas, con cuándo conviene cada una. Sólo si la información alcanza para decirlo con fundamento.",
+          items: {
+            type: "object",
+            properties: {
+              titulo: { type: "string", description: "Corto: 'Segundo enlace con SD-WAN'." },
+              detalle: { type: "string", description: "Qué es y cuándo conviene, 1-2 oraciones." },
+            },
+            required: ["titulo", "detalle"],
+          },
+        },
+        notas: {
+          type: "array",
+          items: { type: "string" },
+          maxItems: 2,
+          description: "Ids de hasta 2 notas del blog relacionadas, de la lista 'Notas del blog'.",
+        },
+        evento: { type: "string", description: "Id de un próximo evento del mismo tema, si hay uno en la lista." },
       },
-      required: ["empresa", "resumen", "nota", "situacion", "hallazgos", "areas"],
+      required: ["empresa", "resumen", "nota", "situacion", "hallazgos", "areas", "datos_cotizacion"],
     },
   },
   {
@@ -276,6 +333,10 @@ function armarTarjeta(nombre: string, entrada: Record<string, unknown>): Tarjeta
     }
     case "armar_relevamiento":
       return armarRelevamiento(entrada);
+    case "mostrar_nota":
+      return notaPorSlug(texto(entrada.id, 120));
+    case "mostrar_evento":
+      return eventoPorSlug(texto(entrada.id, 120));
   }
   return null;
 }
@@ -356,10 +417,11 @@ const MAX_TOKENS = 4000;
 
 /**
  * El peor caso de un pedido: el historial (≈3 caracteres por token, de más) en
- * cada vuelta, la salida máxima de cada vuelta y escribir la caché del prompt.
+ * cada vuelta, la salida máxima de cada vuelta y escribir la caché del prompt
+ * (y la del blog y los eventos, que suma unos 3.000 tokens).
  */
 const reservaPara = (historial: Entrada[]) =>
-  Math.ceil(historial.reduce((n, m) => n + m.content.length, 0) / 3) * VUELTAS + MAX_TOKENS * 5 * VUELTAS + 15_000;
+  Math.ceil(historial.reduce((n, m) => n + m.content.length, 0) / 3) * VUELTAS + MAX_TOKENS * 5 * VUELTAS + 22_000;
 
 export async function POST(req: NextRequest) {
   if (!mismoOrigen(req)) return error("Pedido inválido", 403);
@@ -419,8 +481,12 @@ export async function POST(req: NextRequest) {
   // La página va en un bloque aparte y sin marca: dentro de lo cacheado haría
   // que cada página tuviera su propia caché.
   const pagina = contextoDePagina(body);
+  // El blog y los eventos cambian cuando se publica algo: en su propio bloque,
+  // con su propia caché, para no invalidar la del prompt cada vez.
+  const novedades = await cargarNovedades();
   const system: Anthropic.TextBlockParam[] = [
     { type: "text", text: systemPrompt(), cache_control: { type: "ephemeral", ttl: "1h" } },
+    ...(novedades.texto ? [{ type: "text" as const, text: novedades.texto, cache_control: { type: "ephemeral" as const } }] : []),
     ...(pagina ? [{ type: "text" as const, text: pagina }] : []),
   ];
   const encoder = new TextEncoder();
@@ -526,12 +592,16 @@ export async function POST(req: NextRequest) {
               is_error: !tarjeta,
             };
           });
+          // Si ya había escrito antes de las tarjetas, el relevamiento también
+          // cierra el turno: la vuelta siguiente repetía "ya tenés el PDF".
+          const yaEscribio = huboTexto;
           // Después de una tarjeta el texto vuelve a arrancar en otro párrafo.
           huboTexto = true;
           // Las opciones cierran el turno: la pregunta ya está escrita y lo
           // que sigue es la respuesta de la persona. Otra vuelta sólo
           // agregaría relleno (o las repetiría).
           if (llamadas.some((l) => l.name === "ofrecer_opciones")) break;
+          if (yaEscribio && llamadas.some((l) => l.name === "armar_relevamiento")) break;
           mensajes.push({ role: "user", content: resultados });
         }
         // La firma de esta respuesta: vuelve en el historial del próximo pedido.

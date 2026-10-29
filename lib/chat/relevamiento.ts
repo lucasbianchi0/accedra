@@ -2,6 +2,7 @@ import { createHmac, randomBytes } from "node:crypto";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { tarjetaCaso } from "./conocimiento";
 import { claveDeFirma, iguales, sinEnlaces } from "./guardia";
+import { eventoPorSlug, notaPorSlug } from "./novedades";
 import type { Prioridad, Relevamiento, TarjetaRelevamiento } from "./tipos";
 
 /**
@@ -58,6 +59,32 @@ function hallazgos(v: unknown) {
     .slice(0, 5);
 }
 
+/**
+ * Lo que hace falta para cotizar, con lo que se sabe. Un dato sin valor es uno
+ * que falta: el PDF lo muestra como "para cotizar nos falta".
+ */
+function datosCotizacion(v: unknown) {
+  return (Array.isArray(v) ? v : [])
+    .map((x) => {
+      const o = (x ?? {}) as Record<string, unknown>;
+      return { dato: texto(o.dato, 60), valor: texto(o.valor, 140) };
+    })
+    .filter((d) => d.dato)
+    .slice(0, 10);
+}
+
+/**
+ * Qué tan completo está el relevamiento, de 0 a 100: los datos para cotizar
+ * que se conocen sobre los que hacen falta. Lo calcula el servidor y no el
+ * modelo, y el divisor tiene un piso: con dos datos conocidos de dos pedidos
+ * no se llega a 100.
+ */
+const MINIMO_DE_DATOS = 6;
+export function puntaje(datos: { valor: string }[]): number {
+  const conocidos = datos.filter((d) => d.valor).length;
+  return Math.round((100 * conocidos) / Math.max(datos.length, MINIMO_DE_DATOS));
+}
+
 function referencia(): string {
   const hoy = new Date().toISOString().slice(0, 10).replace(/-/g, "");
   return `REL-${hoy}-${randomBytes(2).toString("hex").toUpperCase()}`;
@@ -93,6 +120,14 @@ export function armarRelevamiento(entrada: Record<string, unknown>): TarjetaRele
       cifra: c.logro,
     }));
 
+  const cotizacion = datosCotizacion(entrada.datos_cotizacion);
+  // Sólo notas y eventos publicados: el modelo no puede inventar uno.
+  const lecturas = lista(entrada.notas, 2, 120)
+    .map(notaPorSlug)
+    .filter((n): n is NonNullable<typeof n> => Boolean(n))
+    .map((n) => ({ slug: n.slug, titulo: n.titulo, resumen: n.resumen }));
+  const ev = eventoPorSlug(texto(entrada.evento, 120));
+
   const datos: Relevamiento = {
     referencia: referencia(),
     empresa: texto(entrada.empresa, 80) || "Tu empresa",
@@ -107,6 +142,17 @@ export function armarRelevamiento(entrada: Record<string, unknown>): TarjetaRele
     areas,
     casos,
     proximosPasos: lista(entrada.proximos_pasos, 4, 200),
+    datosCotizacion: cotizacion,
+    puntaje: puntaje(cotizacion),
+    enfoques: (Array.isArray(entrada.enfoques) ? entrada.enfoques : [])
+      .map((x) => {
+        const o = (x ?? {}) as Record<string, unknown>;
+        return { titulo: texto(o.titulo, 80), detalle: texto(o.detalle, 300) };
+      })
+      .filter((e) => e.titulo && e.detalle)
+      .slice(0, 3),
+    lecturas,
+    evento: ev ? { slug: ev.slug, titulo: ev.titulo, fecha: ev.fecha, modalidad: ev.modalidad } : null,
     fecha: new Date().toISOString(),
   };
 
