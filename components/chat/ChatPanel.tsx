@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { ArrowUp, ChevronDown, RotateCcw, X } from "lucide-react";
 import Robot from "./Robot";
 import Conversacion, { whatsappDeLaCharla } from "./Conversacion";
+import { ProgresoBarra, PromesaPdf } from "./Progreso";
 import { IconoWhatsApp } from "./Tarjetas";
 import { enviar, reiniciar, useConversacion } from "@/lib/chat/store";
 import { track } from "@/lib/track";
@@ -26,7 +27,7 @@ const SUGERENCIAS = [
 ];
 
 export default function ChatPanel({ abierto, onCerrar }: { abierto: boolean; onCerrar: () => void }) {
-  const { mensajes } = useConversacion();
+  const { mensajes, leadEnviado } = useConversacion();
   const panel = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -116,6 +117,12 @@ export default function ChatPanel({ abierto, onCerrar }: { abierto: boolean; onC
         </button>
       </header>
 
+      {mensajes.length > 0 && (
+        <div className="relative border-b border-white/[0.06] px-4 py-2.5">
+          <ProgresoBarra mensajes={mensajes} leadEnviado={leadEnviado} />
+        </div>
+      )}
+
       {abierto && <EnfocarAlAbrir />}
       <Conversacion
         origen="panel"
@@ -131,6 +138,7 @@ export default function ChatPanel({ abierto, onCerrar }: { abierto: boolean; onC
                 Te damos una primera devolución en el momento, te mostramos cómo lo resolvimos en empresas parecidas y,
                 si querés, un especialista analiza tu proceso sin costo.
               </p>
+              <PromesaPdf className="mt-4" />
             </div>
             <div className="space-y-2">
               {SUGERENCIAS.map((s) => (

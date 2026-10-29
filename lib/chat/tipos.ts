@@ -57,12 +57,18 @@ export type TarjetaOpciones = {
 };
 
 /** Lo que va en el PDF de relevamiento. Lo arma el modelo; el servidor lo firma. */
+export type Prioridad = "alta" | "media" | "baja";
+
 export type Relevamiento = {
+  /** "REL-20261029-4F2A": para que el comercial y el cliente hablen del mismo documento. */
+  referencia: string;
   empresa: string;
   industria: string;
   tamano: string;
+  /** Resumen ejecutivo: el problema y la recomendación, en dos oraciones. */
+  resumen: string;
   situacion: string;
-  hallazgos: string[];
+  hallazgos: { texto: string; prioridad: Prioridad }[];
   areas: { solucion: string; nombre: string; accent: string; porque: string; propuesta: string }[];
   casos: { id: string; cliente: string; titulo: string; cifra: string }[];
   proximosPasos: string[];

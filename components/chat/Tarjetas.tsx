@@ -243,7 +243,7 @@ export function Humano({ t }: { t: TarjetaHumano }) {
 }
 
 const campo =
-  "w-full rounded-xl border border-white/10 bg-navy-900/60 px-3 py-2.5 text-[16px] sm:text-[13.5px] text-white placeholder:text-gray-500 outline-none transition-colors focus:border-accent-300/60 chat-campo";
+  "chat-campo w-full rounded-xl border border-white/10 bg-navy-900/60 px-3 py-2.5 text-[16px] sm:text-[13.5px] text-white placeholder:text-gray-500 outline-none transition-[border-color,box-shadow] focus:border-[#9F8CFB]/60 focus:shadow-[0_0_0_3px_rgba(139,92,246,0.15)]";
 
 export function Contacto({
   t,
@@ -319,14 +319,14 @@ export function Contacto({
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   return (
-    <form onSubmit={enviar} className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+    <form onSubmit={enviar} autoComplete="off" className="rounded-2xl border border-white/10 bg-white/[0.04] p-4">
       <p className="text-[13.5px] font-semibold text-white">Dejanos tus datos y un especialista sigue tu caso</p>
       <p className="mt-0.5 text-[12px] text-gray-500">Le pasamos esta conversación para que no tengas que repetir nada.</p>
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <input className={campo} placeholder="Nombre" autoComplete="name" required maxLength={80} value={form.nombre} onChange={set("nombre")} />
-        <input className={campo} placeholder="Empresa" autoComplete="organization" maxLength={80} value={form.empresa} onChange={set("empresa")} />
-        <input className={`${campo} col-span-2`} placeholder="Teléfono / WhatsApp" type="tel" inputMode="tel" autoComplete="tel" required maxLength={30} value={form.telefono} onChange={set("telefono")} />
-        <input className={`${campo} col-span-2`} placeholder="Email (opcional)" type="email" autoComplete="email" maxLength={254} value={form.email} onChange={set("email")} />
+        <input className={campo} placeholder="Nombre" name="ai-nombre" autoComplete="off" required maxLength={80} value={form.nombre} onChange={set("nombre")} />
+        <input className={campo} placeholder="Empresa" name="ai-empresa" autoComplete="off" maxLength={80} value={form.empresa} onChange={set("empresa")} />
+        <input className={`${campo} col-span-2`} placeholder="Teléfono / WhatsApp" type="tel" inputMode="tel" name="ai-telefono" autoComplete="off" required maxLength={30} value={form.telefono} onChange={set("telefono")} />
+        <input className={`${campo} col-span-2`} placeholder="Email (opcional)" type="email" name="ai-email" autoComplete="off" maxLength={254} value={form.email} onChange={set("email")} />
       </div>
       {/* Honeypot: una persona no lo ve ni lo completa. */}
       <input ref={trampa} tabIndex={-1} autoComplete="off" aria-hidden className="absolute -left-[9999px] h-0 w-0 opacity-0" name="website" />

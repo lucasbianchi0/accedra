@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUp, RotateCcw, X } from "lucide-react";
 import Conversacion, { whatsappDeLaCharla } from "./Conversacion";
 import { LogoAccedraAI, NombreAccedraAI } from "./AccedraAI";
+import { ProgresoBarra, ProgresoVertical, PromesaPdf } from "./Progreso";
 import { IconoWhatsApp } from "./Tarjetas";
 import { enviar, reiniciar, useConversacion } from "@/lib/chat/store";
 import { sugerenciasPara } from "@/lib/chat/sugerencias";
@@ -32,7 +33,7 @@ function solucionDeLaRuta(): string | undefined {
 }
 
 export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean; onCerrar: () => void }) {
-  const { mensajes } = useConversacion();
+  const { mensajes, leadEnviado } = useConversacion();
   const hoja = useRef<HTMLDivElement>(null);
   const [solucion, setSolucion] = useState<string | undefined>();
   const vacio = mensajes.length === 0;
@@ -130,7 +131,7 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
         // Vidrio: translúcida sobre la página ya desenfocada, con un blur propio
         // que termina de lavar lo que hay detrás. Márgenes laterales amplios:
         // en escritorio la hoja no pasa de ~1000 px de ancho.
-        className={`chat-hoja fixed inset-x-0 bottom-0 z-[81] flex flex-col overflow-hidden rounded-t-[32px] border border-b-0 border-white/[0.13] bg-[linear-gradient(180deg,rgba(24,36,66,0.62)_0%,rgba(9,16,32,0.74)_100%)] shadow-[0_-40px_140px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-3xl backdrop-saturate-[1.6] sm:inset-x-[max(2rem,calc((100vw-1040px)/2))] ${
+        className={`chat-hoja fixed inset-x-0 bottom-0 z-[81] flex flex-col overflow-hidden rounded-t-[32px] border border-b-0 border-white/[0.13] bg-[linear-gradient(180deg,rgba(24,36,66,0.62)_0%,rgba(9,16,32,0.74)_100%)] shadow-[0_-40px_140px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-3xl backdrop-saturate-[1.6] sm:inset-x-[max(2rem,calc((100vw-1120px)/2))] ${
           vacio ? "h-[72dvh] sm:h-[60dvh] sm:min-h-[480px] sm:max-h-[92dvh]" : "h-[92dvh] sm:h-[86dvh]"
         }`}
       >
@@ -193,6 +194,19 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
             </button>
           </div>
         </div>
+
+        {/* Cuánto falta: a la izquierda en escritorio ancho, como barra arriba
+            en el resto. Aparece cuando la charla arranca. */}
+        {!vacio && (
+          <>
+            <div className="progreso-entra absolute left-8 top-[86px] z-10 hidden xl:block">
+              <ProgresoVertical mensajes={mensajes} leadEnviado={leadEnviado} />
+            </div>
+            <div className="relative mx-auto w-full max-w-[760px] px-4 pb-1 pt-2 xl:hidden">
+              <ProgresoBarra mensajes={mensajes} leadEnviado={leadEnviado} />
+            </div>
+          </>
+        )}
 
         <Conversacion
           origen="hoja"
@@ -271,6 +285,7 @@ function Bienvenida({ solucion }: { solucion?: string }) {
         <h2 className="font-display mt-5 text-[26px] font-semibold leading-tight tracking-[-0.015em] text-white sm:text-[34px]">
           {titulo}
         </h2>
+        <PromesaPdf className="mt-4" />
 
         {/* Industrias: elegir una cambia los ejemplos y le dice el rubro al asistente. */}
         <div

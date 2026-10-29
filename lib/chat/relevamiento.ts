@@ -1,7 +1,7 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { tarjetaCaso } from "./conocimiento";
-import type { Relevamiento, TarjetaRelevamiento } from "./tipos";
+import type { Prioridad, Relevamiento, TarjetaRelevamiento } from "./tipos";
 
 /**
  * El relevamiento que arma el asistente y se descarga en PDF.
@@ -47,6 +47,25 @@ const texto = (v: unknown, max: number) =>
 const lista = (v: unknown, max: number, largo: number) =>
   (Array.isArray(v) ? v : []).map((x) => texto(x, largo)).filter(Boolean).slice(0, max);
 
+const PRIORIDADES: Prioridad[] = ["alta", "media", "baja"];
+
+/** Acepta el hallazgo como objeto {texto, prioridad} o como texto suelto. */
+function hallazgos(v: unknown) {
+  return (Array.isArray(v) ? v : [])
+    .map((h) => {
+      const o = (typeof h === "string" ? { texto: h } : (h ?? {})) as Record<string, unknown>;
+      const prioridad = PRIORIDADES.includes(o.prioridad as Prioridad) ? (o.prioridad as Prioridad) : "media";
+      return { texto: texto(o.texto, 220), prioridad };
+    })
+    .filter((h) => h.texto)
+    .slice(0, 5);
+}
+
+function referencia(): string {
+  const hoy = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  return `REL-${hoy}-${randomBytes(2).toString("hex").toUpperCase()}`;
+}
+
 /** De lo que pidió el modelo a la tarjeta firmada. Null si no alcanza para un PDF serio. */
 export function armarRelevamiento(entrada: Record<string, unknown>): TarjetaRelevamiento | null {
   const areas = (Array.isArray(entrada.areas) ? entrada.areas : [])
@@ -77,11 +96,13 @@ export function armarRelevamiento(entrada: Record<string, unknown>): TarjetaRele
     }));
 
   const datos: Relevamiento = {
+    referencia: referencia(),
     empresa: texto(entrada.empresa, 80) || "Tu empresa",
     industria: texto(entrada.industria, 60),
     tamano: texto(entrada.tamano, 60),
+    resumen: texto(entrada.resumen, 420),
     situacion: texto(entrada.situacion, 700),
-    hallazgos: lista(entrada.hallazgos, 5, 220),
+    hallazgos: hallazgos(entrada.hallazgos),
     areas,
     casos,
     proximosPasos: lista(entrada.proximos_pasos, 4, 200),
@@ -89,6 +110,7 @@ export function armarRelevamiento(entrada: Record<string, unknown>): TarjetaRele
   };
 
   if (!datos.situacion || datos.hallazgos.length === 0 || datos.areas.length === 0) return null;
+  if (!datos.resumen) datos.resumen = `${datos.areas[0].propuesta}`;
   if (datos.proximosPasos.length === 0) {
     datos.proximosPasos = [
       "Relevamiento técnico sin costo con un especialista de Accedra.",

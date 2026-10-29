@@ -17,17 +17,18 @@
  * y `metadata.sin_email` lo marca para que nadie le mande un correo.
  */
 
+import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
 
 import { EMAIL_RE, extractAttribution, type ContactData, type Service } from "@/lib/contact/schema";
 import { clientIp } from "@/lib/contact/clientIp";
 import { consume } from "@/lib/contact/rateLimit";
-import { buildHtml, buildText } from "@/lib/contact/emailTemplate";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { verificar } from "@/lib/chat/relevamiento";
 import { nombreArchivo, pdfRelevamiento } from "@/lib/chat/pdf-relevamiento";
 import type { Relevamiento } from "@/lib/chat/tipos";
+import { asuntoEquipo, htmlEquipo, textoEquipo, type LeadAsistente } from "@/lib/chat/emailEquipo";
 
 export const runtime = "nodejs";
 
@@ -125,7 +126,24 @@ export async function POST(req: NextRequest) {
       ip,
       req.headers.get("user-agent"),
     ),
-    avisar(datos, email, ip, relevamiento),
+    avisar(
+      {
+        nombre,
+        empresa,
+        telefono,
+        email,
+        resumen,
+        solucion: SOLUTIONS[solucion] ? solucion : null,
+        conversacion,
+        relevamiento,
+        origen:
+          [attribution.utm_source, attribution.utm_campaign].filter(Boolean).join(" / ") ||
+          attribution.referrer ||
+          attribution.submitted_from ||
+          "directo",
+      },
+      ip,
+    ),
   ]);
 
   if (!persistido && !enviado) return error("No se pudo guardar. Probá de nuevo o escribinos por WhatsApp.", 502);
@@ -176,38 +194,67 @@ async function guardar(
   return true;
 }
 
-async function avisar(datos: ContactData, email: string, ip: string, relevamiento: Relevamiento | null): Promise<boolean> {
+/** El PDF en base64 para Resend. Si falla, el mail sale igual: el lead importa más que el adjunto. */
+async function pdfAdjunto(relevamiento: Relevamiento | null) {
+  if (!relevamiento) return [];
+  try {
+    const pdf = await pdfRelevamiento(relevamiento);
+    return [{ filename: nombreArchivo(relevamiento), content: pdf.toString("base64") }];
+  } catch (e) {
+    console.error("[chat lead] no se pudo generar el PDF:", (e as Error).message);
+    return [];
+  }
+}
+
+/**
+ * Avisa al equipo comercial y, si la persona dejó su email y hay relevamiento,
+ * le manda su PDF.
+ *
+ * El mail a la persona sólo sale con un relevamiento firmado (el texto es
+ * nuestro, no lo que alguien escribió en el formulario) y con un tope por
+ * dirección: este endpoint no puede servir para mandarle correo a terceros.
+ */
+async function avisar(lead: LeadAsistente, ip: string): Promise<boolean> {
   const to = process.env.CONTACT_TO;
   const from = process.env.CONTACT_FROM;
   const apiKey = process.env.RESEND_API_KEY;
   if (!to || !from || !apiKey) return false;
 
-  const meta = { ip, receivedAt: new Date() };
-  // Si el PDF falla, el mail sale igual: el lead importa más que el adjunto.
-  const adjunto = relevamiento
-    ? await pdfRelevamiento(relevamiento)
-        .then((pdf) => [{ filename: nombreArchivo(relevamiento), content: pdf.toString("base64") }])
-        .catch((e) => {
-          console.error("[chat lead] no se pudo generar el PDF:", (e as Error).message);
-          return [];
-        })
-    : [];
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
+  const { email, nombre, relevamiento } = lead;
+  const adjunto = await pdfAdjunto(relevamiento);
+  const resend = (cuerpo: Record<string, unknown>) =>
+    fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        ...(email ? { reply_to: email } : {}),
-        subject: `Asistente web — ${datos.name}${datos.company ? ` (${datos.company})` : ""}`,
-        text: buildText(datos, meta),
-        html: buildHtml(datos, meta),
-        ...(adjunto.length ? { attachments: adjunto } : {}),
-      }),
+      body: JSON.stringify({ from, ...cuerpo, ...(adjunto.length ? { attachments: adjunto } : {}) }),
+    });
+
+  if (email && relevamiento && adjunto.length) {
+    const hash = createHash("sha256").update(email.toLowerCase()).digest("hex").slice(0, 32);
+    const permitido = await consume("chat-lead-email", hash, [{ suffix: "day", limit: 2, windowSec: 24 * 60 * 60 }]);
+    if (permitido.allowed) {
+      await resend({
+        to: [email],
+        reply_to: to,
+        subject: `Tu relevamiento — ${relevamiento.empresa}`,
+        text: textoAlCliente(nombre, relevamiento),
+        html: htmlAlCliente(nombre, relevamiento),
+      }).catch((e) => console.error("[chat lead] no salió el mail a la persona:", (e as Error).message));
+    }
+  }
+
+  // Al equipo: su propio formato (contacto arriba, el caso, lo identificado y
+  // la conversación) con el mismo PDF adjunto.
+  try {
+    const res = await resend({
+      to: [to],
+      ...(email ? { reply_to: email } : {}),
+      subject: asuntoEquipo(lead),
+      text: textoEquipo(lead),
+      html: htmlEquipo(lead),
     });
     if (!res.ok) {
-      console.error("[chat lead] Resend respondió", res.status);
+      console.error("[chat lead] Resend respondió", res.status, "ip", ip);
       return false;
     }
     return true;
@@ -215,4 +262,33 @@ async function avisar(datos: ContactData, email: string, ip: string, relevamient
     console.error("[chat lead] fallo al enviar:", err);
     return false;
   }
+}
+
+const escapar = (t: string) =>
+  t.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+
+function textoAlCliente(nombre: string, r: Relevamiento): string {
+  return [
+    `Hola ${nombre},`,
+    "",
+    `Te dejamos adjunto el relevamiento preliminar para ${r.empresa} (${r.referencia}), con lo que identificamos en la conversación y dónde te podemos ayudar.`,
+    "",
+    "Un especialista de Accedra lo revisa y te contacta para coordinar el relevamiento técnico en sitio, sin costo. Si querés adelantarlo, respondé este correo o escribinos por WhatsApp al +54 11 3300-1233.",
+    "",
+    "Equipo Accedra",
+    "accedra.com.ar",
+  ].join("\n");
+}
+
+/** Sobrio a propósito: el contenido está en el PDF; el mail sólo lo entrega. */
+function htmlAlCliente(nombre: string, r: Relevamiento): string {
+  const p = "margin:0 0 16px;font-size:15px;line-height:1.6;color:#26354a";
+  return `<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:32px 16px;background:#f5f7fa;font-family:Helvetica,Arial,sans-serif">
+<div style="max-width:560px;margin:0 auto;background:#fff;border:1px solid #e3e8ef;border-radius:10px;padding:36px 36px 28px">
+<p style="margin:0 0 28px;font-size:13px;letter-spacing:4px;color:#0b1626">ACCEDRA</p>
+<p style="${p}">Hola ${escapar(nombre)},</p>
+<p style="${p}">Te dejamos adjunto el <strong>relevamiento preliminar para ${escapar(r.empresa)}</strong>, con lo que identificamos en la conversación y dónde te podemos ayudar.</p>
+<p style="${p}">Un especialista de Accedra lo revisa y te contacta para coordinar el <strong>relevamiento técnico en sitio, sin costo</strong>. Si querés adelantarlo, respondé este correo o escribinos por WhatsApp al <a href="https://wa.me/541133001233" style="color:#2b6fd4">+54 11 3300-1233</a>.</p>
+<p style="margin:28px 0 0;font-size:13px;color:#6b7a90">Equipo Accedra · <a href="https://accedra.com.ar" style="color:#6b7a90">accedra.com.ar</a><br>Referencia ${escapar(r.referencia)}</p>
+</div></body></html>`;
 }

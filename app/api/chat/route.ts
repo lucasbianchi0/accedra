@@ -119,13 +119,25 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
         empresa: { type: "string", description: "Nombre de la empresa, o una descripción si no lo dijo (\"Distribuidora con 8 depósitos\")." },
         industria: { type: "string" },
         tamano: { type: "string", description: "Empleados y/o sedes, como lo dijo la persona." },
+        resumen: {
+          type: "string",
+          description:
+            "Resumen ejecutivo para un gerente que no leyó la charla: el problema, su impacto y la recomendación principal, en 2 oraciones.",
+        },
         situacion: { type: "string", description: "Lo que contó, en 2-3 oraciones." },
         hallazgos: {
           type: "array",
-          items: { type: "string" },
           minItems: 2,
           maxItems: 5,
-          description: "Lo que identificaste: causas probables, riesgos, lo que conviene y lo que no. Una oración cada uno.",
+          description: "Lo que identificaste: causas probables, riesgos, lo que conviene y lo que no.",
+          items: {
+            type: "object",
+            properties: {
+              texto: { type: "string", description: "Una oración." },
+              prioridad: { type: "string", enum: ["alta", "media", "baja"], description: "Alta: frena la operación o es un riesgo serio." },
+            },
+            required: ["texto", "prioridad"],
+          },
         },
         areas: {
           type: "array",
@@ -143,7 +155,7 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
         casos: { type: "array", items: { type: "string", enum: IDS_CASO }, maxItems: 2 },
         proximos_pasos: { type: "array", items: { type: "string" }, maxItems: 4 },
       },
-      required: ["empresa", "situacion", "hallazgos", "areas"],
+      required: ["empresa", "resumen", "situacion", "hallazgos", "areas"],
     },
   },
   {
@@ -313,9 +325,10 @@ export async function POST(req: NextRequest) {
           const respuesta = client.messages.stream(
             {
               model: MODELO,
-              // El relevamiento viaja como argumentos de herramienta: con 900
-              // se cortaba a la mitad.
-              max_tokens: 1800,
+              // El relevamiento viaja como argumentos de herramienta, junto con
+              // el texto, la solución, el caso y el formulario: con 1800 se
+              // cortaba y las herramientas llegaban truncadas (se descartan).
+              max_tokens: 4000,
               system,
               messages: mensajes,
               tools: HERRAMIENTAS,
