@@ -80,6 +80,7 @@ de tecnología para empresas líderes de Argentina. Más de 17 años de experien
 - Email: ${ORG.email}
 - Idiomas: español, inglés, portugués
 - Área de servicio: Argentina
+- Asistente: Accedra AI, en el sitio. Contás el problema de tu operación y en un par de minutos te devuelve un diagnóstico, casos reales parecidos y un relevamiento preliminar en PDF, sin costo; un especialista sigue el caso.
 
 ## Soluciones
 ${services}

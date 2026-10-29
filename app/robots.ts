@@ -11,7 +11,9 @@ export default function robots(): MetadataRoute.Robots {
       // indexa, la URL aparece en la búsqueda y el formulario deja de existir.
       // Las landings por industria SÍ se rastrean e indexan: tienen contenido
       // propio (contexto, normativa y FAQs por vertical) y están en el sitemap.
-      disallow: ["/preview-mapa", "/brochures/"],
+      // Y los endpoints: son POST del formulario y del asistente, no páginas;
+      // rastrearlos sólo gasta presupuesto de crawl en respuestas 405.
+      disallow: ["/preview-mapa", "/brochures/", "/api/"],
     },
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,
