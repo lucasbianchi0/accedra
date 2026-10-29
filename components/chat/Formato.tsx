@@ -76,7 +76,8 @@ export default function Formato({ texto, onNavegar }: { texto: string; onNavegar
     lista = null;
   };
 
-  for (const cruda of texto.split("\n")) {
+  // A veces el modelo escribe un <br> suelto: se lee como salto de línea, nunca como HTML.
+  for (const cruda of texto.replace(/<br\s*\/?>/gi, "\n").split("\n")) {
     const linea = cruda.trim();
     const vineta = /^[-*•]\s+(.*)$/.exec(linea);
     const numeral = /^\d+[.)]\s+(.*)$/.exec(linea);

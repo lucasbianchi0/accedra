@@ -6,6 +6,9 @@ import { IDS_CASO, SLUGS_SOLUCION, tarjetaCaso, tarjetaSolucion } from "@/lib/ch
 import { systemPrompt } from "@/lib/chat/prompt";
 import { LIMITES_CHAT, type Entrada, type Tarjeta } from "@/lib/chat/tipos";
 import { clientIp } from "@/lib/contact/clientIp";
+import { SOLUTIONS } from "@/components/solutions/solutionsData";
+import { SUB_SERVICES } from "@/components/solutions/subServicesData";
+import { INDUSTRIES } from "@/components/solutions/industriesData";
 import { consume } from "@/lib/contact/rateLimit";
 
 /**
@@ -153,6 +156,31 @@ function leerHistorial(body: unknown): Entrada[] | null {
   return mensajes;
 }
 
+/**
+ * En qué página está la persona, en palabras. No es lo mismo "¿sirve para
+ * bancos?" escrito en la home que en la landing de firma para bancos.
+ *
+ * La ruta la manda el navegador: se acepta sólo con forma de ruta del sitio y
+ * se traduce contra el catálogo. Lo que no se reconoce no llega al modelo, así
+ * que no hay forma de colarle texto por acá.
+ */
+function contextoDePagina(body: unknown): string | null {
+  const ruta = (body as { pagina?: unknown } | null)?.pagina;
+  if (typeof ruta !== "string" || !/^\/[a-z0-9\-/]{0,120}$/.test(ruta)) return null;
+  const [, seccion, slug, extra] = ruta.split("/");
+  if (seccion === "soluciones" && SOLUTIONS[slug]) {
+    const sol = SOLUTIONS[slug];
+    const sub = extra ? Object.values(SUB_SERVICES).find((x) => x.parent === slug && x.slug === extra) : undefined;
+    const industria = extra ? INDUSTRIES[extra] : undefined;
+    const detalle = sub ? ` (servicio: ${sub.name})` : industria ? ` (versión para ${industria.name})` : "";
+    return `La persona está escribiendo desde la página de ${sol.name}${detalle}. Asumí ese contexto salvo que diga otra cosa.`;
+  }
+  if (seccion === "casos" && SOLUTIONS[slug]?.cases[Number(extra)]) {
+    return `La persona está mirando el caso de éxito ${slug}:${extra}.`;
+  }
+  return ruta === "/" ? "La persona está escribiendo desde la portada del sitio." : null;
+}
+
 function error(mensaje: string, status: number) {
   return Response.json({ error: mensaje }, { status });
 }
@@ -185,8 +213,12 @@ export async function POST(req: NextRequest) {
   const mensajes: Anthropic.MessageParam[] = historial.map((m) => ({ role: m.role, content: m.content }));
   // El prompt es igual para todos: cacheado una hora, cada conversación paga
   // sólo lo suyo.
+  // La página va en un bloque aparte y sin marca: dentro de lo cacheado haría
+  // que cada página tuviera su propia caché.
+  const pagina = contextoDePagina(body);
   const system: Anthropic.TextBlockParam[] = [
     { type: "text", text: systemPrompt(), cache_control: { type: "ephemeral", ttl: "1h" } },
+    ...(pagina ? [{ type: "text" as const, text: pagina }] : []),
   ];
   const encoder = new TextEncoder();
 

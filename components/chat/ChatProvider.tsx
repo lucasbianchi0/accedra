@@ -3,19 +3,21 @@
 import dynamic from "next/dynamic";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import ChatLauncher from "./ChatLauncher";
+import { enviar } from "@/lib/chat/store";
 
 /**
  * El asistente, disponible en todo el sitio.
  *
- * Acá vive sólo el estado de "abierto" y el mensaje con el que se abre (el que
- * escribieron en la portada). El panel —streaming, formato, tarjetas,
- * formulario— se carga recién cuando hace falta: es código que la mayoría de
- * las visitas no usa y no tiene por qué competir con el LCP de cada página.
- * Se precarga en el primer gesto de intención (hover o foco en el botón o en el
- * campo de la portada), así que al abrir ya está.
+ * La conversación vive en `lib/chat/store`; acá sólo se decide si el panel
+ * flotante está abierto y si la tarjeta de la portada está a la vista (con la
+ * tarjeta en pantalla, el robotito flotante sobra: sería el mismo chat dos
+ * veces).
  *
- * Una vez montado el panel no se desmonta al cerrarlo: una respuesta a medio
- * llegar sigue llegando, y la conversación está ahí al volver.
+ * El panel —formato, tarjetas, formulario— se carga recién cuando hace falta:
+ * es código que la mayoría de las visitas no usa y no tiene por qué competir
+ * con el LCP. Se precarga en el primer gesto de intención (hover o foco). Una
+ * vez montado no se desmonta al cerrarlo, así la animación de salida corre y
+ * al volver está como quedó.
  */
 
 const cargarPanel = () => import("./ChatPanel");
@@ -23,10 +25,12 @@ const ChatPanel = dynamic(cargarPanel, { ssr: false });
 
 type Ctx = {
   abierto: boolean;
-  /** Abre el panel. Con texto, lo manda como primer mensaje. */
+  /** Abre el panel. Con texto, lo manda como mensaje. */
   abrir: (texto?: string, origen?: string) => void;
   cerrar: () => void;
   precargar: () => void;
+  heroVisible: boolean;
+  setHeroVisible: (v: boolean) => void;
 };
 
 const ChatCtx = createContext<Ctx | null>(null);
@@ -40,31 +44,26 @@ export function useChat(): Ctx {
 export default function ChatProvider({ children }: { children: React.ReactNode }) {
   const [abierto, setAbierto] = useState(false);
   const [montado, setMontado] = useState(false);
-  const [pendiente, setPendiente] = useState<{ texto: string; origen: string; n: number } | null>(null);
+  const [heroVisible, setHeroVisible] = useState(false);
 
   const abrir = useCallback((texto?: string, origen = "flotante") => {
     setMontado(true);
     setAbierto(true);
-    const limpio = texto?.trim();
-    if (limpio) setPendiente((p) => ({ texto: limpio, origen, n: (p?.n ?? 0) + 1 }));
+    if (texto?.trim()) void enviar(texto, origen);
   }, []);
   const cerrar = useCallback(() => setAbierto(false), []);
   const precargar = useCallback(() => void cargarPanel(), []);
 
-  const valor = useMemo(() => ({ abierto, abrir, cerrar, precargar }), [abierto, abrir, cerrar, precargar]);
+  const valor = useMemo(
+    () => ({ abierto, abrir, cerrar, precargar, heroVisible, setHeroVisible }),
+    [abierto, abrir, cerrar, precargar, heroVisible],
+  );
 
   return (
     <ChatCtx.Provider value={valor}>
       {children}
       <ChatLauncher />
-      {montado && (
-        <ChatPanel
-          abierto={abierto}
-          onCerrar={cerrar}
-          pendiente={pendiente}
-          onPendienteUsado={() => setPendiente(null)}
-        />
-      )}
+      {montado && <ChatPanel abierto={abierto} onCerrar={cerrar} />}
     </ChatCtx.Provider>
   );
 }

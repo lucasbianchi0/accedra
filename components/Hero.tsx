@@ -7,6 +7,7 @@ import CountUp from "@/components/CountUp";
 import HeroMedia from "@/components/HeroMedia";
 import { enter } from "@/components/Reveal";
 import HeroChat from "@/components/chat/HeroChat";
+import HeroChatCard from "@/components/chat/HeroChatCard";
 
 const stats = ["17+", "400+", "26+", "100+"];
 
@@ -22,6 +23,7 @@ const ENTER = {
   title: { ...enter("40px", "1.3s", "0s", "12px"), "--enter-from": "0.01" } as CSSProperties,
   subtitle: enter("16px", "1.1s", "0.42s"),
   ctas: enter("16px", "1.1s", "0.66s"),
+  chat: enter("24px", "1.2s", "0.5s"),
   stats: enter("30px", "1.2s", "0.9s"),
 };
 
@@ -42,43 +44,70 @@ export default function Hero() {
       {/* `px-5` en mobile como el resto del sitio: con `px-8` quedaban 296px
           útiles en un iPhone de 360 y el h1 no entraba. */}
       <div className="relative z-10 container-x pt-28 pb-20">
-        <div className="max-w-3xl">
-          {/* Headline — animado por CSS (.hero-enter), no por framer: es el
-              elemento LCP y con framer no se pintaba hasta después de hidratar.
-              Los valores son los mismos que tenía la versión con motion. */}
-          <h1
-            className="hero-enter text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-[-0.02em] mb-6"
-            style={ENTER.title}
-          >
-            {t.hero.titlePre}<br className="hidden sm:block" />{" "}
-            <span className="gradient-text">{t.hero.titleHighlight}</span>
-            <br className="hidden sm:block" />{" "}
-            {t.hero.titlePost}
-          </h1>
+        {/* Dos columnas desde `lg`: el título a la izquierda y el asistente a
+            la derecha, donde la persona cuenta su caso sin abrir nada. Abajo de
+            `lg` la tarjeta no entra al lado del título: queda el campo
+            compacto, que abre el chat a pantalla completa. */}
+        <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(380px,420px)] lg:items-center lg:gap-12 xl:gap-16">
+          <div className="max-w-3xl">
+            {/* Headline — animado por CSS (.hero-enter), no por framer: es el
+                elemento LCP y con framer no se pintaba hasta después de hidratar.
+                Los valores son los mismos que tenía la versión con motion. */}
+            <h1
+              className="hero-enter text-[40px] md:text-[54px] lg:text-[64px] font-bold text-white leading-[1.05] tracking-[-0.02em] mb-6"
+              style={ENTER.title}
+            >
+              {t.hero.titlePre}<br className="hidden sm:block" />{" "}
+              <span className="gradient-text">{t.hero.titleHighlight}</span>
+              <br className="hidden sm:block" />{" "}
+              {t.hero.titlePost}
+            </h1>
 
-          {/* Subheadline */}
-          <p
-            className="hero-enter text-gray-300 text-lg leading-relaxed mb-10 max-w-xl"
-            style={ENTER.subtitle}
-          >
-            {t.hero.subtitlePre}
-            <span className="text-gray-200 font-medium">{t.hero.subtitleStrong}</span>.
-          </p>
+            {/* Subheadline */}
+            <p
+              className="hero-enter text-gray-300 text-lg leading-relaxed mb-10 max-w-xl"
+              style={ENTER.subtitle}
+            >
+              {t.hero.subtitlePre}
+              <span className="text-gray-200 font-medium">{t.hero.subtitleStrong}</span>.
+            </p>
 
-          {/* El asistente es la entrada principal: "contanos tu problema" en
-              vez de "elegí un servicio". Los dos CTA de antes quedan como
-              salida secundaria para quien ya sabe adónde va. */}
-          <div className="hero-enter" style={ENTER.ctas}>
-            <HeroChat />
-            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-              <a href="#contacto" className="group inline-flex items-center gap-1.5 font-semibold text-white transition-all hover:gap-2.5">
+            {/* En el teléfono el asistente es la entrada principal ("contanos tu
+                problema" en vez de "elegí un servicio") y los CTA de siempre
+                quedan como links. En escritorio el chat está a la derecha y
+                vuelven los dos botones. */}
+            <div className="hero-enter lg:hidden" style={ENTER.ctas}>
+              <HeroChat />
+              <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+                <a href="#contacto" className="group inline-flex items-center gap-1.5 font-semibold text-white transition-all hover:gap-2.5">
+                  {t.services.ctaButton}
+                  <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+                </a>
+                <a href="#servicios" className="font-medium text-gray-400 transition-colors hover:text-white">
+                  {t.hero.ctaServices}
+                </a>
+              </div>
+            </div>
+            <div className="hero-enter hidden lg:flex gap-4" style={ENTER.ctas}>
+              <a
+                href="#contacto"
+                className="relative overflow-hidden shine inline-flex items-center justify-center gap-2 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 hover:-translate-y-0.5 hover:gap-3 group text-base"
+                style={{ background: "#2560BC", boxShadow: "0 8px 28px rgba(43,111,212,0.35)" }}
+              >
                 {t.services.ctaButton}
-                <ArrowRight size={15} className="transition-transform group-hover:translate-x-0.5" />
+                <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
               </a>
-              <a href="#servicios" className="font-medium text-gray-400 transition-colors hover:text-white">
+              <a
+                href="#servicios"
+                className="inline-flex items-center justify-center gap-2 border border-white/20 hover:border-white/40 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 hover:bg-white/5 text-base"
+              >
                 {t.hero.ctaServices}
               </a>
             </div>
+          </div>
+
+          <div className="hero-enter" style={ENTER.chat}>
+            <HeroChatCard />
           </div>
         </div>
 

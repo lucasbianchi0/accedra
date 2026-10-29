@@ -18,12 +18,15 @@ import { track } from "@/lib/track";
  * El globo de "¿Te ayudo?" aparece una sola vez por sesión, sólo en
  * escritorio, después de unos segundos, y se va solo: invita sin tapar nada.
  * En el teléfono un globo flotante tapa contenido justo donde se lee.
+ *
+ * Mientras la tarjeta del chat de la portada está a la vista, el botón se
+ * esconde: es la misma conversación, y aparece recién al bajar.
  */
 
 const CLAVE_GLOBO = "accedra-chat-globo";
 
 export default function ChatLauncher() {
-  const { abierto, abrir, precargar } = useChat();
+  const { abierto, abrir, precargar, heroVisible } = useChat();
   const pathname = usePathname();
   const [tapada, setTapada] = useState(false);
   const [conWhatsApp, setConWhatsApp] = useState(true);
@@ -64,7 +67,8 @@ export default function ChatLauncher() {
     };
   }, []);
 
-  const visible = !abierto && !tapada;
+  // Con la tarjeta del chat de la portada en pantalla, el botón sobra.
+  const visible = !abierto && !tapada && !heroVisible;
 
   return (
     <div
