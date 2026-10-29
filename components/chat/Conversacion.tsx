@@ -84,7 +84,7 @@ export default function Conversacion({
         data-lenis-prevent
         className="chat-scroll relative flex-1 overflow-y-auto overscroll-contain px-4 py-5"
       >
-        <div className={ancho}>
+        <div className={`min-h-full ${ancho}`}>
           {vacio ? (
             inicio
           ) : (

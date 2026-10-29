@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, RotateCcw, Sparkles, X } from "lucide-react";
+import { ArrowUp, RotateCcw, X } from "lucide-react";
 import Conversacion, { whatsappDeLaCharla } from "./Conversacion";
 import { LogoAccedraAI, NombreAccedraAI } from "./AccedraAI";
 import { IconoWhatsApp } from "./Tarjetas";
@@ -18,8 +18,8 @@ import { track } from "@/lib/track";
  * derecha (ChatPanel)—, pero los dos muestran la misma conversación: vive en
  * `lib/chat/store` y sigue al navegar.
  *
- * Antes del primer mensaje es una bienvenida: la marca, la pregunta de la
- * página, un campo grande y tres acciones. Con la conversación andando la
+ * Antes del primer mensaje es una bienvenida mínima: la marca, la pregunta de
+ * la página, el campo y tres atajos. Con la conversación andando la
  * hoja sube al 88 % para que se lean las respuestas y las tarjetas. En el
  * teléfono ocupa casi todo el alto y se acomoda al teclado con
  * `visualViewport` (en iOS `100dvh` no se achica cuando aparece el teclado).
@@ -92,7 +92,7 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
       <div
         aria-hidden
         onClick={onCerrar}
-        className="chat-hoja-fondo fixed inset-0 z-[80] bg-[rgba(5,10,20,0.62)] backdrop-blur-md"
+        className="chat-hoja-fondo fixed inset-0 z-[80] bg-[rgba(4,8,18,0.55)] backdrop-blur-[10px]"
       />
 
       <div
@@ -100,14 +100,17 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
         role="dialog"
         aria-modal="true"
         aria-label="Accedra AI"
-        className={`chat-hoja fixed inset-x-0 bottom-0 z-[81] flex flex-col sm:inset-x-4 lg:inset-x-6 overflow-hidden rounded-t-[32px] border border-b-0 border-white/10 bg-navy-800 shadow-[0_-30px_100px_rgba(0,0,0,0.6)] ${
-          vacio ? "h-[92dvh] sm:h-[60dvh] sm:min-h-[600px] sm:max-h-[92dvh]" : "h-[92dvh] sm:h-[88dvh]"
+        // Vidrio: translúcida sobre la página ya desenfocada, con un blur propio
+        // que termina de lavar lo que hay detrás. Márgenes laterales amplios:
+        // en escritorio la hoja no pasa de ~1000 px de ancho.
+        className={`chat-hoja fixed inset-x-0 bottom-0 z-[81] flex flex-col overflow-hidden rounded-t-[32px] border border-b-0 border-white/[0.14] bg-[rgba(14,26,46,0.58)] shadow-[0_-30px_120px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.14)] backdrop-blur-2xl backdrop-saturate-150 sm:inset-x-[max(2rem,calc((100vw-1040px)/2))] ${
+          vacio ? "h-[88dvh] sm:h-[60dvh] sm:min-h-[480px] sm:max-h-[92dvh]" : "h-[92dvh] sm:h-[86dvh]"
         }`}
       >
         {/* Luz de la marca desde arriba */}
         <div
           aria-hidden
-          className="pointer-events-none absolute -top-40 left-1/2 h-80 w-[min(900px,140%)] -translate-x-1/2 rounded-full opacity-50 blur-3xl"
+          className="pointer-events-none absolute -top-44 left-1/2 h-80 w-[min(760px,120%)] -translate-x-1/2 rounded-full opacity-40 blur-3xl"
           style={{
             background: "radial-gradient(closest-side, rgba(124,108,246,0.55), rgba(43,111,212,0.25), transparent)",
           }}
@@ -185,86 +188,71 @@ function Bienvenida({ solucion, abierto }: { solucion?: string; abierto: boolean
     // lo recorta arriba (donde no se puede scrollear); my-auto sólo centra
     // cuando sobra lugar.
     <div className="flex min-h-full flex-col">
-      <div className="my-auto flex flex-col items-center pb-2 text-center">
-        <LogoAccedraAI size={52} brillo />
-        <p className="mt-4 text-[15px] text-gray-400">
-          Hola, soy <NombreAccedraAI className="font-semibold" />
-        </p>
-        <h2 className="font-display mt-1 text-[28px] font-semibold leading-tight tracking-[-0.01em] text-white sm:text-[36px]">
+      {/* `hoja-entra`: cada hijo entra escalonado cuando la hoja termina de subir. */}
+      <div className="hoja-entra my-auto flex flex-col items-center pb-4 text-center">
+        <LogoAccedraAI size={44} brillo />
+        <h2 className="font-display mt-5 text-[26px] font-semibold leading-tight tracking-[-0.01em] text-white sm:text-[32px]">
           {titulo}
         </h2>
-        <p className="mt-2.5 max-w-[46ch] text-[14px] leading-relaxed text-gray-400">
-          Te ayudo a entender qué necesita tu operación, te muestro casos reales y, si querés, un especialista lo
-          analiza sin costo.
-        </p>
 
-        {/* El campo grande, con su franja de arriba y su barra de abajo */}
-        <div className="mt-6 w-full rounded-[22px] border border-white/10 bg-white/[0.04] p-1.5 text-left">
-          <p className="flex items-center gap-1.5 px-3 py-1.5 text-[12px] text-gray-400">
-            <Sparkles size={13} className="text-[#B9A5FB]" />
-            Un especialista sigue tu caso, sin costo
-          </p>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              mandar(texto);
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            mandar(texto);
+          }}
+          className="mt-7 w-full rounded-[22px] border border-white/[0.12] bg-white/[0.05] text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] transition-colors focus-within:border-[#9F8CFB]/45 focus-within:bg-white/[0.07]"
+        >
+          <textarea
+            ref={campo}
+            rows={2}
+            value={texto}
+            maxLength={1200}
+            onChange={(e) => setTexto(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                e.preventDefault();
+                mandar(texto);
+              }
             }}
-            className="rounded-[18px] border border-white/10 bg-navy-900 transition-colors focus-within:border-[#9F8CFB]/50"
-          >
-            <textarea
-              ref={campo}
-              rows={2}
-              value={texto}
-              maxLength={1200}
-              onChange={(e) => setTexto(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-                  e.preventDefault();
-                  mandar(texto);
-                }
-              }}
-              placeholder="Contanos tu caso: qué hace tu empresa y qué te está frenando…"
-              aria-label="Contanos tu caso"
-              className="chat-campo block w-full resize-none bg-transparent px-4 pt-3.5 text-[16px] leading-relaxed text-white placeholder:text-gray-500 outline-none sm:text-[15px]"
-            />
-            <div className="flex items-center gap-2 px-2.5 pb-2.5 pt-1">
-              <a
-                href={whatsappDeLaCharla(mensajes)}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => track({ type: "click", name: "whatsapp", target: origen })}
-                className="inline-flex items-center gap-1.5 rounded-full border border-white/10 px-3 py-1.5 text-[12.5px] text-gray-300 transition-colors hover:border-[#25D366]/50 hover:text-[#25D366]"
-              >
-                <IconoWhatsApp size={13} />
-                Hablar con una persona
-              </a>
-              <button
-                type="submit"
-                disabled={!texto.trim()}
-                aria-label="Enviar"
-                className="ml-auto grid h-9 w-9 place-items-center rounded-full text-white transition-all hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0"
-                style={{ background: "linear-gradient(135deg, #9F6CF6 0%, #2B6FD4 100%)" }}
-              >
-                <ArrowUp size={17} />
-              </button>
-            </div>
-          </form>
-        </div>
+            placeholder="Contanos tu caso…"
+            aria-label="Contanos tu caso"
+            className="chat-campo block w-full resize-none bg-transparent px-5 pt-4 text-[16px] leading-relaxed text-white placeholder:text-gray-500 outline-none"
+          />
+          <div className="flex items-center justify-end gap-2 px-3 pb-3">
+            <a
+              href={whatsappDeLaCharla(mensajes)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => track({ type: "click", name: "whatsapp", target: origen })}
+              aria-label="Hablar con una persona por WhatsApp"
+              title="Hablar con una persona"
+              className="grid h-9 w-9 place-items-center rounded-full text-gray-400 transition-colors hover:bg-white/5 hover:text-[#25D366]"
+            >
+              <IconoWhatsApp size={16} />
+            </a>
+            <button
+              type="submit"
+              disabled={!texto.trim()}
+              aria-label="Enviar"
+              className="grid h-9 w-9 place-items-center rounded-full text-white transition-all hover:-translate-y-0.5 disabled:opacity-35 disabled:hover:translate-y-0"
+              style={{ background: "linear-gradient(135deg, #9F6CF6 0%, #2B6FD4 100%)" }}
+            >
+              <ArrowUp size={17} />
+            </button>
+          </div>
+        </form>
 
-        {/* Tres acciones, como las tarjetas de la referencia */}
-        <div className="mt-4 grid w-full gap-2.5 text-left sm:grid-cols-3">
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
           {atajos.slice(0, 3).map(({ label, texto: t, icono: Icono }) => (
             <button
               key={label}
               type="button"
               onClick={() => mandar(t, `${origen}:atajo`)}
-              className="group rounded-2xl border border-white/[0.08] bg-white/[0.03] p-3.5 transition-all hover:border-[#9F8CFB]/40 hover:bg-white/[0.06]"
+              title={t}
+              className="inline-flex items-center gap-2 rounded-full border border-white/[0.1] bg-white/[0.03] px-3.5 py-2 text-[13px] text-gray-300 transition-all hover:border-[#9F8CFB]/40 hover:bg-white/[0.06] hover:text-white"
             >
-              <span className="flex items-center gap-2 text-[13.5px] font-semibold text-white">
-                <Icono size={15} className="text-[#B9A5FB]" />
-                {label}
-              </span>
-              <span className="mt-1 line-clamp-2 block text-[12.5px] leading-snug text-gray-400">{t}</span>
+              <Icono size={14} className="text-[#B9A5FB]" />
+              {label}
             </button>
           ))}
         </div>
