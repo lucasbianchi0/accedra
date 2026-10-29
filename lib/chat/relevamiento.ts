@@ -101,6 +101,9 @@ export function armarRelevamiento(entrada: Record<string, unknown>): TarjetaRele
     industria: texto(entrada.industria, 60),
     tamano: texto(entrada.tamano, 60),
     resumen: texto(entrada.resumen, 420),
+    nota:
+      texto(entrada.nota, 320) ||
+      "Lo que nos contaste tiene solución, y no hace falta empezar comprando equipos: primero hay que ver el problema en el lugar. Para eso estamos.",
     situacion: texto(entrada.situacion, 700),
     hallazgos: hallazgos(entrada.hallazgos),
     areas,

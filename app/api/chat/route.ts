@@ -124,6 +124,11 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
           description:
             "Resumen ejecutivo para un gerente que no leyó la charla: el problema, su impacto y la recomendación principal, en 2 oraciones.",
         },
+        nota: {
+          type: "string",
+          description:
+            "Una nota humana del equipo para esta empresa, 1-2 oraciones en primera persona del plural: lo que le diría un especialista en persona (tranquilizar, poner en perspectiva, una idea concreta). Cálida y específica, sin frases hechas ni tono de IA.",
+        },
         situacion: { type: "string", description: "Lo que contó, en 2-3 oraciones." },
         hallazgos: {
           type: "array",
@@ -155,7 +160,7 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
         casos: { type: "array", items: { type: "string", enum: IDS_CASO }, maxItems: 2 },
         proximos_pasos: { type: "array", items: { type: "string" }, maxItems: 4 },
       },
-      required: ["empresa", "resumen", "situacion", "hallazgos", "areas"],
+      required: ["empresa", "resumen", "nota", "situacion", "hallazgos", "areas"],
     },
   },
   {

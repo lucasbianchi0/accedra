@@ -67,6 +67,8 @@ export type Relevamiento = {
   tamano: string;
   /** Resumen ejecutivo: el problema y la recomendación, en dos oraciones. */
   resumen: string;
+  /** Una nota humana del equipo para esta empresa: lo que le diría un especialista en persona. */
+  nota: string;
   situacion: string;
   hallazgos: { texto: string; prioridad: Prioridad }[];
   areas: { solucion: string; nombre: string; accent: string; porque: string; propuesta: string }[];
