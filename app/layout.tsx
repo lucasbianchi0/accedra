@@ -98,6 +98,10 @@ export const viewport: Viewport = {
   themeColor: "#07101d",
   width: "device-width",
   initialScale: 1,
+  // Android: con el teclado abierto se achica la página entera y no sólo lo
+  // visible, como en una app. El asistente queda pegado arriba del teclado
+  // sin esperar a `visualViewport`. (iOS lo ignora; ahí lo hace la hoja.)
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({

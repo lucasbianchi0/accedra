@@ -27,6 +27,9 @@ import { track } from "@/lib/track";
  * `visualViewport` (en iOS `100dvh` no se achica cuando aparece el teclado).
  */
 
+/** Lo que tarda en irse (el `transform` de cierre en globals.css). */
+const SALIDA_MS = 380;
+
 /** La solución de la página actual, para la pregunta y las acciones. */
 function solucionDeLaRuta(): string | undefined {
   return /^\/soluciones\/([^/]+)/.exec(window.location.pathname)?.[1];
@@ -38,6 +41,23 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
   const [solucion, setSolucion] = useState<string | undefined>();
   const vacio = mensajes.length === 0;
 
+  // La primera vez la hoja se monta ya abierta y no hay desde dónde animar:
+  // `data-open` pasa a "true" un cuadro después del montaje, así sube igual
+  // que las demás veces. Al cerrar, en el acto.
+  const [enPantalla, setEnPantalla] = useState(false);
+  if (!abierto && enPantalla) setEnPantalla(false);
+  useEffect(() => {
+    if (!abierto) return;
+    let segundo = 0;
+    const primero = requestAnimationFrame(() => {
+      segundo = requestAnimationFrame(() => setEnPantalla(true));
+    });
+    return () => {
+      cancelAnimationFrame(primero);
+      cancelAnimationFrame(segundo);
+    };
+  }, [abierto]);
+
   // La pregunta y las acciones se eligen al abrir: la hoja queda montada
   // mientras se navega y la página puede haber cambiado.
   useEffect(() => {
@@ -48,36 +68,56 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
 
   // Escape cierra; el fondo no scrollea mientras la hoja está abierta (y el
   // robotito y WhatsApp se esconden: escuchan el overflow del body).
+  //
+  // Al cerrar, la página se suelta recién cuando la hoja terminó de bajar: si
+  // no, el robotito y WhatsApp volvían a aparecer encima de la hoja que se
+  // estaba yendo. Si se reabre antes, el bloqueo sigue el que estaba.
+  const bloqueo = useRef<{ soltar: () => void; salida?: number } | null>(null);
   useEffect(() => {
     if (!abierto) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onCerrar();
     window.addEventListener("keydown", onKey);
-    const html = document.documentElement;
-    const body = document.body.style;
-    const previo = { overflow: body.overflow, html: html.style.overflow, position: body.position, top: body.top, width: body.width };
-    body.overflow = "hidden";
-    html.style.overflow = "hidden";
-    // En celular y tablet, además, el body fijo: iOS ignora el `overflow` y
-    // seguía moviendo la página de atrás al abrir el teclado o al arrastrar
-    // sobre una parte de la hoja sin scroll, y la hoja quedaba corrida. (En
-    // escritorio no: ahí el scroll lo lleva Lenis y alcanza con el overflow.)
-    const celular = window.matchMedia("(max-width: 1023px)").matches;
-    const y = window.scrollY;
-    if (celular) {
-      body.position = "fixed";
-      body.top = `-${y}px`;
-      body.width = "100%";
+    if (bloqueo.current?.salida) {
+      clearTimeout(bloqueo.current.salida);
+      bloqueo.current.salida = undefined;
+    } else {
+      const html = document.documentElement;
+      const body = document.body.style;
+      const previo = { overflow: body.overflow, html: html.style.overflow, position: body.position, top: body.top, width: body.width };
+      body.overflow = "hidden";
+      html.style.overflow = "hidden";
+      // En celular y tablet, además, el body fijo: iOS ignora el `overflow` y
+      // seguía moviendo la página de atrás al abrir el teclado o al arrastrar
+      // sobre una parte de la hoja sin scroll, y la hoja quedaba corrida. (En
+      // escritorio no: ahí el scroll lo lleva Lenis y alcanza con el overflow.)
+      const celular = window.matchMedia("(max-width: 1023px)").matches;
+      const y = window.scrollY;
+      if (celular) {
+        body.position = "fixed";
+        body.top = `-${y}px`;
+        body.width = "100%";
+      }
+      bloqueo.current = {
+        soltar: () => {
+          body.overflow = previo.overflow;
+          html.style.overflow = previo.html;
+          if (celular) {
+            body.position = previo.position;
+            body.top = previo.top;
+            body.width = previo.width;
+            window.scrollTo({ top: y, behavior: "instant" });
+          }
+        },
+      };
     }
+    const b = bloqueo.current;
     return () => {
       window.removeEventListener("keydown", onKey);
-      body.overflow = previo.overflow;
-      html.style.overflow = previo.html;
-      if (celular) {
-        body.position = previo.position;
-        body.top = previo.top;
-        body.width = previo.width;
-        window.scrollTo({ top: y, behavior: "instant" });
-      }
+      if (!b) return;
+      b.salida = window.setTimeout(() => {
+        b.soltar();
+        bloqueo.current = null;
+      }, SALIDA_MS);
     };
   }, [abierto, onCerrar]);
 
@@ -158,7 +198,7 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
   };
 
   return (
-    <div className="chat-hoja-raiz" data-open={abierto ? "true" : "false"}>
+    <div className="chat-hoja-raiz" data-open={enPantalla ? "true" : "false"}>
       {/* Fondo: oscurece y desenfoca la página; un clic cierra. */}
       <div
         aria-hidden
@@ -334,10 +374,15 @@ function Bienvenida({ solucion }: { solucion?: string }) {
     // `my-auto` y no `justify-center`: si el contenido no entra, justify-center
     // lo recorta arriba (donde no se puede scrollear); my-auto sólo centra
     // cuando sobra lugar.
+    //
+    // En celular y tablet el campo va abajo, como en una app de chat: el
+    // saludo se centra en lo que queda (los dos `mt-auto`) y el campo queda
+    // pegado al borde, así el teclado lo empuja hacia arriba sin que nada más
+    // se corra. En escritorio todo junto y centrado.
     <div className="flex flex-1 flex-col">
       {/* `hoja-entra`: cada hijo entra escalonado cuando la hoja termina de subir. */}
-      <div className="hoja-entra my-auto flex flex-col items-center pb-4 text-center">
-        <MascotaRetrato size={112} className="lg:h-[96px] lg:w-[96px]" />
+      <div className="hoja-entra flex flex-1 flex-col items-center text-center lg:my-auto lg:flex-none lg:pb-4">
+        <MascotaRetrato size={112} className="mt-auto lg:mt-0 lg:h-[96px] lg:w-[96px]" />
         <p className="mt-1 text-[14px] text-gray-400">
           Hola, soy el asistente de <NombreAccedraAI className="font-semibold text-white" />
         </p>
@@ -350,8 +395,10 @@ function Bienvenida({ solucion }: { solucion?: string }) {
         <div
           role="radiogroup"
           aria-label="Tu industria"
+          // `mb-6` en el teléfono: con el campo abajo, separa los rubros de él
+          // cuando el saludo ocupa todo el alto.
           // En el teléfono se deslizan de costado; el fundido a la derecha avisa que hay más.
-          className="no-scrollbar -mx-4 mt-6 flex max-w-[calc(100%+2rem)] gap-2 sm:gap-1.5 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,#000_82%,transparent)] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none]"
+          className="no-scrollbar -mx-4 mb-6 mt-6 flex max-w-[calc(100%+2rem)] gap-2 sm:gap-1.5 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,#000_82%,transparent)] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none] lg:mb-0"
         >
           {INDUSTRIAS.map((ind) => {
             const activa = industria?.id === ind.id;
@@ -383,7 +430,7 @@ function Bienvenida({ solucion }: { solucion?: string }) {
             e.preventDefault();
             mandar(texto);
           }}
-          className="campo-ai relative mt-4 w-full rounded-[22px] text-left"
+          className="campo-ai sticky bottom-0 mt-auto w-full rounded-[22px] text-left lg:relative lg:mt-4"
         >
           <textarea
             rows={2}

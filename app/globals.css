@@ -1475,8 +1475,9 @@ dialog[data-brochure]::backdrop {
 /* La hoja de Accedra AI: sube desde abajo; el fondo oscurece y desenfoca.
    Queda montada y alterna `data-open`, así tiene animación de salida. */
 /* Abrir: curva expo (sale rápido y se asienta muy largo), desde apenas más
-   chica. Cerrar: acelera hacia abajo, sin rebote, más corta que la apertura —
-   lo que se va no tiene que hacerse esperar. */
+   chica. Cerrar: más corta y también arranca rápido —con una curva que
+   acelera de a poco, la hoja quedaba quieta un cuarto de segundo sobre la
+   página ya aclarada—. 380 ms: SALIDA_MS en HojaAsistente. */
 .chat-hoja-fondo {
   transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1), visibility 0s linear 0.55s;
 }
@@ -1495,12 +1496,12 @@ dialog[data-brochure]::backdrop {
 .chat-hoja-raiz[data-open="true"] .chat-hoja { transition-delay: 0s; }
 .chat-hoja-raiz[data-open="false"] .chat-hoja {
   transition:
-    transform 0.4s cubic-bezier(0.7, 0, 0.84, 0),
-    opacity 0.4s cubic-bezier(0.7, 0, 0.84, 0),
-    height 0.4s ease,
-    visibility 0s linear 0.4s;
+    transform 0.38s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.38s ease-in,
+    height 0.38s ease,
+    visibility 0s linear 0.38s;
 }
-.chat-hoja-raiz[data-open="false"] .chat-hoja-fondo { transition: opacity 0.4s ease 0.05s, visibility 0s linear 0.45s; }
+.chat-hoja-raiz[data-open="false"] .chat-hoja-fondo { transition: opacity 0.34s ease, visibility 0s linear 0.34s; }
 /* Al cerrar, el contenido se apaga antes que la hoja termine de bajar. */
 .chat-hoja-raiz[data-open="false"] .hoja-entra > * { opacity: 0; transition: opacity 0.15s ease; }
 /* Mientras se arrastra con el dedo, la hoja sigue al dedo sin transición. */
@@ -1589,6 +1590,20 @@ dialog[data-brochure]::backdrop {
   border-color: rgba(185, 165, 251, 0.5);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.045) 100%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 0 0 4px rgba(139, 92, 246, 0.12), 0 0 60px rgba(124, 108, 246, 0.22), 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+/* Celular y tablet: el campo va pegado abajo y, con el teclado, el saludo
+   pasa por debajo. El vidrio lleva el fondo de la hoja detrás, y una banda
+   que funde lo que sube hasta él: sin eso el texto se leía a través. */
+@media (max-width: 1023px) {
+  .campo-ai { background-color: #0c1426; }
+  .campo-ai::before {
+    content: "";
+    position: absolute;
+    inset: -28px -16px -20px;
+    z-index: -1;
+    background: linear-gradient(to bottom, rgba(9, 16, 32, 0), rgb(9, 16, 32) 34px);
+    pointer-events: none;
+  }
 }
 
 /* Enviar: degradé de la marca; apagado hasta que hay texto. */
