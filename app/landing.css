@@ -681,7 +681,7 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
   }
   .lp-tarjeta-tope { grid-column: 1; grid-row: 1; }
   .lp-tarjeta-marca { margin-top: 0.5rem; }
-  .lp-insignia { position: absolute; top: 1.125rem; right: 1.25rem; z-index: 1; }
+  .lp-insignia { position: absolute; top: -0.1875rem; left: 2.125rem; }
   .lp-azulejo { width: 2.875rem; height: 2.875rem; border-radius: 0.8125rem; }
   .lp-tarjeta-pie {
     grid-column: 1;
