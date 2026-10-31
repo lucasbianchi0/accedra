@@ -761,6 +761,7 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
 .lp-metodo-fijo {
   display: grid;
   gap: 2.5rem;
+  grid-template-columns: minmax(0, 1fr);
   padding: 3rem 1.25rem 2.5rem;
 }
 .lp-metodo-medios { display: none; }
