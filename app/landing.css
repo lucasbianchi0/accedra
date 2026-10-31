@@ -1163,8 +1163,9 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
       animation: lp-enciende linear both;
       animation-timeline: --lp-manifiesto;
       animation-range:
-        cover calc(16% + var(--p) * 32%)
-        cover calc(22% + var(--p) * 32%);
+        /* Arranca con el texto cerca del centro, no cuando recién asoma. */
+        cover calc(40% + var(--p) * 18%)
+        cover calc(44% + var(--p) * 18%);
     }
     .lp-marco {
       animation: lp-marco-sale linear both;
