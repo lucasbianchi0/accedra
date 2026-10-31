@@ -231,7 +231,10 @@ export default function Conversacion({
                 e.preventDefault();
                 mandar();
               }}
-              className="campo-ai flex items-end gap-1 rounded-[26px] py-1.5 pl-4 pr-1.5 lg:gap-2 lg:rounded-[22px]"
+              // Celular: escribir arriba y los botones abajo, como en la
+              // bienvenida. Escritorio: un solo renglón (la fila de botones se
+              // disuelve con `contents`).
+              className="campo-ai rounded-[26px] lg:flex lg:items-end lg:gap-2 lg:rounded-[22px] lg:py-1.5 lg:pl-4 lg:pr-1.5"
             >
               <textarea
                 ref={campo}
@@ -257,41 +260,43 @@ export default function Conversacion({
                 aria-label="Tu mensaje"
                 // 16px hasta escritorio: con menos, iOS hace zoom al enfocar y
                 // desarma la hoja (en tablet también).
-                className="chat-campo max-h-[132px] flex-1 resize-none bg-transparent py-2 text-[16px] leading-snug text-white placeholder:text-gray-500 outline-none lg:text-[14px]"
+                className="chat-campo block max-h-[132px] w-full resize-none bg-transparent px-4 pb-1 pt-3.5 text-[16px] lg:flex-1 lg:px-0 lg:py-2 leading-snug text-white placeholder:text-gray-500 outline-none lg:text-[14px]"
               />
-              <a
-                href={whatsappDeLaCharla(mensajes)}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => track({ type: "click", name: "whatsapp", target: `chat_campo:${origen}` })}
-                aria-label="Hablar con una persona por WhatsApp"
-                title="Hablar con una persona"
-                className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-gray-400 transition-colors hover:bg-white/5 hover:text-[#25D366] lg:hidden"
-              >
-                <IconoWhatsApp size={16} />
-              </a>
-              {enCurso ? (
-                <button
-                  type="button"
-                  onClick={detener}
-                  aria-label="Detener"
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/15"
+              <div className="flex items-center gap-1 px-2 pb-2 lg:contents">
+                <a
+                  href={whatsappDeLaCharla(mensajes)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => track({ type: "click", name: "whatsapp", target: `chat_campo:${origen}` })}
+                  aria-label="Hablar con una persona por WhatsApp"
+                  title="Hablar con una persona"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-gray-400 transition-colors hover:bg-white/5 hover:text-[#25D366] lg:hidden"
                 >
-                  <Square size={12} fill="currentColor" />
-                </button>
-              ) : (
-                <button
-                  // Sin robarle el foco al campo: si no, el teclado empieza a cerrarse
-                  // con el toque, la hoja se reacomoda y el toque cae en otro lado.
-                  onPointerDown={(e) => e.preventDefault()}
-                  type="submit"
-                  disabled={!texto.trim()}
-                  aria-label="Enviar"
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-600 text-white transition-all hover:bg-accent disabled:bg-white/10 disabled:text-gray-500"
-                >
-                  <ArrowUp size={17} />
-                </button>
-              )}
+                  <IconoWhatsApp size={16} />
+                </a>
+                {enCurso ? (
+                  <button
+                    type="button"
+                    onClick={detener}
+                    aria-label="Detener"
+                    className="ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/15 lg:ml-0"
+                  >
+                    <Square size={12} fill="currentColor" />
+                  </button>
+                ) : (
+                  <button
+                    // Sin robarle el foco al campo: si no, el teclado empieza a cerrarse
+                    // con el toque, la hoja se reacomoda y el toque cae en otro lado.
+                    onPointerDown={(e) => e.preventDefault()}
+                    type="submit"
+                    disabled={!texto.trim()}
+                    aria-label="Enviar"
+                    className="ml-auto grid h-9 w-9 shrink-0 place-items-center rounded-full bg-accent-600 text-white transition-all hover:bg-accent disabled:bg-white/10 disabled:text-gray-500 lg:ml-0"
+                  >
+                    <ArrowUp size={17} />
+                  </button>
+                )}
+              </div>
             </form>
             <div className="mt-2 hidden items-center justify-between px-1 text-[11px] text-gray-600 lg:flex">
               <span>Asistente con IA · puede equivocarse</span>

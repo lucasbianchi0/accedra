@@ -396,7 +396,8 @@ function Bienvenida({ solucion }: { solucion?: string }) {
     // pegada abajo —el teclado la empuja y queda justo arriba de él— y el
     // saludo se centra en lo que sobra. Con el teclado abierto el robot, el
     // "Hola" y la promesa del PDF se esconden (`data-teclado` de la hoja):
-    // quedan la pregunta, los rubros y el campo.
+    // quedan la pregunta y los rubros, y bajan a apoyarse sobre el campo: en
+    // el medio dejaban un hueco arriba y otro abajo.
     //
     // Escritorio: todo junto y centrado, con el campo grande que escribe
     // ejemplos solo.
@@ -406,7 +407,7 @@ function Bienvenida({ solucion }: { solucion?: string }) {
     // cuando sobra lugar.
     <div className="flex flex-1 flex-col items-center text-center lg:my-auto lg:flex-none lg:pb-4">
       {/* `hoja-entra`: cada hijo entra escalonado cuando la hoja termina de subir. */}
-      <div className="hoja-entra my-auto flex w-full flex-col items-center py-4 lg:my-0 lg:py-0">
+      <div className="hoja-entra my-auto flex w-full flex-col items-center py-4 lg:my-0 lg:py-0 in-data-[teclado=true]:mb-0 in-data-[teclado=true]:pb-4">
         <MascotaRetrato size={96} className="in-data-[teclado=true]:hidden" />
         <p className="mt-1 text-[14px] text-gray-400 in-data-[teclado=true]:hidden">
           Hola, soy el asistente de <NombreAccedraAI className="font-semibold text-white" />
@@ -455,7 +456,10 @@ function Bienvenida({ solucion }: { solucion?: string }) {
             e.preventDefault();
             mandar(texto);
           }}
-          className="campo-ai relative flex w-full items-end gap-1 rounded-[26px] py-1.5 pl-4 pr-1.5 text-left lg:block lg:rounded-[22px] lg:p-0"
+          // Celular: como en ChatGPT, el renglón para escribir arriba y los
+          // botones abajo (WhatsApp a la izquierda, enviar a la derecha): el
+          // campo se ve más grande y el texto no compite con los íconos.
+          className="campo-ai relative w-full rounded-[26px] text-left lg:rounded-[22px]"
         >
           <textarea
             ref={campo}
@@ -481,7 +485,7 @@ function Bienvenida({ solucion }: { solucion?: string }) {
             // escritorio sólo con foco (sin foco se ve el ejemplo que se escribe).
             placeholder="Contanos tu caso…"
             aria-label="Contanos tu caso"
-            className="chat-campo relative block max-h-[140px] min-w-0 flex-1 resize-none [field-sizing:content] bg-transparent py-2 text-[16px] leading-snug text-white placeholder:text-gray-500 outline-none lg:min-h-[76px] lg:w-full lg:px-5 lg:pb-0 lg:pt-4 lg:leading-relaxed lg:placeholder:text-transparent lg:focus:placeholder:text-gray-500"
+            className="chat-campo relative block max-h-[140px] w-full resize-none [field-sizing:content] bg-transparent px-4 pb-1 pt-3.5 text-[16px] leading-snug text-white placeholder:text-gray-500 outline-none lg:min-h-[76px] lg:px-5 lg:pb-0 lg:pt-4 lg:leading-relaxed lg:placeholder:text-transparent lg:focus:placeholder:text-gray-500"
           />
           {/* El ejemplo va encima y no como placeholder: uno que cambia cada
               40 ms lo releen los lectores de pantalla en cada cambio. */}
@@ -494,7 +498,7 @@ function Bienvenida({ solucion }: { solucion?: string }) {
               <span className="hero-cursor ml-0.5 inline-block h-[1.05em] w-[2px] translate-y-[3px] rounded-full bg-[#B9A5FB]" />
             </p>
           )}
-          <div className="flex shrink-0 items-center gap-1 lg:gap-2 lg:px-3 lg:pb-3">
+          <div className="flex items-center gap-1 px-2 pb-2 lg:gap-2 lg:px-3 lg:pb-3">
             <a
               href={whatsappDeLaCharla(mensajes)}
               target="_blank"
@@ -513,7 +517,7 @@ function Bienvenida({ solucion }: { solucion?: string }) {
               type="submit"
               disabled={!texto.trim()}
               aria-label="Enviar"
-              className="enviar-ai grid h-9 w-9 place-items-center rounded-full text-white"
+              className="enviar-ai ml-auto grid h-9 w-9 place-items-center rounded-full text-white lg:ml-0"
             >
               <ArrowUp size={17} />
             </button>
