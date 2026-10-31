@@ -139,15 +139,18 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
       cancelAnimationFrame(cuadro);
       cuadro = requestAnimationFrame(() => {
         base = Math.max(base, vv.height);
-        el.style.height = `${vv.height}px`;
-        el.style.top = `${vv.offsetTop}px`;
+        // Sin teclado manda el CSS (`100dvh`, top 0) y no se toca nada: al
+        // abrir, Safari mueve su barra cuando se fija la página de atrás y
+        // seguirla en píxeles hacía saltar la hoja un cuadro (el parpadeo).
+        const conTeclado = base - vv.height > 150;
+        el.style.height = conTeclado ? `${vv.height}px` : "";
+        el.style.top = conTeclado ? `${vv.offsetTop}px` : "";
         // Con el teclado abierto, el campo donde se escribe (con sus botones)
         // queda a la vista, justo arriba. En cada cambio de alto y no una sola
         // vez: el teclado sube en varios pasos. Sin esconder ni mover nada
         // más: la bienvenida se desliza dentro de la hoja.
-        const teclado = base - vv.height > 150;
-        el.dataset.teclado = teclado ? "true" : "false";
-        if (teclado && vv.height !== alto) {
+        el.dataset.teclado = conTeclado ? "true" : "false";
+        if (conTeclado && vv.height !== alto) {
           const foco = document.activeElement;
           if (foco instanceof HTMLElement && el.contains(foco)) {
             (foco.closest("form") ?? foco).scrollIntoView({ block: "nearest" });

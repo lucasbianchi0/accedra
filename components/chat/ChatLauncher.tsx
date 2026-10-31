@@ -48,7 +48,10 @@ export default function ChatLauncher() {
   // navegador está libre: en el celular no hay hover que la anticipe, y
   // bajarla y montarla recién con el toque hacía esperar la apertura.
   useEffect(() => {
-    const ric = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1500));
+    // Safari no tiene requestIdleCallback: ahí se espera 4 s después de
+    // `load`, cuando ya terminó la entrada de la portada y arrancó el video
+    // del fondo (2,5 s). Montarla encima de eso trababa la entrada.
+    const ric = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 4000));
     const cic = window.cancelIdleCallback ?? window.clearTimeout;
     let id = 0;
     const bajar = () => (id = ric(montarCerrada, { timeout: 4000 }));
