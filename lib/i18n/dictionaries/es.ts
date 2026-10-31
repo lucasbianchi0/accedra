@@ -3,6 +3,7 @@
 export const es = {
   // Portada corporativa (rama feature/test-new-landing).
   landing: {
+    manifiesto: "Proveedor integral de infraestructura, servicios y proyectos de tecnología para las empresas líderes de Argentina.",
     portada: {
       sub: "Redes, seguridad, firma biométrica, datos e IA, con un único responsable.",
       pruebaCifra: "400+ proyectos",

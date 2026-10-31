@@ -7,7 +7,7 @@ import { useT } from "@/lib/i18n/useT";
  * sin soporte el texto queda en su color final. */
 export default function Manifiesto() {
   const t = useT();
-  const palabras = t.footer.tagline.split(/\s+/);
+  const palabras = t.landing.manifiesto.split(/\s+/);
 
   return (
     <section className="lp-contenedor lp-manifiesto">

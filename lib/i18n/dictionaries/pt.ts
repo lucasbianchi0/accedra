@@ -2,6 +2,7 @@ import type { Dict } from "./es";
 
 export const pt: Dict = {
   landing: {
+    manifiesto: "Fornecedor integral de infraestrutura, serviços e projetos de tecnologia para as empresas líderes da Argentina.",
     portada: {
       sub: "Redes, segurança, assinatura biométrica, dados e IA, com um único responsável.",
       pruebaCifra: "400+ projetos",
