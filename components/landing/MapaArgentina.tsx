@@ -9,8 +9,8 @@ const MAPA = { w: 560, h: 1196 };
 const SEDE = { x: 418.8, y: 402.9 };
 export const CODIGO_SEDE = "ciudad-de-buenos-aires";
 
-// Provincias con un caso publicado; el texto sale de `landing.presencia.detalles`.
-export const CON_CASO = ["buenos-aires", "catamarca", "jujuy", "san-juan", "santa-cruz"];
+/** Marca todo el territorio continental desde una fila de la lista. */
+export const TODAS = "*";
 
 function arco(x: number, y: number) {
   const lejos = Math.abs(y - SEDE.y) > 200;
@@ -50,7 +50,11 @@ export default function MapaArgentina({
   }, []);
 
   const activa = useMemo(() => provincias.find((x) => x.code === foco), [provincias, foco]);
-  const destinos = useMemo(() => provincias.filter((x) => CON_CASO.includes(x.code)), [provincias]);
+  // Una ruta por provincia, de la más cercana a CABA a la más lejana.
+  const destinos = useMemo(
+    () => provincias.filter((x) => x.code !== CODIGO_SEDE && x.code !== "malvinas"),
+    [provincias],
+  );
 
   const cambiar = (codigo: string | null) => {
     setFoco(codigo);
@@ -58,7 +62,9 @@ export default function MapaArgentina({
   };
 
   const hayFoco = foco !== null || resaltadas.length > 0;
-  const detalle = foco ? (p.detalles as Record<string, string>)[foco] : undefined;
+  const detalle = foco ? ((p.detalles as Record<string, string>)[foco] ?? p.detalleGeneral) : undefined;
+  const marcada = (codigo: string) =>
+    codigo === foco || resaltadas.includes(codigo) || (resaltadas.includes(TODAS) && codigo !== "malvinas");
 
   return (
     <div ref={caja} className="lp-mapa-lienzo" onPointerLeave={() => cambiar(null)}>
@@ -72,8 +78,7 @@ export default function MapaArgentina({
                 key={x.code}
                 d={x.path}
                 className="lp-prov"
-                data-caso={CON_CASO.includes(x.code) || x.code === CODIGO_SEDE || undefined}
-                data-activa={x.code === foco || resaltadas.includes(x.code) || undefined}
+                data-activa={marcada(x.code) || undefined}
                 style={{ "--ola": x.ola } as CSSProperties}
                 onPointerEnter={() => cambiar(x.code)}
                 onClick={() => cambiar(x.code)}
@@ -101,8 +106,9 @@ export default function MapaArgentina({
           {destinos.map((d, i) => (
             <g key={d.code} style={{ "--i": i } as CSSProperties} className="lp-ruta">
               <path d={arco(d.cx, d.cy)} pathLength={1} className="lp-arco" />
-              <path d={arco(d.cx, d.cy)} pathLength={1} className="lp-senal" />
-              <circle cx={d.cx} cy={d.cy} r={9} className="lp-punto" />
+              {/* Pulsos solo en una de cada cuatro rutas: con todas sería ruido. */}
+              {i % 4 === 1 && <path d={arco(d.cx, d.cy)} pathLength={1} className="lp-senal" />}
+              <circle cx={d.cx} cy={d.cy} r={6.5} className="lp-punto" />
             </g>
           ))}
           <circle cx={SEDE.x} cy={SEDE.y} r={13} className="lp-sede-pulso" />

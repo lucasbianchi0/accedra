@@ -13,6 +13,7 @@
   --azul-claro: #2b6fd4;
   --cielo: #8dbbf5;
   --navy: #0a1424;
+  --azul-oscuro-ola: #17468f;
   --curva: cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   background: var(--papel);
@@ -433,14 +434,13 @@
 .lp-mapa-lienzo { position: relative; aspect-ratio: 560 / 1196; }
 .lp-mapa-lienzo > img, .lp-mapa-lienzo > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .lp-prov {
-  fill: #c4d7f2;
+  fill: var(--azul-claro);
   stroke: var(--papel);
   stroke-width: 1.4;
   stroke-linejoin: round;
   transition: fill 0.3s ease, opacity 0.3s ease;
 }
-.lp-prov[data-caso] { fill: var(--azul-claro); }
-svg[data-foco] .lp-prov { opacity: 0.45; }
+svg[data-foco] .lp-prov { opacity: 0.35; }
 svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
 .lp-prov-alza {
   fill: var(--tinta);
@@ -454,9 +454,9 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
 }
 .lp-contorno { fill: none; stroke: none; pointer-events: none; }
 .lp-ruta { pointer-events: none; }
-.lp-arco { stroke: var(--tinta); stroke-width: 1.5; fill: none; opacity: 0.5; }
-.lp-senal { stroke: #fff; stroke-width: 3; stroke-linecap: round; fill: none; stroke-dasharray: 0.035 1; stroke-dashoffset: 1.035; opacity: 0; }
-.lp-punto { fill: #fff; stroke: var(--tinta); stroke-width: 3; }
+.lp-arco { stroke: #fff; stroke-width: 1.2; fill: none; opacity: 0.5; }
+.lp-senal { stroke: #fff; stroke-width: 3.5; stroke-linecap: round; fill: none; stroke-dasharray: 0.035 1; stroke-dashoffset: 1.035; opacity: 0; }
+.lp-punto { fill: #fff; stroke: var(--tinta); stroke-width: 2.5; }
 .lp-sede { fill: var(--tinta); stroke: #fff; stroke-width: 4; cursor: pointer; }
 .lp-sede-pulso { fill: var(--azul-claro); transform-box: fill-box; transform-origin: center; opacity: 0; pointer-events: none; }
 .lp-mapa-malvinas { font-family: var(--font-inter), sans-serif; font-size: 19px; font-weight: 500; fill: var(--gris); pointer-events: none; }
@@ -479,6 +479,17 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
   transition: left 0.35s var(--curva), top 0.35s var(--curva);
 }
 .lp-mapa-globo[data-lado="izq"] { transform: translate(calc(-100% - 14px), -50%); }
+@media (max-width: 1199px) {
+  /* Sin margen a los costados: el globo va fijo sobre el Atlántico. */
+  .lp-mapa-globo,
+  .lp-mapa-globo[data-lado="izq"] {
+    left: auto !important;
+    top: 58% !important;
+    right: 0;
+    max-width: 58%;
+    transform: none;
+  }
+}
 .lp-mapa-globo strong { font-weight: 600; }
 .lp-mapa-globo span { color: var(--cielo); font-size: 0.75rem; }
 .lp-mapa-lista {
@@ -1078,7 +1089,7 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
     }
     @keyframes lp-ola {
       0% { fill: #e4e8ef; }
-      45% { fill: var(--azul-claro); }
+      45% { fill: var(--azul-oscuro-ola); }
       100% { }
     }
     @keyframes lp-ruta { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
@@ -1102,10 +1113,10 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
     .lp-mapa[data-in] .lp-prov { animation: lp-ola 1.3s ease calc(var(--ola) * 1.3s + 0.75s) backwards; }
     .lp-mapa[data-in] .lp-sede { animation: lp-pop 0.7s var(--curva) 0.5s backwards; transform-box: fill-box; transform-origin: center; }
     .lp-mapa[data-in] .lp-mapa-malvinas { animation: lp-globo 0.9s ease 2.2s backwards; }
-    .lp-mapa[data-in] .lp-arco { stroke-dasharray: 1; animation: lp-ruta 1.2s var(--curva) calc(var(--i) * 130ms + 1.9s) backwards; }
+    .lp-mapa[data-in] .lp-arco { stroke-dasharray: 1; animation: lp-ruta 1.1s var(--curva) calc(var(--i) * 55ms + 1.8s) backwards; }
     .lp-punto { transform-box: fill-box; transform-origin: center; }
-    .lp-mapa[data-in] .lp-punto { animation: lp-pop 0.7s var(--curva) calc(var(--i) * 130ms + 2.6s) backwards; }
-    .lp-mapa[data-in] [data-cerca] .lp-senal { animation: lp-senal 3.4s ease-in calc(var(--i) * 0.7s + 3.2s) infinite; }
+    .lp-mapa[data-in] .lp-punto { animation: lp-pop 0.7s var(--curva) calc(var(--i) * 55ms + 2.3s) backwards; }
+    .lp-mapa[data-in] [data-cerca] .lp-senal { animation: lp-senal 3.4s ease-in calc(var(--i) * 0.22s + 3.6s) infinite; }
     .lp-mapa[data-in] [data-cerca] .lp-sede-pulso { animation: lp-pulso 3s ease-out 1.6s infinite; }
     .lp-mapa[data-in] [data-cerca] .lp-sede-pulso-2 { animation-delay: 3.1s; }
     .lp-prov-alza { animation: lp-alza 0.45s var(--curva) both; }

@@ -13,6 +13,7 @@ export const pt: Dict = {
       proyectos: "Projetos",
       sedeLugar: "CABA",
       mapaAria: "Mapa da Argentina com suas províncias e as Ilhas Malvinas",
+      detalleGeneral: "Cobertura nacional",
       detalles: {
         "ciudad-de-buenos-aires": "Sede",
         "buenos-aires": "Banco Provincia · assinatura biométrica",
@@ -23,8 +24,9 @@ export const pt: Dict = {
         malvinas: "Argentina",
       },
       despliegues: [
-        { lugar: "Província de Buenos Aires", detalle: "Banco Provincia · assinatura biométrica" },
-        { lugar: "Catamarca · Jujuy · San Juan · Santa Cruz", detalle: "Finning · conectividade para mineração" },
+        { lugar: "Banco Provincia", detalle: "Assinatura biométrica · 400 agências" },
+        { lugar: "Finning", detalle: "Conectividade para mineração · 15+ locais" },
+        { lugar: "Andreani", detalle: "Rede corporativa · operação nacional" },
       ],
     },
     soluciones: { eyebrow: "Soluções" },

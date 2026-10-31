@@ -14,6 +14,7 @@ export const es = {
       proyectos: "Proyectos",
       sedeLugar: "CABA",
       mapaAria: "Mapa de la Argentina con sus provincias y las Islas Malvinas",
+      detalleGeneral: "Cobertura nacional",
       detalles: {
         "ciudad-de-buenos-aires": "Casa central",
         "buenos-aires": "Banco Provincia · firma biométrica",
@@ -24,8 +25,9 @@ export const es = {
         malvinas: "Argentina",
       },
       despliegues: [
-        { lugar: "Provincia de Buenos Aires", detalle: "Banco Provincia · firma biométrica" },
-        { lugar: "Catamarca · Jujuy · San Juan · Santa Cruz", detalle: "Finning · conectividad minera" },
+        { lugar: "Banco Provincia", detalle: "Firma biométrica · 400 sucursales" },
+        { lugar: "Finning", detalle: "Conectividad minera · 15+ sitios" },
+        { lugar: "Andreani", detalle: "Red corporativa · operación nacional" },
       ],
     },
     soluciones: { eyebrow: "Soluciones" },

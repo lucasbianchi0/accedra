@@ -5,7 +5,7 @@ import { CalendarDays, Rocket, Handshake, Building2 } from "lucide-react";
 import { useT } from "@/lib/i18n/useT";
 import Cuenta from "./Cuenta";
 import { Entra, Palabras } from "./Entra";
-import MapaArgentina, { CODIGO_SEDE } from "./MapaArgentina";
+import MapaArgentina, { CODIGO_SEDE, TODAS } from "./MapaArgentina";
 
 const CIFRAS = [
   { valor: 17, icono: CalendarDays },
@@ -15,7 +15,7 @@ const CIFRAS = [
 ];
 
 // Mismo orden que `despliegues`; la primera fila es la casa central.
-const FILAS = [[CODIGO_SEDE], ["buenos-aires"], ["catamarca", "jujuy", "san-juan", "santa-cruz"]];
+const FILAS = [[CODIGO_SEDE], [TODAS], ["catamarca", "jujuy", "san-juan", "santa-cruz"], [TODAS]];
 
 export default function Presencia() {
   const t = useT();
