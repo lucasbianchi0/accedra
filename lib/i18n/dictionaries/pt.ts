@@ -2,6 +2,11 @@ import type { Dict } from "./es";
 
 export const pt: Dict = {
   landing: {
+    portada: {
+      sub: "Redes, segurança, assinatura biométrica, dados e IA, com um único responsável.",
+      pruebaCifra: "400+ projetos",
+      pruebaClientes: "Banco Provincia · Andreani · Finning",
+    },
     clientes: "As empresas líderes da Argentina confiam em nós",
     presencia: {
       eyebrow: "Onde estamos",

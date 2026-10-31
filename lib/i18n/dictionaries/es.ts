@@ -3,6 +3,11 @@
 export const es = {
   // Portada corporativa (rama feature/test-new-landing).
   landing: {
+    portada: {
+      sub: "Redes, seguridad, firma biométrica, datos e IA, con un único responsable.",
+      pruebaCifra: "400+ proyectos",
+      pruebaClientes: "Banco Provincia · Andreani · Finning",
+    },
     clientes: "Las empresas líderes de Argentina confían en nosotros",
     presencia: {
       eyebrow: "Dónde estamos",

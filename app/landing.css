@@ -324,16 +324,25 @@
   gap: 0.75rem;
   align-items: center;
 }
-.lp-portada-marca {
+.lp-portada-prueba {
   display: none;
   position: absolute;
   z-index: 1;
   right: 7.5rem;
   bottom: clamp(3.5rem, 5vw, 4.5rem);
-  height: 26px;
-  width: auto;
+  text-align: right;
+  color: #fff;
 }
-@media (min-width: 1024px) { .lp-portada-marca { display: block; } }
+.lp-portada-prueba strong {
+  display: block;
+  font-family: var(--font-tight), sans-serif;
+  font-size: 2.25rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.lp-portada-prueba span { display: block; margin-top: 0.375rem; font-size: 0.8125rem; color: rgba(255, 255, 255, 0.78); }
+@media (min-width: 1024px) { .lp-portada-prueba { display: block; } }
 
 /* ── Clientes ────────────────────────────────────────────── */
 .lp-clientes-seccion { padding-top: 1.5rem; }
@@ -624,7 +633,7 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
   overflow: visible;
   font-family: var(--font-inter), sans-serif;
   /* La sombra le da peso al metal: una ancha y suave, otra corta y marcada. */
-  filter: drop-shadow(0 24px 28px rgba(13, 26, 45, 0.26)) drop-shadow(0 6px 8px rgba(13, 26, 45, 0.2));
+  filter: drop-shadow(0 12px 14px rgba(13, 26, 45, 0.1)) drop-shadow(0 2px 3px rgba(13, 26, 45, 0.1));
   transition: transform 0.8s var(--curva);
 }
 /* La notebook mira apenas de costado y gira hacia vos con el mouse. */
@@ -653,17 +662,19 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
   .lp-soluciones-seccion {
     display: flex;
     flex-direction: column;
-    height: clamp(640px, 100svh, 1000px);
-    padding-top: 5.75rem;
-    padding-bottom: 1.25rem;
+    height: clamp(640px, 100svh, 920px);
+    max-width: 1240px;
+    padding-top: 6.5rem;
+    padding-bottom: 3rem;
   }
-  .lp-soluciones-seccion .lp-cabeza { flex: none; margin-bottom: 1.25rem; align-items: end; }
+  .lp-soluciones-seccion .lp-cabeza { flex: none; margin-bottom: 1rem; align-items: end; }
   .lp-soluciones-seccion .lp-h2 {
     margin-top: 0.375rem;
-    font-size: clamp(2.5rem, 6.4vh, 4rem);
+    font-size: clamp(2.25rem, 5.2vh, 3.25rem);
     text-wrap: nowrap;
   }
-  .lp-soluciones-seccion .lp-sub { font-size: 0.9375rem; line-height: 1.45; }
+  .lp-soluciones-seccion .lp-sub { font-size: 0.875rem; line-height: 1.45; }
+  .lp-soluciones-seccion .lp-h3 { font-size: 1.375rem; }
   .lp-soluciones {
     flex: 1;
     min-height: 0;
@@ -677,7 +688,7 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
     grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
     grid-template-rows: auto minmax(0, 1fr);
     column-gap: 0.75rem;
-    padding: 1.125rem 1.25rem;
+    padding: 1rem 1.125rem;
   }
   .lp-tarjeta-tope { grid-column: 1; grid-row: 1; }
   .lp-tarjeta-marca { margin-top: 0.5rem; }
@@ -739,7 +750,7 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
 }
 
 /* ── Método ──────────────────────────────────────────────── */
-.lp-capitulo { padding-inline: 0.75rem; margin-block: 1.5rem; }
+.lp-capitulo { padding-inline: 0.75rem; margin-block: 3rem 1.5rem; }
 .lp-capitulo-panel {
   background: var(--navy);
   color: #fff;
@@ -750,10 +761,10 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
 .lp-metodo-fijo {
   display: grid;
   gap: 2.5rem;
-  padding: 4rem 1.25rem;
+  padding: 3rem 1.25rem 2.5rem;
 }
 .lp-metodo-medios { display: none; }
-.lp-pasos { margin-top: 2.5rem; list-style: none; padding: 0; }
+.lp-pasos { list-style: none; padding: 0; }
 .lp-pasos li { padding-block: 1.25rem; border-top: 1px solid rgba(255, 255, 255, 0.14); }
 .lp-pasos button {
   display: flex;
@@ -776,13 +787,73 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
   line-height: 1.55;
   color: rgba(255, 255, 255, 0.72);
 }
-.lp-paso-foto {
-  margin-top: 1rem;
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  border-radius: 0.875rem;
+/* Tabs de mobile */
+.lp-tabs-bloque { margin-top: 1.75rem; }
+.lp-pasos { display: none; }
+/* La tab activa se abre y muestra su nombre; las otras quedan en número. */
+.lp-tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
 }
+.lp-tabs button {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.625rem 0.25rem 0.875rem;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.6);
+  transition: flex-grow 0.6s var(--curva), color 0.35s ease;
+}
+.lp-tabs button[aria-selected="true"] { flex-grow: 3.4; color: #fff; }
+.lp-tabs button::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: var(--cielo);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.6s var(--curva);
+}
+.lp-tabs button[aria-selected="true"]::after { transform: none; }
+.lp-tabs .lp-numero { flex: none; font-size: 0.75rem; color: inherit; }
+.lp-tab-nombre {
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.3s ease, transform 0.5s var(--curva);
+}
+.lp-tabs button[aria-selected="true"] .lp-tab-nombre { opacity: 1; transform: none; transition-delay: 0.12s; }
+.lp-tab-panel { margin-top: 1.25rem; }
+.lp-tab-fotos {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  border-radius: 0.875rem;
+  overflow: clip;
+  background: #111c2f;
+}
+.lp-tab-fotos img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transform: scale(1.07);
+  transition: opacity 0.7s ease, transform 1.2s var(--curva);
+}
+.lp-tab-fotos img[data-activo] { opacity: 1; transform: none; }
+.lp-tab-texto { margin-top: 1.125rem; min-height: 7.25rem; animation: lp-funde 0.6s var(--curva) both; }
+.lp-tab-texto h3 { font-size: 1.625rem; line-height: 1.1; color: #fff; }
+.lp-tab-texto p { margin-top: 0.5rem; font-size: 1rem; line-height: 1.5; color: rgba(255, 255, 255, 0.76); }
 
 @media (min-width: 1024px) {
   .lp-metodo-pista { height: 400vh; }
@@ -804,7 +875,8 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
     margin-inline: auto;
     padding: 5.25rem 3.5rem 1.5rem;
   }
-  .lp-paso-foto { display: none; }
+  .lp-tabs-bloque { display: none; }
+  .lp-pasos { display: block; }
   /* Fijo a 100vh: todo escala con el alto para entrar en notebooks bajas. */
   .lp-metodo-texto .lp-h2 { font-size: clamp(2.125rem, 7.6vh, 4.25rem); }
   .lp-paso-titulo { font-size: clamp(1.25rem, 3vh, 1.625rem); }

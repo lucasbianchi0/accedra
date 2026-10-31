@@ -44,7 +44,33 @@ const VIDEO = {
   desktop: "/videos/5028622.mp4", // 1920x1080, 31s, 2,8 MB
 };
 
-export default function HeroMedia() {
+// Juego de archivos de cada portada: mismos encuadres y mismos anchos.
+const IMAGEN = {
+  movil: "/hero/hero-mobile",
+  ancho1280: "/hero/hero-desktop-1280",
+  ancho1920: "/hero/hero-desktop-1920",
+  respaldo: "/hero/hero-desktop.jpg",
+};
+
+export const SERVIDORES = {
+  video: { mobile: "/landing/hero/servidores-vertical.mp4", desktop: "/landing/hero/servidores-1080.mp4" },
+  imagen: {
+    movil: "/landing/hero/poster-vertical",
+    ancho1280: "/landing/hero/poster-1280",
+    ancho1920: "/landing/hero/poster-1920",
+    respaldo: "/landing/hero/poster.jpg",
+  },
+};
+
+export default function HeroMedia({
+  capa = "plena",
+  video = VIDEO,
+  imagen = IMAGEN,
+}: {
+  capa?: "plena" | "liviana";
+  video?: typeof VIDEO;
+  imagen?: typeof IMAGEN;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
 
@@ -70,8 +96,8 @@ export default function HeroMedia() {
       if (cancelled || !videoRef.current) return;
       const el = videoRef.current;
       el.src = window.matchMedia(MOBILE_MQ).matches
-        ? VIDEO.mobile
-        : VIDEO.desktop;
+        ? video.mobile
+        : video.desktop;
       el.playbackRate = 0.75;
       el.load();
       el.play().catch(() => {
@@ -113,7 +139,7 @@ export default function HeroMedia() {
       cancelled = true;
       if (idleId) clearTimeout(idleId);
     };
-  }, []);
+  }, [video]);
 
   return (
     <div className="absolute inset-0 z-0 bg-[#0D1A2D]">
@@ -124,7 +150,7 @@ export default function HeroMedia() {
       <link
         rel="preload"
         as="image"
-        href="/hero/hero-mobile.avif"
+        href={`${imagen.movil}.avif`}
         type="image/avif"
         media={MOBILE_MQ}
         fetchPriority="high"
@@ -132,8 +158,8 @@ export default function HeroMedia() {
       <link
         rel="preload"
         as="image"
-        href="/hero/hero-desktop-1280.avif"
-        imageSrcSet="/hero/hero-desktop-1280.avif 1280w, /hero/hero-desktop-1920.avif 1920w"
+        href={`${imagen.ancho1280}.avif`}
+        imageSrcSet={`${imagen.ancho1280}.avif 1280w, ${imagen.ancho1920}.avif 1920w`}
         imageSizes="100vw"
         type="image/avif"
         media="(min-width: 768px)"
@@ -144,27 +170,27 @@ export default function HeroMedia() {
         <source
           type="image/avif"
           media={MOBILE_MQ}
-          srcSet="/hero/hero-mobile.avif"
+          srcSet={`${imagen.movil}.avif`}
         />
         <source
           type="image/webp"
           media={MOBILE_MQ}
-          srcSet="/hero/hero-mobile.webp"
+          srcSet={`${imagen.movil}.webp`}
         />
         <source
           type="image/avif"
-          srcSet="/hero/hero-desktop-1280.avif 1280w, /hero/hero-desktop-1920.avif 1920w"
+          srcSet={`${imagen.ancho1280}.avif 1280w, ${imagen.ancho1920}.avif 1920w`}
           sizes="100vw"
         />
         <source
           type="image/webp"
-          srcSet="/hero/hero-desktop-1280.webp 1280w, /hero/hero-desktop-1920.webp 1920w"
+          srcSet={`${imagen.ancho1280}.webp 1280w, ${imagen.ancho1920}.webp 1920w`}
           sizes="100vw"
         />
         {/* El <img> es el que realmente cuenta como LCP. `decoding="sync"` +
             `fetchPriority="high"` le piden al navegador que no lo posponga. */}
         <img
-          src="/hero/hero-desktop.jpg"
+          src={imagen.respaldo}
           alt=""
           aria-hidden="true"
           width={1920}
@@ -193,8 +219,18 @@ export default function HeroMedia() {
           (navy-800 #0a1424), no a navy-700: así el hero se derrite en el fondo
           único en vez de cerrar un tono más claro y marcar una costura contra
           la barra de clientes. */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0D1A2D]/95 via-[#0D1A2D]/80 to-[#0D1A2D]/60" />
-      <div className="absolute inset-0 bg-gradient-to-t from-[#0a1424] via-transparent to-[#0D1A2D]/30" />
+      {capa === "plena" ? (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0D1A2D]/95 via-[#0D1A2D]/80 to-[#0D1A2D]/60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a1424] via-transparent to-[#0D1A2D]/30" />
+        </>
+      ) : (
+        // Sombra solo donde hay texto: el video queda a la vista.
+        <>
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0D1A2D]/90 via-[#0D1A2D]/45 to-[#0D1A2D]/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a1424]/85 via-transparent to-[#0D1A2D]/25" />
+        </>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import HeroMedia from "@/components/HeroMedia";
+import HeroMedia, { SERVIDORES } from "@/components/HeroMedia";
 import BotonAsistente from "@/components/chat/BotonAsistente";
 import { useT } from "@/lib/i18n/useT";
 import { Palabras } from "./Entra";
@@ -16,7 +16,7 @@ export default function Portada() {
       <span data-lp-tope aria-hidden />
       <div className="lp-marco">
         <div className="lp-marco-media">
-          <HeroMedia />
+          <HeroMedia capa="liviana" video={SERVIDORES.video} imagen={SERVIDORES.imagen} />
         </div>
 
         <div className="lp-portada-texto">
@@ -27,8 +27,7 @@ export default function Portada() {
             <Palabras texto={t.hero.titlePost} desde={pre + medio} className="block" />
           </h1>
           <p className="lp-portada-sub lp-carga" style={{ "--d": "420ms" } as React.CSSProperties}>
-            {t.hero.subtitlePre}
-            {t.hero.subtitleStrong}.
+            {t.landing.portada.sub}
           </p>
           <div className="lp-portada-ctas lp-carga hero-capa" style={{ "--d": "560ms" } as React.CSSProperties}>
             <Cta href="#contacto">{t.services.ctaButton}</Cta>
@@ -36,14 +35,10 @@ export default function Portada() {
           </div>
         </div>
 
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logos/accedra-outlined.svg"
-          alt=""
-          aria-hidden
-          className="lp-portada-marca lp-carga"
-          style={{ "--d": "760ms" } as React.CSSProperties}
-        />
+        <p className="lp-portada-prueba lp-carga" style={{ "--d": "760ms" } as React.CSSProperties}>
+          <strong>{t.landing.portada.pruebaCifra}</strong>
+          <span>{t.landing.portada.pruebaClientes}</span>
+        </p>
       </div>
     </section>
   );

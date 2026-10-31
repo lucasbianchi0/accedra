@@ -52,9 +52,15 @@ export default function Metodo() {
     });
   }, [activo, visible]);
 
+  // Mobile: deslizar con el dedo pasa de etapa, igual que tocar una tab.
+  const inicioToque = useRef(0);
+  const deslizar = (hasta: number) => {
+    const dx = hasta - inicioToque.current;
+    if (Math.abs(dx) < 40) return;
+    setActivo((a) => Math.min(m.pasos.length - 1, Math.max(0, a + (dx < 0 ? 1 : -1))));
+  };
+
   const irA = (i: number) => {
-    // Sin scroll fijo (mobile) las cuatro etapas ya están a la vista.
-    if (!window.matchMedia("(min-width: 1024px)").matches) return;
     const tramo = pista.current?.querySelector<HTMLElement>(`[data-tramo="${i}"]`);
     if (!tramo) return;
     // La etapa se activa cuando su tramo cruza el centro de la pantalla.
@@ -90,18 +96,56 @@ export default function Metodo() {
                         <p>{p.desc}</p>
                       </div>
                     </div>
-                    {/* Mobile: sin scroll fijo, cada etapa lleva su foto. */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={`/_opt/videos/${MEDIOS[i]}-1080.webp`}
-                      alt=""
-                      loading="lazy"
-                      decoding="async"
-                      className="lp-paso-foto"
-                    />
                   </li>
                 ))}
               </ol>
+
+              {/* Mobile: una etapa a la vez, con tabs en lugar de scroll fijo. */}
+              <div className="lp-tabs-bloque">
+                <div className="lp-tabs" role="tablist" aria-label={m.eyebrow} >
+                  {m.pasos.map((p, i) => (
+                    <button
+                      key={p.titulo}
+                      type="button"
+                      role="tab"
+                      id={`lp-tab-${i}`}
+                      aria-selected={i === activo}
+                      aria-label={p.titulo}
+                      aria-controls="lp-tab-panel"
+                      onClick={() => setActivo(i)}
+                    >
+                      <span className="lp-numero">{String(i + 1).padStart(2, "0")}</span>
+                      <span className="lp-tab-nombre">{p.titulo}</span>
+                    </button>
+                  ))}
+                </div>
+                <div
+                  id="lp-tab-panel"
+                  role="tabpanel"
+                  aria-labelledby={`lp-tab-${activo}`}
+                  className="lp-tab-panel"
+                  onTouchStart={(e) => (inicioToque.current = e.touches[0].clientX)}
+                  onTouchEnd={(e) => deslizar(e.changedTouches[0].clientX)}
+                >
+                  <div className="lp-tab-fotos">
+                    {MEDIOS.map((id, i) => (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        key={id}
+                        src={`/_opt/videos/${id}-1080.webp`}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        data-activo={i === activo || undefined}
+                      />
+                    ))}
+                  </div>
+                  <div key={activo} className="lp-tab-texto">
+                    <h3>{m.pasos[activo].titulo}</h3>
+                    <p>{m.pasos[activo].desc}</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <Entra tipo="foto" className="lp-metodo-medios" aria-hidden>
