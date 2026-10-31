@@ -663,7 +663,6 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
     display: flex;
     flex-direction: column;
     height: clamp(640px, 100svh, 920px);
-    max-width: 1240px;
     padding-top: 6.5rem;
     padding-bottom: 3rem;
   }
