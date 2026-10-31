@@ -52,14 +52,12 @@ export default function SmoothScroll({ children }: { children: React.ReactNode }
 
   // Cada rama trae SU reset de scroll entre rutas: el de Lenis va dentro de
   // LenisRoot (necesita el contexto de la librería), el nativo es este.
-  if (!enabled) {
-    return (
-      <>
-        <ScrollToTop />
-        {children}
-      </>
-    );
-  }
-
-  return <LenisRoot>{children}</LenisRoot>;
+  // `children` queda siempre en el mismo lugar del árbol: si cambiara de
+  // padre al encender Lenis, React volvería a montar toda la página.
+  return (
+    <>
+      {enabled ? <LenisRoot /> : <ScrollToTop />}
+      {children}
+    </>
+  );
 }

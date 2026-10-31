@@ -52,7 +52,12 @@ function LenisScrollToTop() {
   return null;
 }
 
-export default function LenisRoot({ children }: { children: React.ReactNode }) {
+// Va AL LADO de la página y no envolviéndola: con `root` Lenis maneja el
+// scroll del documento y no necesita a la página adentro. Envolviéndola, al
+// encenderse después de cargar el árbol cambiaba de forma y React desmontaba y
+// volvía a montar TODA la página: las entradas de la portada arrancaban de
+// nuevo (el parpadeo de los botones).
+export default function LenisRoot() {
   return (
     <ReactLenis
       root
@@ -69,7 +74,6 @@ export default function LenisRoot({ children }: { children: React.ReactNode }) {
       }}
     >
       <LenisScrollToTop />
-      {children}
     </ReactLenis>
   );
 }
