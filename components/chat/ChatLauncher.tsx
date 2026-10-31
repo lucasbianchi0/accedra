@@ -44,6 +44,22 @@ export default function ChatLauncher() {
     return () => observer.disconnect();
   }, []);
 
+  // La hoja se baja sola cuando la página ya terminó y el navegador está
+  // libre: en el celular no hay hover que la anticipe, y bajarla recién con
+  // el toque hacía esperar la apertura.
+  useEffect(() => {
+    const ric = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1500));
+    const cic = window.cancelIdleCallback ?? window.clearTimeout;
+    let id = 0;
+    const bajar = () => (id = ric(precargar, { timeout: 4000 }));
+    if (document.readyState === "complete") bajar();
+    else window.addEventListener("load", bajar, { once: true });
+    return () => {
+      window.removeEventListener("load", bajar);
+      cic(id);
+    };
+  }, [precargar]);
+
   // La burbuja de WhatsApp la monta cada página; se mira después de navegar.
   useEffect(() => {
     const t = setTimeout(() => setConWhatsApp(Boolean(document.querySelector(".wa-bubble"))), 50);

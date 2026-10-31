@@ -205,7 +205,7 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
       <div
         aria-hidden
         onClick={onCerrar}
-        className="chat-hoja-fondo fixed inset-0 z-[80] bg-[rgba(3,6,14,0.58)] backdrop-blur-xl backdrop-saturate-[1.2]"
+        className="chat-hoja-fondo fixed inset-0 z-[80] bg-[rgba(3,6,14,0.58)] lg:backdrop-blur-xl lg:backdrop-saturate-[1.2]"
       />
 
       <div
@@ -215,10 +215,12 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
         aria-label="Accedra AI"
         // Vidrio: translúcida sobre la página ya desenfocada, con un blur propio
         // que termina de lavar lo que hay detrás.
-        // Celular y tablet: pantalla completa (sube desde abajo igual).
+        // Celular y tablet: pantalla completa, sólida y sin desenfoques: tapa
+        // toda la página, así que el vidrio no se ve, y el iPhone lo repintaba
+        // entero en cada tecla (parpadeaba) y al subir (tardaba).
         // Escritorio: hoja que sube hasta el 60 %, con márgenes amplios —no
         // pasa de ~1100 px de ancho— y al 86 % cuando hay conversación.
-        className={`chat-hoja fixed inset-x-0 top-0 z-[81] flex h-[100dvh] flex-col overflow-hidden bg-[linear-gradient(180deg,rgba(24,36,66,0.86)_0%,rgba(9,16,32,0.94)_100%)] backdrop-blur-3xl backdrop-saturate-[1.6] lg:top-auto lg:bottom-0 lg:inset-x-[max(2rem,calc((100vw-1120px)/2))] lg:rounded-t-[32px] lg:border lg:border-b-0 lg:border-white/[0.13] lg:bg-[linear-gradient(180deg,rgba(24,36,66,0.62)_0%,rgba(9,16,32,0.74)_100%)] lg:shadow-[0_-40px_140px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.16)] ${
+        className={`chat-hoja fixed inset-x-0 top-0 z-[81] flex h-[100dvh] flex-col overflow-hidden bg-[linear-gradient(180deg,#172440_0%,#0a1121_100%)] lg:backdrop-blur-3xl lg:backdrop-saturate-[1.6] lg:top-auto lg:bottom-0 lg:inset-x-[max(2rem,calc((100vw-1120px)/2))] lg:rounded-t-[32px] lg:border lg:border-b-0 lg:border-white/[0.13] lg:bg-[linear-gradient(180deg,rgba(24,36,66,0.62)_0%,rgba(9,16,32,0.74)_100%)] lg:shadow-[0_-40px_140px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.16)] ${
           vacio ? "lg:h-[62dvh] lg:min-h-[560px] lg:max-h-[92dvh]" : "lg:h-[86dvh]"
         }`}
       >
@@ -239,7 +241,7 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
         {/* Grano muy fino: le saca lo plástico al vidrio */}
         <div
           aria-hidden
-          className="hoja-grano pointer-events-none absolute inset-0 opacity-[0.035] mix-blend-overlay"
+          className="hoja-grano pointer-events-none absolute inset-0 hidden opacity-[0.035] mix-blend-overlay lg:block"
         />
 
         {/* Barra superior: manija, marca (con conversación), acciones */}
@@ -358,12 +360,20 @@ function Bienvenida({ solucion }: { solucion?: string }) {
   const frases = industria ? industria.ejemplos : EJEMPLOS_MEZCLADOS;
   const escribiendo = useMaquina(frases, !texto && !enfocado);
 
-  // El campo crece con el texto hasta cinco líneas (en el teléfono arranca en una).
+  // El campo crece con el texto hasta cinco líneas (en el teléfono arranca en
+  // una). Con `field-sizing: content` lo hace el navegador; donde no existe,
+  // se mide, pero sin pasar por `height: auto` en cada tecla: en iOS ese
+  // achicarse y volver a crecer movía el cursor, Safari corría la pantalla
+  // para seguirlo y la hoja parpadeaba. Sólo se remide si cambió de renglón.
   const campo = useRef<HTMLTextAreaElement>(null);
+  const largoPrevio = useRef(0);
   useEffect(() => {
     const el = campo.current;
-    if (!el) return;
-    el.style.height = "auto";
+    if (!el || CSS.supports("field-sizing", "content")) return;
+    const achico = texto.length < largoPrevio.current;
+    largoPrevio.current = texto.length;
+    if (!achico && el.scrollHeight <= el.clientHeight) return;
+    if (achico) el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
   }, [texto]);
 
@@ -471,7 +481,7 @@ function Bienvenida({ solucion }: { solucion?: string }) {
             // escritorio sólo con foco (sin foco se ve el ejemplo que se escribe).
             placeholder="Contanos tu caso…"
             aria-label="Contanos tu caso"
-            className="chat-campo relative block min-w-0 flex-1 resize-none bg-transparent py-2 text-[16px] leading-snug text-white placeholder:text-gray-500 outline-none lg:min-h-[76px] lg:w-full lg:px-5 lg:pb-0 lg:pt-4 lg:leading-relaxed lg:placeholder:text-transparent lg:focus:placeholder:text-gray-500"
+            className="chat-campo relative block max-h-[140px] min-w-0 flex-1 resize-none [field-sizing:content] bg-transparent py-2 text-[16px] leading-snug text-white placeholder:text-gray-500 outline-none lg:min-h-[76px] lg:w-full lg:px-5 lg:pb-0 lg:pt-4 lg:leading-relaxed lg:placeholder:text-transparent lg:focus:placeholder:text-gray-500"
           />
           {/* El ejemplo va encima y no como placeholder: uno que cambia cada
               40 ms lo releen los lectores de pantalla en cada cambio. */}

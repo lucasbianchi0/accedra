@@ -1510,13 +1510,19 @@ dialog[data-brochure]::backdrop {
 /* Celular y tablet: el alto lo maneja el teclado (visualViewport), y tiene
    que seguirlo en el mismo cuadro. Con la transición de `height` la hoja
    tardaba medio segundo en achicarse y el teclado tapaba el campo. */
+/* Y sube más corta, con la curva de las hojas de iOS: a pantalla completa,
+   0.75 s se sentían lentos. Las luces de atrás quedan quietas: dos manchas
+   desenfocadas moviéndose detrás del campo se repintaban en cada tecla. */
 @media (max-width: 1023px) {
   .chat-hoja-raiz[data-open="true"] .chat-hoja {
     transition:
-      transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
-      opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
-      visibility 0s linear 0.75s;
+      transform 0.46s cubic-bezier(0.32, 0.72, 0, 1),
+      opacity 0.3s ease-out,
+      visibility 0s linear 0.46s;
   }
+  .chat-hoja-raiz[data-open="true"] .chat-hoja-fondo { transition: opacity 0.3s ease, visibility 0s; }
+  .chat-hoja-raiz[data-open="true"] .hoja-entra > * { animation-duration: 0.5s; }
+  .hoja-aurora { animation: none; }
 }
 
 

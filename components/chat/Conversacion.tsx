@@ -138,20 +138,22 @@ export default function Conversacion({
               {mensajes.map((m) =>
                 m.rol === "user" ? (
                   <div key={m.id} className={`flex justify-end ${nuevo(m.id) ? "msg-propio-entra" : ""}`}>
-                    <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-[20px] rounded-br-md bg-accent-600 px-4 py-2.5 text-[14px] leading-relaxed text-white">
+                    <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-[20px] rounded-br-md bg-accent-600 px-4 py-2.5 text-[15px] leading-relaxed text-white lg:text-[14px]">
                       {textoDe(m)}
                     </div>
                   </div>
                 ) : (
-                  <div key={m.id} className={`flex gap-2.5 ${nuevo(m.id) ? "msg-entra" : ""}`}>
+                  <div key={m.id} className={`flex lg:gap-2.5 ${nuevo(m.id) ? "msg-entra" : ""}`}>
                     {/* `self-start` y tamaño fijo: sin eso el span se estiraba al
-                        alto del mensaje y el latido dibujaba una pastilla. */}
+                        alto del mensaje y el latido dibujaba una pastilla.
+                        En celular y tablet sin avatar, como en las apps de
+                        chat: la respuesta y las tarjetas usan todo el ancho. */}
                     <span
-                      className={`mt-0.5 h-7 w-7 shrink-0 self-start rounded-full ${m.id === ultimo?.id && enCurso ? "avatar-pensando" : ""}`}
+                      className={`mt-0.5 hidden h-7 w-7 shrink-0 self-start rounded-full lg:block ${m.id === ultimo?.id && enCurso ? "avatar-pensando" : ""}`}
                     >
                       <MascotaCara size={28} className="ring-1 ring-white/10" />
                     </span>
-                    <div className="min-w-0 flex-1 space-y-4 text-[14px] leading-relaxed text-gray-200">
+                    <div className="min-w-0 flex-1 space-y-3.5 text-[15px] leading-relaxed text-gray-200 lg:space-y-4 lg:text-[14px]">
                       {separarPregunta(m.partes).partes.map((p, i) =>
                         p.tipo === "texto" ? (
                           <Formato key={i} texto={p.texto} onNavegar={onNavegar} />
@@ -166,11 +168,13 @@ export default function Conversacion({
                           las tarjetas se perdía, y es lo único que la persona
                           tiene que contestar. */}
                       {preguntaDe(m.partes) && (
-                        <div className={`border-t border-white/[0.08] pt-4 ${nuevo(m.id) ? "opciones-entra" : ""}`}>
+                        // Sin raya arriba: el rótulo ya la separa, y las rayas
+                        // en cada respuesta cortaban la charla en pedazos.
+                        <div className={`pt-1.5 ${nuevo(m.id) ? "opciones-entra" : ""}`}>
                           <p className="text-[10.5px] font-semibold uppercase tracking-[0.16em] text-[#A99BFF]">
                             Para seguir
                           </p>
-                          <div className="mt-1.5 text-[15px] font-medium leading-snug text-white">
+                          <div className="mt-1 text-[16px] font-medium leading-snug text-white lg:text-[15px]">
                             <Formato texto={preguntaDe(m.partes)!} onNavegar={onNavegar} />
                           </div>
                         </div>
@@ -218,14 +222,16 @@ export default function Conversacion({
       </div>
 
       {(campoAlInicio || !vacio) && (
-        <div className="relative border-t border-white/[0.06] px-3 pb-[max(12px,env(safe-area-inset-bottom))] pt-3">
+        // Sin raya arriba ni pie en el celular: el campo solo, como en la
+        // bienvenida, con WhatsApp adentro.
+        <div className="relative px-3 pb-[max(10px,env(safe-area-inset-bottom))] pt-2 lg:border-t lg:border-white/[0.06] lg:pb-[max(12px,env(safe-area-inset-bottom))] lg:pt-3">
           <div className={ancho}>
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 mandar();
               }}
-              className="flex items-end gap-2 rounded-[22px] border border-white/10 bg-white/[0.04] py-1.5 pl-4 pr-1.5 transition-colors focus-within:border-accent-300/40"
+              className="campo-ai flex items-end gap-1 rounded-[26px] py-1.5 pl-4 pr-1.5 lg:gap-2 lg:rounded-[22px]"
             >
               <textarea
                 ref={campo}
@@ -253,6 +259,17 @@ export default function Conversacion({
                 // desarma la hoja (en tablet también).
                 className="chat-campo max-h-[132px] flex-1 resize-none bg-transparent py-2 text-[16px] leading-snug text-white placeholder:text-gray-500 outline-none lg:text-[14px]"
               />
+              <a
+                href={whatsappDeLaCharla(mensajes)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => track({ type: "click", name: "whatsapp", target: `chat_campo:${origen}` })}
+                aria-label="Hablar con una persona por WhatsApp"
+                title="Hablar con una persona"
+                className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-gray-400 transition-colors hover:bg-white/5 hover:text-[#25D366] lg:hidden"
+              >
+                <IconoWhatsApp size={16} />
+              </a>
               {enCurso ? (
                 <button
                   type="button"
@@ -276,7 +293,7 @@ export default function Conversacion({
                 </button>
               )}
             </form>
-            <div className="mt-2 flex items-center justify-between px-1 text-[11px] text-gray-600">
+            <div className="mt-2 hidden items-center justify-between px-1 text-[11px] text-gray-600 lg:flex">
               <span>Asistente con IA · puede equivocarse</span>
               <a
                 href={whatsappDeLaCharla(mensajes)}
