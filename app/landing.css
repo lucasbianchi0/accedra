@@ -735,7 +735,7 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
   .lp-tarjeta:is(:hover, :focus-visible) .lp-aparece { animation: lp-aparece-2 0.7s var(--curva) calc(var(--i) * 110ms) backwards; }
   .lp-tarjeta:is(:hover, :focus-visible) .lp-linea-codigo { animation: lp-linea-2 0.8s var(--curva) calc(var(--i) * 90ms) backwards; }
   .lp-tarjeta:is(:hover, :focus-visible) .lp-flujo { opacity: 1; animation: lp-flujo 1.6s linear calc(var(--i) * 180ms) infinite; }
-  .lp-tarjeta:is(:hover, :focus-visible) .lp-reflejo { animation: lp-reflejo 1.3s var(--curva) 0.1s; }
+  .lp-tarjeta:is(:hover, :focus-visible) .lp-reflejo { animation: lp-reflejo 1.25s cubic-bezier(0.45, 0, 0.4, 1) 0.1s; }
   .lp-tarjeta:is(:hover, :focus-visible) .lp-led { animation: lp-led 1.4s ease-in-out calc(var(--i) * 90ms) infinite; }
   .lp-tarjeta:is(:hover, :focus-visible) .lp-cursor { animation: lp-cursor 1s steps(2) infinite; }
   .lp-tarjeta:is(:hover, :focus-visible) .lp-lapiz { animation: lp-lapiz 1.5s var(--curva); }

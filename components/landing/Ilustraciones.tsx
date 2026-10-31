@@ -241,7 +241,7 @@ function Firma() {
         <rect x="6" y="150" width="108" height="30" rx="10" fill="#fff" stroke={LINEA} />
         <path d="M19 165l3.2 3.2 5.6-6.6" stroke={VERDE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         <text x="33" y="162" fontSize="9.5" fontWeight="600" fill={TINTA}>Firma válida</text>
-        <text x="33" y="173" fontSize="7" fill="#5B6A80">Presión · velocidad · trazo</text>
+        <text x="33" y="173" fontSize="7" fill="#5B6A80">Presión y trazo</text>
       </g>
     </Lienzo>
   );
