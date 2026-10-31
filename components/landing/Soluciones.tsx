@@ -24,7 +24,7 @@ export default function Soluciones() {
   const t = useT();
 
   return (
-    <section id="servicios" className="lp-seccion lp-contenedor">
+    <section id="servicios" className="lp-seccion lp-contenedor lp-soluciones-seccion">
       <div className="lp-cabeza">
         <div>
           <Entra as="span" tipo="funde" className="lp-rotulo">{t.landing.soluciones.eyebrow}</Entra>
