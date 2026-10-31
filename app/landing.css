@@ -624,7 +624,7 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
   overflow: visible;
   font-family: var(--font-inter), sans-serif;
   /* La sombra le da peso al metal: una ancha y suave, otra corta y marcada. */
-  filter: drop-shadow(0 16px 20px rgba(13, 26, 45, 0.13)) drop-shadow(0 3px 4px rgba(13, 26, 45, 0.1));
+  filter: drop-shadow(0 24px 28px rgba(13, 26, 45, 0.26)) drop-shadow(0 6px 8px rgba(13, 26, 45, 0.2));
   transition: transform 0.8s var(--curva);
 }
 /* La notebook mira apenas de costado y gira hacia vos con el mouse. */
@@ -711,14 +711,12 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
 @keyframes lp-linea { from { transform: scaleX(0); } to { transform: none; } }
 @keyframes lp-linea-2 { from { transform: scaleX(0); } to { transform: none; } }
 @keyframes lp-orbita { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
-@keyframes lp-reflejo { from { opacity: 1; transform: rotate(16deg) translateX(0); } to { opacity: 1; transform: rotate(16deg) translateX(460px); } }
 @keyframes lp-flota { 0%, 100% { transform: none; } 50% { transform: translateY(-5px); } }
 @keyframes lp-cursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
 @keyframes lp-lapiz { 0%, 100% { transform: none; } 50% { transform: translate(-16px, 6px); } }
 
 .lp-dibuja { stroke-dasharray: 1; stroke-dashoffset: 0; }
 .lp-flujo { stroke-dasharray: 0.14 1; stroke-dashoffset: 1.14; opacity: 0; }
-.lp-reflejo { opacity: 0; }
 .lp-barra { transform-box: fill-box; transform-origin: bottom; }
 .lp-linea-codigo { transform-box: fill-box; transform-origin: left; }
 
@@ -735,7 +733,6 @@ svg[data-foco] .lp-prov[data-activa] { opacity: 1; fill: var(--azul); }
   .lp-tarjeta:is(:hover, :focus-visible) .lp-aparece { animation: lp-aparece-2 0.7s var(--curva) calc(var(--i) * 110ms) backwards; }
   .lp-tarjeta:is(:hover, :focus-visible) .lp-linea-codigo { animation: lp-linea-2 0.8s var(--curva) calc(var(--i) * 90ms) backwards; }
   .lp-tarjeta:is(:hover, :focus-visible) .lp-flujo { opacity: 1; animation: lp-flujo 1.6s linear calc(var(--i) * 180ms) infinite; }
-  .lp-tarjeta:is(:hover, :focus-visible) .lp-reflejo { animation: lp-reflejo 1.25s cubic-bezier(0.45, 0, 0.4, 1) 0.1s; }
   .lp-tarjeta:is(:hover, :focus-visible) .lp-led { animation: lp-led 1.4s ease-in-out calc(var(--i) * 90ms) infinite; }
   .lp-tarjeta:is(:hover, :focus-visible) .lp-cursor { animation: lp-cursor 1s steps(2) infinite; }
   .lp-tarjeta:is(:hover, :focus-visible) .lp-lapiz { animation: lp-lapiz 1.5s var(--curva); }

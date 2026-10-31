@@ -37,18 +37,18 @@ export function Metal() {
     <svg width="0" height="0" className="absolute" aria-hidden>
       <defs>
         <linearGradient id="lp-m-frente" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#FCFDFE" />
-          <stop offset=".38" stopColor="#E0E5EB" />
-          <stop offset=".58" stopColor="#F4F6F8" />
-          <stop offset="1" stopColor="#C6CDD7" />
+          <stop offset="0" stopColor="#F3F5F8" />
+          <stop offset=".38" stopColor="#D0D6DE" />
+          <stop offset=".58" stopColor="#E6EAEF" />
+          <stop offset="1" stopColor="#AEB7C4" />
         </linearGradient>
         <linearGradient id="lp-m-lado" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#A9B3C0" />
-          <stop offset="1" stopColor="#D6DCE3" />
+          <stop offset="0" stopColor="#8E99A8" />
+          <stop offset="1" stopColor="#BAC2CD" />
         </linearGradient>
         <linearGradient id="lp-m-tapa" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stopColor="#E3E7EC" />
-          <stop offset="1" stopColor="#FFFFFF" />
+          <stop offset="0" stopColor="#D5DBE3" />
+          <stop offset="1" stopColor="#F4F6F8" />
         </linearGradient>
         <linearGradient id="lp-m-panel" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#FAFBFC" />
@@ -58,29 +58,12 @@ export function Metal() {
           <stop offset="0" stopColor="#AAB3C0" />
           <stop offset="1" stopColor="#C4CBD5" />
         </linearGradient>
-        <linearGradient id="lp-m-reflejo" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#fff" stopOpacity="0" />
-          <stop offset=".5" stopColor="#fff" stopOpacity=".85" />
-          <stop offset="1" stopColor="#fff" stopOpacity="0" />
-        </linearGradient>
         <radialGradient id="lp-m-piso">
-          <stop offset="0" stopColor="#0D1A2D" stopOpacity=".3" />
+          <stop offset="0" stopColor="#0D1A2D" stopOpacity=".5" />
           <stop offset="1" stopColor="#0D1A2D" stopOpacity="0" />
         </radialGradient>
       </defs>
     </svg>
-  );
-}
-
-/* Franja de luz que cruza el objeto al pasar el mouse. */
-function Reflejo({ id, forma }: { id: string; forma: React.ReactNode }) {
-  return (
-    <>
-      <clipPath id={id}>{forma}</clipPath>
-      <g clipPath={`url(#${id})`}>
-        <rect x="-60" y="-20" width="70" height="300" fill="url(#lp-m-reflejo)" transform="rotate(16)" className="lp-reflejo" />
-      </g>
-    </>
   );
 }
 
@@ -106,12 +89,12 @@ function Networking() {
       })}
 
       {/* Gabinete */}
-      <path d="M92 22 L126 8 H262 L228 22 Z" fill="url(#lp-m-tapa)" stroke="#fff" />
+      <path d="M92 22 L126 8 H262 L228 22 Z" fill="url(#lp-m-tapa)" stroke="#8E99A8" strokeWidth=".9" />
       <path d="M228 22 L262 8 V210 L228 226 Z" fill="url(#lp-m-lado)" />
       {Array.from({ length: 9 }).map((_, k) => (
         <line key={k} x1="236" y1={44 + k * 17} x2="254" y2={36 + k * 17} stroke="#8E99A8" strokeOpacity=".7" strokeWidth="1.5" />
       ))}
-      <rect x="92" y="22" width="136" height="204" rx="3" fill="url(#lp-m-frente)" stroke="#fff" />
+      <rect x="92" y="22" width="136" height="204" rx="3" fill="url(#lp-m-frente)" stroke="#8E99A8" strokeWidth=".9" />
       <rect x="99" y="29" width="122" height="190" rx="2" fill="url(#lp-m-hueco)" />
       {[0, 1].map((k) => (
         <g key={k}>
@@ -182,8 +165,6 @@ function Networking() {
       ))}
       <rect x="114" y="196" width="92" height="9" rx="1.5" fill="#AAB3C0" />
 
-      <Reflejo id="lp-c-rack" forma={<path d="M92 22 L126 8 H262 V210 L228 226 H92 Z" />} />
-
       {/* Estado */}
       <g className="lp-aparece" style={i(4)}>
         <rect x="14" y="146" width="96" height="30" rx="10" fill="#fff" stroke={LINEA} />
@@ -201,7 +182,7 @@ function Firma() {
       <ellipse cx="192" cy="231" rx="84" ry="7" fill="url(#lp-m-piso)" />
 
       {/* Tableta */}
-      <rect x="126" y="4" width="134" height="222" rx="15" fill="url(#lp-m-frente)" stroke="#fff" strokeWidth="1.2" />
+      <rect x="126" y="4" width="134" height="222" rx="15" fill="url(#lp-m-frente)" stroke="#8E99A8" strokeWidth=".9" />
       <rect x="126.5" y="4.5" width="133" height="221" rx="14.5" stroke="#8E99A8" strokeWidth="1" />
       <rect x="135" y="15" width="116" height="200" rx="5" fill="#fff" stroke="#AEB7C4" strokeWidth=".8" />
       <circle cx="193" cy="9.5" r="1.5" fill="#8E99A8" />
@@ -224,8 +205,6 @@ function Firma() {
       />
       <rect x="145" y="192" width="96" height="14" rx="4" fill={AZUL} />
       <text x="193" y="201.5" fontSize="7" fontWeight="600" fill="#fff" textAnchor="middle">Confirmar firma</text>
-
-      <Reflejo id="lp-c-tableta" forma={<rect x="126" y="4" width="134" height="222" rx="15" />} />
 
       {/* Lápiz */}
       <g className="lp-lapiz">
@@ -274,7 +253,7 @@ function Consultoria() {
       })}
 
       <g className="lp-orbita" style={i(0)}>
-        <rect x="128" y="58" width="84" height="84" rx="22" fill="url(#lp-m-frente)" stroke="#fff" strokeWidth="1.5" />
+        <rect x="128" y="58" width="84" height="84" rx="22" fill="url(#lp-m-frente)" stroke="#8E99A8" strokeWidth=".9" />
         {["#F25022", "#7FBA00", "#00A4EF", "#FFB900"].map((c, k) => (
           <rect key={c} x={148 + (k % 2) * 23} y={78 + Math.floor(k / 2) * 23} width="21" height="21" fill={c} />
         ))}
@@ -282,7 +261,7 @@ function Consultoria() {
 
       {ECOSISTEMA.map((e, k) => (
         <g key={e.nombre} className="lp-orbita" style={i(k + 1)}>
-          <rect x={e.x - 27} y={e.y - 27} width="54" height="54" rx="15" fill="url(#lp-m-frente)" stroke="#fff" strokeWidth="1.2" />
+          <rect x={e.x - 27} y={e.y - 27} width="54" height="54" rx="15" fill="url(#lp-m-frente)" stroke="#8E99A8" strokeWidth=".9" />
           <image href={e.logo} x={e.x - 16} y={e.y - 16} width="32" height="32" preserveAspectRatio="xMidYMid meet" />
           <text x={e.x} y={e.y + 39} fontSize="8.5" fontWeight="600" fill="#45546A" textAnchor="middle">{e.nombre}</text>
         </g>
@@ -307,13 +286,13 @@ function Seguridad() {
           <path
             d={`M${X} ${y} L${X + DX} ${y - DY} H${X + ANCHO + DX} L${X + ANCHO} ${y} Z`}
             fill="url(#lp-m-tapa)"
-            stroke="#fff"
+            stroke="#8E99A8" strokeWidth=".9"
           />
           <path
             d={`M${X + ANCHO} ${y} L${X + ANCHO + DX} ${y - DY} V${y + ALTO - DY} L${X + ANCHO} ${y + ALTO} Z`}
             fill="url(#lp-m-lado)"
           />
-          <rect x={X} y={y} width={ANCHO} height={ALTO} rx="2.5" fill="url(#lp-m-frente)" stroke="#fff" />
+          <rect x={X} y={y} width={ANCHO} height={ALTO} rx="2.5" fill="url(#lp-m-frente)" stroke="#8E99A8" strokeWidth=".9" />
 
           {f === 2 ? (
             <>
@@ -356,8 +335,6 @@ function Seguridad() {
         </g>
       ))}
 
-      <Reflejo id="lp-c-firewall" forma={<path d={`M${X} 40 L${X + DX} 22 H${X + ANCHO + DX} V192 L${X + ANCHO} 210 H${X} Z`} />} />
-
       {/* Estado */}
       <g className="lp-aparece" style={i(3)}>
         <rect x="6" y="176" width="104" height="30" rx="10" fill="#fff" stroke={LINEA} />
@@ -388,15 +365,15 @@ function SoftwareAI() {
     <Lienzo caja="0 0 340 240" clase="lp-ilu-giro">
       <defs>
         <linearGradient id="lp-base" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#FBFCFD" />
-          <stop offset=".55" stopColor="#E0E5EB" />
-          <stop offset="1" stopColor="#B4BDC9" />
+          <stop offset="0" stopColor="#F3F5F8" />
+          <stop offset=".55" stopColor="#D0D6DE" />
+          <stop offset="1" stopColor="#9AA5B4" />
         </linearGradient>
       </defs>
       <ellipse cx="170" cy="227" rx="164" ry="9" fill="url(#lp-m-piso)" />
 
       {/* Tapa y pantalla */}
-      <rect x="32" y="8" width="276" height="188" rx="12" fill="url(#lp-m-frente)" stroke="#fff" />
+      <rect x="32" y="8" width="276" height="188" rx="12" fill="url(#lp-m-frente)" stroke="#8E99A8" strokeWidth=".9" />
       <rect x="32.5" y="8.5" width="275" height="187" rx="11.5" stroke="#AEB7C4" strokeWidth=".6" />
       <rect x="40" y="16" width="260" height="170" rx="5" fill="#FDFDFE" stroke="#D5DBE3" strokeWidth=".6" />
 
@@ -453,12 +430,9 @@ function SoftwareAI() {
       <rect x="216" y="156" width="76" height="20" rx="6" fill="#fff" stroke={gris} />
       <text x="222" y="169" fontSize="6.5" fill="#5B6A80">Preguntá algo…</text>
 
-      {/* Luz sobre el vidrio */}
-      <path d="M40 16 H150 L84 186 H40 Z" fill="#fff" fillOpacity=".1" pointerEvents="none" />
-      <Reflejo id="lp-c-pantalla" forma={<rect x="32" y="8" width="276" height="188" rx="12" />} />
 
       {/* Base */}
-      <path d="M32 196 H308 L334 214 Q336 222 326 222 H14 Q4 222 6 214 Z" fill="url(#lp-base)" stroke="#fff" strokeWidth=".8" />
+      <path d="M32 196 H308 L334 214 Q336 222 326 222 H14 Q4 222 6 214 Z" fill="url(#lp-base)" stroke="#8E99A8" strokeWidth=".9" />
       <path d="M140 196 H200 Q198 203 190 203 H150 Q142 203 140 196 Z" fill="#B4BDC9" />
     </Lienzo>
   );
