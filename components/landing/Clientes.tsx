@@ -13,7 +13,7 @@ export default function Clientes() {
       <Entra tipo="funde" className="lp-clientes">
         <p className="lp-clientes-rotulo">{t.landing.clientes}</p>
         <div className="lp-clientes-pista">
-          <div className="lp-marquesina">
+          <div className="lp-marquesina animate-marquee">
             {tira.map((c, i) => (
               // eslint-disable-next-line @next/next/no-img-element
               <img

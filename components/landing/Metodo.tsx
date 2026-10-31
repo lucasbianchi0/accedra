@@ -53,11 +53,14 @@ export default function Metodo() {
   }, [activo, visible]);
 
   const irA = (i: number) => {
+    // Sin scroll fijo (mobile) las cuatro etapas ya están a la vista.
+    if (!window.matchMedia("(min-width: 1024px)").matches) return;
     const tramo = pista.current?.querySelector<HTMLElement>(`[data-tramo="${i}"]`);
     if (!tramo) return;
     // La etapa se activa cuando su tramo cruza el centro de la pantalla.
     const destino = tramo.getBoundingClientRect().top + window.scrollY - window.innerHeight / 2 + 4;
-    window.scrollTo({ top: destino, behavior: "smooth" });
+    const quieto = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    window.scrollTo({ top: destino, behavior: quieto ? "auto" : "smooth" });
   };
 
   return (

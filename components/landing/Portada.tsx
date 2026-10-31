@@ -30,7 +30,7 @@ export default function Portada() {
             {t.hero.subtitlePre}
             {t.hero.subtitleStrong}.
           </p>
-          <div className="lp-portada-ctas lp-carga" style={{ "--d": "560ms" } as React.CSSProperties}>
+          <div className="lp-portada-ctas lp-carga hero-capa" style={{ "--d": "560ms" } as React.CSSProperties}>
             <Cta href="#contacto">{t.services.ctaButton}</Cta>
             <BotonAsistente origen="portada" />
           </div>

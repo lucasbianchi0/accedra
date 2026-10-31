@@ -76,7 +76,7 @@ export default function Nav() {
 
   return (
     <>
-      <nav className="lp-nav" data-claro={claro || undefined} data-bajo={bajo || undefined} aria-label="Principal">
+      <nav className="lp-nav" data-claro={(claro && !abierto) || undefined} data-bajo={bajo || undefined} aria-label="Principal">
         <div className="lp-nav-barra">
           <Link href="/" className="lp-nav-logo" aria-label="Accedra">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -105,6 +105,10 @@ export default function Nav() {
                       <ArrowRight size={14} aria-hidden />
                     </Link>
                   ))}
+                  <a href="#contacto" onClick={() => setSolAbierto(false)} className="lp-nav-panel-cta">
+                    {t.services.ctaText}
+                    <ArrowRight size={14} aria-hidden />
+                  </a>
                 </div>
               </div>
             </div>
@@ -155,6 +159,7 @@ export default function Nav() {
           otherLinks={enlaces}
           activeSlug={undefined}
           labels={{ services: t.nav.services, cta: t.nav.cta, language: t.nav.language }}
+          ocultoDesde="min-[1100px]:hidden"
           onAsistente={() => {
             setAbierto(false);
             track({ type: "click", name: "asistente", target: "menu_mobile" });

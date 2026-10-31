@@ -2,16 +2,16 @@
 
 import type { CSSProperties } from "react";
 import { CalendarDays, Rocket, Handshake, Building2 } from "lucide-react";
-import CountUp from "@/components/CountUp";
 import { useT } from "@/lib/i18n/useT";
+import Cuenta from "./Cuenta";
 import { Entra, Palabras } from "./Entra";
 import { MAPA, PROVINCIAS } from "./provincias";
 
 const CIFRAS = [
-  { valor: "17", icono: CalendarDays },
-  { valor: "400", icono: Rocket },
-  { valor: "26", icono: Handshake },
-  { valor: "100", icono: Building2 },
+  { valor: 17, icono: CalendarDays },
+  { valor: 400, icono: Rocket },
+  { valor: 26, icono: Handshake },
+  { valor: 100, icono: Building2 },
 ];
 
 // Coordenadas sobre el mapa de argProvinces (viewBox 560×1196).
@@ -54,7 +54,7 @@ export default function Presencia() {
                 <Icono size={17} strokeWidth={1.6} aria-hidden />
               </div>
               <div className="lp-cifra-valor">
-                <CountUp value={valor} />
+                <Cuenta valor={valor} />
                 <sup>+</sup>
               </div>
             </Entra>
