@@ -308,7 +308,7 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
           onNavegar={onNavegar}
           ancho="mx-auto w-full max-w-[760px]"
           campoAlInicio={false}
-          inicio={<Bienvenida solucion={solucion} />}
+          inicio={<Bienvenida solucion={solucion} visible={abierto} />}
         />
       </div>
     </div>
@@ -350,7 +350,7 @@ function useMaquina(frases: string[], activa: boolean): string {
  * El campo NO toma el foco al abrir: si lo tomara, el ejemplo dejaría de
  * escribirse (y en el teléfono saltaría el teclado tapando la hoja).
  */
-function Bienvenida({ solucion }: { solucion?: string }) {
+function Bienvenida({ solucion, visible }: { solucion?: string; visible: boolean }) {
   const { mensajes } = useConversacion();
   const { titulo } = sugerenciasPara(solucion);
   const [texto, setTexto] = useState("");
@@ -358,7 +358,8 @@ function Bienvenida({ solucion }: { solucion?: string }) {
   const [industria, setIndustria] = useState<Industria | null>(null);
   const origen = solucion ? `hoja:${solucion}` : "hoja";
   const frases = industria ? industria.ejemplos : EJEMPLOS_MEZCLADOS;
-  const escribiendo = useMaquina(frases, !texto && !enfocado);
+  // Con la hoja cerrada (queda montada de antemano) el ejemplo no se escribe.
+  const escribiendo = useMaquina(frases, visible && !texto && !enfocado);
 
   // El campo crece con el texto hasta cinco líneas (en el teléfono arranca en
   // una). Con `field-sizing: content` lo hace el navegador; donde no existe,

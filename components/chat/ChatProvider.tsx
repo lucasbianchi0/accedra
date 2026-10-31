@@ -14,7 +14,9 @@ import { enviar } from "@/lib/chat/store";
  *
  * La hoja se carga recién cuando hace falta —es código que la mayoría de las
  * visitas no usa y no tiene por qué competir con el LCP— y se precarga en el
- * primer gesto de intención (hover o foco). Una vez montada no se desmonta al
+ * primer gesto de intención (hover o foco). Cuando la página ya está libre,
+ * además, se monta cerrada (ver `ChatLauncher`): abrirla es sólo cambiar un
+ * atributo, sin montar nada en el toque. Una vez montada no se desmonta al
  * cerrarla, así corre la animación de salida.
  */
 
@@ -31,6 +33,8 @@ type Ctx = {
   cerrar: () => void;
   precargar: () => void;
   precargarHoja: () => void;
+  /** Baja la hoja y la deja montada y cerrada, lista para abrir al instante. */
+  montarCerrada: () => void;
   heroVisible: boolean;
   setHeroVisible: (v: boolean) => void;
 };
@@ -55,6 +59,8 @@ export default function ChatProvider({ children }: { children: React.ReactNode }
   }, []);
   const cerrar = useCallback(() => setAbierto(false), []);
   const precargar = useCallback(() => void cargarHoja(), []);
+  // Baja el código y la deja montada y cerrada, con la imagen ya cargada.
+  const montarCerrada = useCallback(() => void cargarHoja().then(() => setMontada(true)), []);
 
   const valor = useMemo(
     () => ({
@@ -64,10 +70,11 @@ export default function ChatProvider({ children }: { children: React.ReactNode }
       cerrar,
       precargar,
       precargarHoja: precargar,
+      montarCerrada,
       heroVisible,
       setHeroVisible,
     }),
-    [abierto, abrir, cerrar, precargar, heroVisible],
+    [abierto, abrir, cerrar, precargar, montarCerrada, heroVisible],
   );
 
   return (

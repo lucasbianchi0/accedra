@@ -36,7 +36,9 @@ export function MascotaRetrato({ size = 132, className = "" }: { size?: number; 
         alt="El asistente de Accedra"
         width={size}
         height={size}
-        priority={false}
+        // Sin `lazy`: la hoja se monta cerrada de antemano y la imagen tiene
+        // que estar cargada cuando se abre, no aparecer después.
+        loading="eager"
         // `closest-side`: el fundido termina antes del borde del cuadro. Con el
         // radio por defecto (la esquina más lejana) el fondo azul se cortaba
         // en línea recta arriba y a los costados.

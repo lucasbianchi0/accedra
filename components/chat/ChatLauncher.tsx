@@ -27,7 +27,7 @@ import { track } from "@/lib/track";
 const CLAVE_GLOBO = "accedra-chat-globo";
 
 export default function ChatLauncher() {
-  const { abierto, abrir, precargar, heroVisible } = useChat();
+  const { abierto, abrir, precargar, montarCerrada, heroVisible } = useChat();
   const pathname = usePathname();
   const [tapada, setTapada] = useState(false);
   const [conWhatsApp, setConWhatsApp] = useState(true);
@@ -44,21 +44,21 @@ export default function ChatLauncher() {
     return () => observer.disconnect();
   }, []);
 
-  // La hoja se baja sola cuando la página ya terminó y el navegador está
-  // libre: en el celular no hay hover que la anticipe, y bajarla recién con
-  // el toque hacía esperar la apertura.
+  // La hoja se baja y se monta cerrada sola cuando la página ya terminó y el
+  // navegador está libre: en el celular no hay hover que la anticipe, y
+  // bajarla y montarla recién con el toque hacía esperar la apertura.
   useEffect(() => {
     const ric = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1500));
     const cic = window.cancelIdleCallback ?? window.clearTimeout;
     let id = 0;
-    const bajar = () => (id = ric(precargar, { timeout: 4000 }));
+    const bajar = () => (id = ric(montarCerrada, { timeout: 4000 }));
     if (document.readyState === "complete") bajar();
     else window.addEventListener("load", bajar, { once: true });
     return () => {
       window.removeEventListener("load", bajar);
       cic(id);
     };
-  }, [precargar]);
+  }, [montarCerrada]);
 
   // La burbuja de WhatsApp la monta cada página; se mira después de navegar.
   useEffect(() => {

@@ -1516,12 +1516,18 @@ dialog[data-brochure]::backdrop {
 @media (max-width: 1023px) {
   .chat-hoja-raiz[data-open="true"] .chat-hoja {
     transition:
-      transform 0.46s cubic-bezier(0.32, 0.72, 0, 1),
-      opacity 0.3s ease-out,
-      visibility 0s linear 0.46s;
+      transform 0.36s cubic-bezier(0.32, 0.72, 0, 1),
+      opacity 0.2s ease-out,
+      visibility 0s linear 0.36s;
   }
-  .chat-hoja-raiz[data-open="true"] .chat-hoja-fondo { transition: opacity 0.3s ease, visibility 0s; }
-  .chat-hoja-raiz[data-open="true"] .hoja-entra > * { animation-duration: 0.5s; }
+  .chat-hoja-raiz[data-open="true"] .chat-hoja-fondo { transition: opacity 0.22s ease, visibility 0s; }
+  /* El contenido entra casi junto con la hoja: escalonado hasta 0.85 s se
+     sentía lento. */
+  .chat-hoja-raiz[data-open="true"] .hoja-entra > * { animation-duration: 0.38s; }
+  .chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(1) { animation-delay: 0.06s; }
+  .chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(2) { animation-delay: 0.09s; }
+  .chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(3) { animation-delay: 0.12s; }
+  .chat-hoja-raiz[data-open="true"] .hoja-entra > :nth-child(4) { animation-delay: 0.15s; }
   .hoja-aurora { animation: none; }
 }
 
