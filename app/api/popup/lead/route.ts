@@ -25,7 +25,8 @@
 import type { NextRequest } from "next/server";
 
 import { EMAIL_RE, LIMITS, extractAttribution, type AttributionData } from "@/lib/contact/schema";
-import { clientIp } from "@/lib/contact/clientIp";
+import { clientIp, ipParaLimite } from "@/lib/contact/clientIp";
+import { esBot, leerJson, mismoOrigen } from "@/lib/chat/guardia";
 import { consume } from "@/lib/contact/rateLimit";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 
@@ -55,14 +56,12 @@ function error(mensaje: string, status: number) {
 }
 
 export async function POST(req: NextRequest) {
-  let body: Record<string, unknown>;
-  try {
-    const raw = await req.text();
-    if (raw.length > LIMITS.maxBodyBytes) return error("Pedido demasiado grande", 413);
-    body = JSON.parse(raw) as Record<string, unknown>;
-  } catch {
-    return error("Pedido inválido", 400);
-  }
+  if (!mismoOrigen(req)) return error("Pedido inválido", 403);
+  if (await esBot()) return error("No pudimos verificar el navegador.", 403);
+
+  const body = await leerJson(req, LIMITS.maxBodyBytes);
+  if (body === "grande") return error("Pedido demasiado grande", 413);
+  if (!body) return error("Pedido inválido", 400);
 
   const email = typeof body.email === "string" ? body.email.trim().slice(0, LIMITS.email) : "";
   if (!EMAIL_RE.test(email)) {
@@ -74,9 +73,10 @@ export async function POST(req: NextRequest) {
 
   const ip = clientIp(req);
 
-  const porIp = await consume("popup", ip, POPUP_IP);
-  const global = await consume("popup-global", "todos", POPUP_GLOBAL);
-  if (!porIp.allowed || !global.allowed) {
+  // La IP primero: alguien ya bloqueado no suma al techo que comparten todos.
+  const porIp = await consume("popup", ipParaLimite(req), POPUP_IP);
+  const global = porIp.allowed ? await consume("popup-global", "todos", POPUP_GLOBAL) : porIp;
+  if (!global.allowed) {
     // El mensaje es amable a propósito: el caso frecuente no es un ataque, es
     // alguien que tocó dos veces o que comparte la IP de su oficina.
     return error("Ya recibimos tu dirección. ¡Gracias!", 429);

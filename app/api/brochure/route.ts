@@ -22,7 +22,8 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { buildHtml, buildText, type DatosBrochure } from "@/lib/brochure/emailTemplate";
-import { clientIp } from "@/lib/contact/clientIp";
+import { clientIp, ipParaLimite } from "@/lib/contact/clientIp";
+import { esBot, leerJson, mismoOrigen } from "@/lib/chat/guardia";
 import { SERVICES, ORG, abs } from "@/lib/seo/site";
 
 const RESEND_ENDPOINT = "https://api.resend.com/emails";
@@ -89,6 +90,9 @@ function json(status: number, body: Record<string, unknown>) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!mismoOrigen(req)) return json(403, { error: "invalid" });
+  if (await esBot()) return json(403, { error: "invalid" });
+
   const to = process.env.CONTACT_FROM; // remitente; el destinatario es el visitante
   const apiKey = process.env.RESEND_API_KEY;
   const puedeMandarMail = Boolean(to && apiKey);
@@ -99,19 +103,10 @@ export async function POST(req: NextRequest) {
     return json(500, { error: "server" });
   }
 
-  const declared = Number(req.headers.get("content-length") ?? 0);
-  if (declared > LIMITS.maxBodyBytes) return json(413, { error: "too_large" });
-
-  const raw = await req.text();
-  if (raw.length > LIMITS.maxBodyBytes) return json(413, { error: "too_large" });
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return json(400, { error: "invalid" });
-  }
-  const body = parsed as Record<string, unknown>;
+  const body = await leerJson(req, LIMITS.maxBodyBytes);
+  if (body === "grande") return json(413, { error: "too_large" });
+  if (!body) return json(400, { error: "invalid" });
+  const parsed: unknown = body;
 
   // Honeypot y tiempo mínimo: 200 a propósito, para que el bot no reintente.
   if (typeof body.website === "string" && body.website.trim() !== "") {
@@ -145,7 +140,7 @@ export async function POST(req: NextRequest) {
   const emailKey = createHash("sha256").update(email.toLowerCase()).digest("hex").slice(0, 32);
 
   for (const [scope, id, rules] of [
-    ["brochure:ip", ip, BROCHURE_IP_RULES],
+    ["brochure:ip", ipParaLimite(req), BROCHURE_IP_RULES],
     ["brochure:email", emailKey, BROCHURE_EMAIL_RULES],
     ["brochure:global", "all", BROCHURE_GLOBAL_RULES],
   ] as const) {

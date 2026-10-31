@@ -35,7 +35,10 @@ import { checkBotId } from "botid/server";
 export function mismoOrigen(req: NextRequest): boolean {
   if (!(req.headers.get("content-type") ?? "").toLowerCase().startsWith("application/json")) return false;
   const origen = req.headers.get("origin");
-  if (!origen) return false;
+  return Boolean(origen) && origenPropio(req, origen!);
+}
+
+function origenPropio(req: NextRequest, origen: string): boolean {
   let host: string;
   try {
     host = new URL(origen).host;
@@ -46,6 +49,17 @@ export function mismoOrigen(req: NextRequest): boolean {
   if (host === propio) return true;
   // `next dev` en otra máquina de la red o con el puerto cambiado.
   return process.env.NODE_ENV !== "production" && /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(host);
+}
+
+/**
+ * Para `/api/track`: lo manda `sendBeacon`, y perder analítica porque un
+ * navegador viejo no adjuntó `Origin` es peor que dejar pasar ese caso. Corta a
+ * otro sitio que quiera escribir en nuestras tablas desde sus visitantes; a un
+ * script lo frenan los cupos.
+ */
+export function origenAjeno(req: NextRequest): boolean {
+  const origen = req.headers.get("origin");
+  return Boolean(origen) && !origenPropio(req, origen!);
 }
 
 /* ── Bots ─────────────────────────────────────────────────────────────────── */
@@ -155,6 +169,13 @@ export const firmaValida = (proposito: string, contenido: string, firma: unknown
 const TELEFONO_ACCEDRA = "1133001233";
 
 /**
+ * Más que cualquier campo que sale de acá (el más largo son 800). Va antes de
+ * las expresiones porque varias son cuadráticas sobre una tira sin separadores:
+ * 47 KB en el campo nombre tenían ocupada la función 2,6 segundos por pedido.
+ */
+const MAX_SIN_ENLACES = 4000;
+
+/**
  * Saca de un texto que escribió el modelo (o la persona) y va a salir con la
  * marca de Accedra —el PDF, el mail a la persona, las tarjetas— todo lo que
  * sirve para mandar a alguien a otro lado: enlaces y dominios (también
@@ -167,6 +188,7 @@ const TELEFONO_ACCEDRA = "1133001233";
  */
 export function sinEnlaces(texto: string): string {
   return texto
+    .slice(0, MAX_SIN_ENLACES)
     .replace(/\s*[[({]\s*(?:\.|punto|dot)\s*[\])}]\s*/gi, ".")
     .replace(/\b(?:https?|ftp):\/\/\S+/gi, "")
     .replace(/\bwww\.\S+/gi, "")

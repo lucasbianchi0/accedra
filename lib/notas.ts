@@ -152,7 +152,7 @@ export function aNotaSitio(fila: Record<string, unknown>, urlPublica: (ruta: str
     fuentes: fuentes
       .map((f) => (f && typeof f === "object" ? (f as Record<string, unknown>) : {}))
       .map((f) => ({ titulo: texto(f.titulo), url: texto(f.url) }))
-      .filter((f) => f.titulo && f.url),
+      .filter((f) => f.titulo && /^https?:\/\//i.test(f.url)),
     autor: texto(fila.autor),
     autorCargo: texto(fila.autor_cargo),
     portadaUrl: portada ? urlPublica(portada) : null,

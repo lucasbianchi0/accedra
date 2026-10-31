@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { bloqueDeRed, ipParaLimite } from "@/lib/contact/clientIp";
+import { leerJson, origenAjeno } from "@/lib/chat/guardia";
 import { consume } from "@/lib/contact/rateLimit";
 
 export const runtime = "nodejs";
@@ -80,13 +81,10 @@ export async function POST(req: NextRequest) {
   const nada = new Response(null, { status: 204 });
 
   try {
-    const declared = Number(req.headers.get("content-length") ?? 0);
-    if (declared > MAX_BODY) return nada;
+    if (origenAjeno(req)) return nada;
 
-    const raw = await req.text();
-    if (raw.length > MAX_BODY) return nada;
-
-    const body = JSON.parse(raw) as Record<string, unknown>;
+    const body = await leerJson(req, MAX_BODY);
+    if (!body || body === "grande") return nada;
 
     const sessionId = txt(body.session_id, 36);
     const type = txt(body.type, 32);

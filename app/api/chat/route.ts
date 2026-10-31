@@ -391,14 +391,17 @@ function contextoDePagina(body: unknown): string | null {
   const ruta = (body as { pagina?: unknown } | null)?.pagina;
   if (typeof ruta !== "string" || !/^\/[a-z0-9\-/]{0,120}$/.test(ruta)) return null;
   const [, seccion, slug, extra] = ruta.split("/");
-  if (seccion === "soluciones" && SOLUTIONS[slug]) {
-    const sol = SOLUTIONS[slug];
+  // `hasOwn`: la ruta la manda el navegador y "/casos/constructor/0" encontraba
+  // lo heredado de Object y tiraba un 500 con la cuota ya descontada.
+  const solucion = slug && Object.hasOwn(SOLUTIONS, slug) ? SOLUTIONS[slug] : undefined;
+  if (seccion === "soluciones" && solucion) {
+    const sol = solucion;
     const sub = extra ? Object.values(SUB_SERVICES).find((x) => x.parent === slug && x.slug === extra) : undefined;
-    const industria = extra ? INDUSTRIES[extra] : undefined;
+    const industria = extra && Object.hasOwn(INDUSTRIES, extra) ? INDUSTRIES[extra] : undefined;
     const detalle = sub ? ` (servicio: ${sub.name})` : industria ? ` (versión para ${industria.name})` : "";
     return `La persona está escribiendo desde la página de ${sol.name}${detalle}. Asumí ese contexto salvo que diga otra cosa.`;
   }
-  if (seccion === "casos" && SOLUTIONS[slug]?.cases[Number(extra)]) {
+  if (seccion === "casos" && solucion?.cases[Number(extra)]) {
     return `La persona está mirando el caso de éxito ${slug}:${extra}.`;
   }
   return ruta === "/" ? "La persona está escribiendo desde la portada del sitio." : null;

@@ -3,7 +3,7 @@
  *
  * QUE PROTEGE, EN ORDEN
  *
- *  1. Tamaño del body antes de parsear, y JSON válido.
+ *  1. Mismo origen y BotID; tamaño del body antes de parsear, y JSON válido.
  *  2. Honeypot y tiempo mínimo de llenado: al bot se le contesta 200 para que
  *     no reintente, y no se hace nada.
  *  3. El mail: largo, sin caracteres de control (header injection) y con la
@@ -26,7 +26,8 @@ import type { NextRequest } from "next/server";
 import { createHash } from "node:crypto";
 
 import { EMAIL_RE, LIMITS, MIN_FILL_MS, extractAttribution } from "@/lib/contact/schema";
-import { clientIp } from "@/lib/contact/clientIp";
+import { clientIp, ipParaLimite } from "@/lib/contact/clientIp";
+import { esBot, leerJson, mismoOrigen } from "@/lib/chat/guardia";
 import { consume, EVENTO_EMAIL_RULES, EVENTO_GLOBAL_RULES, EVENTO_IP_RULES } from "@/lib/contact/rateLimit";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { CATEGORIAS, CATEGORIA_COLOR, ZONA, type Categoria } from "@/lib/eventos";
@@ -70,20 +71,12 @@ function tieneControl(s: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
-  // ── 1. Body ──
-  const declarado = Number(req.headers.get("content-length") ?? 0);
-  if (declarado > LIMITS.maxBodyBytes) return json(413, { error: "too_large" });
-  const raw = await req.text();
-  if (raw.length > LIMITS.maxBodyBytes) return json(413, { error: "too_large" });
-
-  let body: Record<string, unknown>;
-  try {
-    const parsed = JSON.parse(raw);
-    if (typeof parsed !== "object" || parsed === null) throw new Error();
-    body = parsed as Record<string, unknown>;
-  } catch {
-    return json(400, { error: "invalid" });
-  }
+  // ── 1. Origen, navegador y body ──
+  if (!mismoOrigen(req)) return json(403, { error: "invalid" });
+  if (await esBot()) return json(403, { error: "invalid" });
+  const body = await leerJson(req, LIMITS.maxBodyBytes);
+  if (body === "grande") return json(413, { error: "too_large" });
+  if (!body) return json(400, { error: "invalid" });
 
   // ── 2. Bots ──
   if (typeof body.website === "string" && body.website.trim() !== "") {
@@ -116,7 +109,7 @@ export async function POST(req: NextRequest) {
   const emailKey = createHash("sha256").update(email).digest("hex").slice(0, 32);
 
   for (const [scope, id, reglas] of [
-    ["evento:ip", ip, EVENTO_IP_RULES],
+    ["evento:ip", ipParaLimite(req), EVENTO_IP_RULES],
     ["evento:email", emailKey, EVENTO_EMAIL_RULES],
     ["evento:global", "all", EVENTO_GLOBAL_RULES],
   ] as const) {

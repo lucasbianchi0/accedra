@@ -97,6 +97,16 @@ export const EVENTO_GLOBAL_RULES: readonly Rule[] = [
   { suffix: "day", limit: 400, windowSec: 24 * 60 * 60 },
 ];
 
+/**
+ * Techo global del formulario de contacto. Hoy son unos pocos leads por semana:
+ * sólo corta un ataque repartido entre muchas IPs, que llenaría `leads` y la
+ * casilla del equipo.
+ */
+export const CONTACT_GLOBAL_RULES: readonly Rule[] = [
+  { suffix: "minute", limit: 10, windowSec: 60 },
+  { suffix: "day", limit: 200, windowSec: 24 * 60 * 60 },
+];
+
 async function redisIncr(key: string, windowSec: number, cantidad: number): Promise<number> {
   const res = await fetch(`${URL_BASE}/incrby/${encodeURIComponent(key)}/${cantidad}`, {
     headers: { Authorization: `Bearer ${TOKEN}` },
@@ -206,6 +216,8 @@ export async function consume(
 }
 
 /** Cuota del formulario de contacto. Mismas claves y límites que antes. */
-export function checkRateLimit(ip: string): Promise<RateVerdict> {
-  return consume("contact", ip, RULES);
+export async function checkRateLimit(ip: string): Promise<RateVerdict> {
+  // La IP primero: alguien ya bloqueado no suma al techo que comparten todos.
+  const porIp = await consume("contact", ip, RULES);
+  return porIp.allowed ? consume("contact-global", "todos", CONTACT_GLOBAL_RULES) : porIp;
 }

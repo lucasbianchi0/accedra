@@ -29,9 +29,19 @@ export const metadata: Metadata = {
 
 type Props = { params: Promise<{ codigo: string }> };
 
+/** La dirección la escribe cualquiera: un "%" suelto hace tirar a decodeURIComponent. */
+function decodificar(codigo: string): string {
+  try {
+    return decodeURIComponent(codigo);
+  } catch {
+    return codigo;
+  }
+}
+
 export default async function CertificadoPage({ params }: Props) {
-  const { codigo } = await params;
-  const c = await verificarCertificado(decodeURIComponent(codigo));
+  const { codigo: crudo } = await params;
+  const codigo = decodificar(crudo);
+  const c = await verificarCertificado(codigo);
 
   return (
     <main className="relative min-h-screen bg-navy-800">
@@ -89,7 +99,7 @@ export default async function CertificadoPage({ params }: Props) {
                 <ShieldAlert size={36} className="mx-auto text-amber-300" />
                 <h1 className="mt-5 text-[26px] font-semibold text-white">No encontramos ese certificado</h1>
                 <p className="mx-auto mt-3 max-w-sm text-[15px] leading-relaxed text-[#9FB0C7]">
-                  Revisá que el código <span className="font-mono text-white">{decodeURIComponent(codigo)}</span> esté escrito igual que en el papel. Si
+                  Revisá que el código <span className="font-mono text-white">{codigo}</span> esté escrito igual que en el papel. Si
                   sigue sin aparecer, escribinos a{" "}
                   <a href="mailto:info@accedra.com.ar" className="text-[#7FB3F8] hover:text-white">
                     info@accedra.com.ar

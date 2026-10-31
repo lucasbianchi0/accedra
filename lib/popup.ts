@@ -169,6 +169,11 @@ function txt(v: unknown): string {
 }
 
 /** Fila de `popups` → lo que se le manda al navegador. */
+/** Lo que puede ir en el `href` del CTA: web, mail, teléfono, WhatsApp o una ruta del sitio. */
+function urlSegura(url: string): string {
+  return /^(?:https?:\/\/|mailto:|tel:|\/(?![/\\]))/i.test(url.trim()) ? url.trim() : "";
+}
+
 export function aPopupSitio(fila: Fila, urlPublica: (ruta: string) => string): PopupSitio {
   const ruta = txt(fila.imagen_ruta);
   const formato = txt(fila.formato);
@@ -186,7 +191,7 @@ export function aPopupSitio(fila: Fila, urlPublica: (ruta: string) => string): P
     imagenAlt: txt(fila.imagen_alt),
     accion: accion === "enlace" ? "enlace" : "mail",
     ctaTexto: txt(fila.cta_texto),
-    ctaUrl: txt(fila.cta_url),
+    ctaUrl: urlSegura(txt(fila.cta_url)),
     ctaNuevaPestana: fila.cta_nueva_pestana !== false,
     mailGracias: txt(fila.mail_gracias),
     cerrarTexto: txt(fila.cerrar_texto),

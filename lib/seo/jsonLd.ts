@@ -263,5 +263,8 @@ export function listaDeNotasLd(notas: { titulo: string; url: string }[]) {
 /** Serializa uno o varios objetos JSON-LD para inyectar en el HTML. */
 export function jsonLdString(...objects: unknown[]): string {
   const payload = objects.length === 1 ? objects[0] : objects;
-  return JSON.stringify(payload);
+  // Va crudo dentro de un <script>, y las notas y los eventos traen texto de la
+  // base: un "</script>" en un título cerraría la etiqueta y lo que siga se
+  // ejecutaría. Como escapes de JSON el dato es el mismo.
+  return JSON.stringify(payload).replace(/[<>&\u2028\u2029]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`);
 }

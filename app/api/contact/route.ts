@@ -5,7 +5,8 @@ import {
 } from "@/lib/contact/schema";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { checkRateLimit, isDurable } from "@/lib/contact/rateLimit";
-import { clientIp } from "@/lib/contact/clientIp";
+import { clientIp, ipParaLimite } from "@/lib/contact/clientIp";
+import { esBot, leerJson, mismoOrigen } from "@/lib/chat/guardia";
 import { buildHtml, buildText } from "@/lib/contact/emailTemplate";
 
 // Envío de mail vía la API REST de Resend — sin SDK, así no sumamos dependencias.
@@ -18,6 +19,9 @@ function json(status: number, body: Record<string, unknown>) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!mismoOrigen(req)) return json(403, { error: "invalid" });
+  if (await esBot()) return json(403, { error: "invalid" });
+
   const to = process.env.CONTACT_TO;
   const from = process.env.CONTACT_FROM;
   const apiKey = process.env.RESEND_API_KEY;
@@ -35,22 +39,10 @@ export async function POST(req: NextRequest) {
     return json(500, { error: "server" });
   }
 
-  // Corte por Content-Length antes de leer el cuerpo.
-  const declared = Number(req.headers.get("content-length") ?? 0);
-  if (declared > LIMITS.maxBodyBytes) return json(413, { error: "too_large" });
-
-  const raw = await req.text();
-  // Content-Length puede mentir o no venir, así que revalidamos sobre lo leído.
-  if (raw.length > LIMITS.maxBodyBytes) return json(413, { error: "too_large" });
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch {
-    return json(400, { error: "invalid" });
-  }
-
-  const body = parsed as Record<string, unknown>;
+  const body = await leerJson(req, LIMITS.maxBodyBytes);
+  if (body === "grande") return json(413, { error: "too_large" });
+  if (!body) return json(400, { error: "invalid" });
+  const parsed: unknown = body;
 
   // Honeypot: campo oculto por CSS que una persona nunca ve ni completa.
   // Se responde 200 a propósito — que el bot crea que funcionó y no reintente.
@@ -74,7 +66,8 @@ export async function POST(req: NextRequest) {
   }
 
   const ip = clientIp(req);
-  const verdict = await checkRateLimit(ip);
+  // Por /64 en IPv6: ver `ipParaLimite`.
+  const verdict = await checkRateLimit(ipParaLimite(req));
   if (!verdict.allowed) {
     console.warn(`[contact] rate limit "${verdict.rule}" para ${ip}`);
     return json(429, { error: "rate_limited" });

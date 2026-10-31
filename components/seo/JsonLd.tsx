@@ -8,8 +8,7 @@ export default function JsonLd({ data }: { data: unknown | unknown[] }) {
   return (
     <script
       type="application/ld+json"
-      // schema.org es data controlada por nosotros (no input de usuario), así que
-      // el JSON serializado es seguro de inyectar.
+      // Parte del dato sale de la base: `jsonLdString` escapa lo que cerraría el <script>.
       dangerouslySetInnerHTML={{ __html: jsonLdString(...items) }}
     />
   );

@@ -13,7 +13,51 @@ const LEGACY_REDIRECTS: [string, string][] = [
   ["/firmadigital", "/soluciones/firma-biometrica"],
 ];
 
+/**
+ * La parte de la CSP que no puede romper nada: nadie nos enmarca (clickjacking
+ * sobre el asistente y los formularios), nadie cambia la base de los enlaces ni
+ * mete un <object>, y los formularios no postean a otro lado.
+ */
+const CSP = ["frame-ancestors 'none'", "base-uri 'self'", "object-src 'none'", "form-action 'self'"];
+
+/**
+ * La lista de orígenes, en modo informe: se ve en la consola del navegador pero
+ * no bloquea. `'unsafe-inline'` es inevitable sin nonces, y los nonces obligan a
+ * renderizar cada página por pedido: las landings dejarían de ser estáticas.
+ *
+ * Para pasarla a obligatoria hay que ver en producción que no cae nada del
+ * desafío de BotID: si se bloquea, el asistente y todos los formularios
+ * contestan 403.
+ */
+const CSP_INFORME = [
+  ...CSP,
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "media-src 'self' https:",
+  "connect-src 'self'",
+  "frame-src 'none'",
+  "worker-src 'self' blob:",
+  "manifest-src 'self'",
+];
+
+const HEADERS_SEGURIDAD = [
+  { key: "Content-Security-Policy", value: CSP.join("; ") },
+  { key: "Content-Security-Policy-Report-Only", value: CSP_INFORME.join("; ") },
+  // Para los navegadores que no entienden `frame-ancestors`.
+  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()" },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+];
+
 const nextConfig: NextConfig = {
+  async headers() {
+    return [{ source: "/:path*", headers: HEADERS_SEGURIDAD }];
+  },
   images: {
     // Sin el optimizador de Vercel: con la cuota del plan agotada `/_next/image`
     // responde 402 y las fotos salen rotas (7/10 en el blog, 16/10 en las
@@ -40,7 +84,9 @@ const nextConfig: NextConfig = {
       // Portadas de eventos subidas desde el backoffice. Van por el optimizador
       // para la miniatura del panel lateral: el original pesa ~280 KB y se ve
       // a 150 px.
-      { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
+      // Sólo nuestro proyecto: con el comodín, /_next/image optimizaba las imágenes
+      // de cualquier proyecto de Supabase con nuestra cuota.
+      { protocol: "https", hostname: "pjpebibjlqjwffafzhhh.supabase.co", pathname: "/storage/v1/object/public/**" },
     ],
   },
   async redirects() {

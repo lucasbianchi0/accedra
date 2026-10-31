@@ -96,8 +96,8 @@ export function armarRelevamiento(entrada: Record<string, unknown>): TarjetaRele
     .map((a) => {
       const r = (a ?? {}) as Record<string, unknown>;
       const slug = texto(r.solucion, 40);
+      if (!Object.hasOwn(SOLUTIONS, slug)) return null;
       const sol = SOLUTIONS[slug];
-      if (!sol) return null;
       return {
         solucion: slug,
         nombre: sol.name,
