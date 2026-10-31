@@ -35,7 +35,7 @@ export function calcularPasos(mensajes: Mensaje[], leadEnviado: boolean): { paso
 
   const hechos = [
     respuestas >= 1,
-    // Contestada la ronda 1 (el segundo mensaje), el contexto está.
+    // Contestada la tanda de preguntas (el segundo mensaje), el contexto está.
     relevamiento || respuestas >= 2,
     diagnostico,
     relevamiento,
