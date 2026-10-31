@@ -1,6 +1,40 @@
 // Diccionario base (español). Es la FUENTE DE VERDAD de la estructura:
 // en.ts y pt.ts deben replicar exactamente estas claves (solo cambian los valores).
 export const es = {
+  // Portada corporativa (rama feature/test-new-landing).
+  landing: {
+    clientes: "Las empresas líderes de Argentina confían en nosotros",
+    presencia: {
+      eyebrow: "Dónde estamos",
+      titulo1: "De Buenos Aires",
+      titulo2: "a todo el país",
+      sub: "Desplegamos sitio por sitio: de sucursales bancarias a yacimientos donde la conectividad tradicional no llega.",
+      listaTitulo: "Algunos despliegues",
+      casaCentral: "Casa central",
+      proyectos: "Proyectos",
+      sedeLugar: "CABA",
+      despliegues: [
+        { lugar: "Buenos Aires", detalle: "Banco Provincia · 400 sucursales" },
+        { lugar: "Catamarca · Jujuy", detalle: "Finning · operación minera" },
+        { lugar: "San Juan · Santa Cruz", detalle: "Finning · conectividad satelital" },
+      ],
+    },
+    soluciones: { eyebrow: "Soluciones" },
+    metodo: {
+      eyebrow: "Cómo trabajamos",
+      titulo: "Un único responsable, de punta a punta.",
+      pasos: [
+        { titulo: "Relevamiento", desc: "Auditamos tu infraestructura y los puntos críticos de la operación." },
+        { titulo: "Diseño", desc: "Definimos arquitectura, tecnología y prioridades a la medida del negocio." },
+        { titulo: "Implementación", desc: "Desplegamos con ventanas coordinadas y mínima interrupción." },
+        { titulo: "Operación", desc: "Monitoreo proactivo y soporte gestionado, sin intermediarios." },
+      ],
+    },
+    casos: { eyebrow: "Casos de éxito", ver: "Ver caso" },
+    testimonios: { eyebrow: "Testimonios" },
+    tecnologias: { eyebrow: "Tecnologías" },
+  },
+
   nav: {
     services: "Soluciones",
     partners: "Partners",

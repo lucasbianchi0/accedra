@@ -1,54 +1,58 @@
-import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import ClientsBar from "@/components/ClientsBar";
-import Services from "@/components/Services";
-import WhyUs from "@/components/WhyUs";
-import Partners from "@/components/Partners";
-import EventosLateral from "@/components/EventosLateral";
+import type { Metadata, Viewport } from "next";
+import { Inter_Tight } from "next/font/google";
+import Nav from "@/components/landing/Nav";
+import Portada from "@/components/landing/Portada";
+import Clientes from "@/components/landing/Clientes";
+import Manifiesto from "@/components/landing/Manifiesto";
+import Presencia from "@/components/landing/Presencia";
+import Soluciones from "@/components/landing/Soluciones";
+import Metodo from "@/components/landing/Metodo";
+import Casos from "@/components/landing/Casos";
+import Testimonios from "@/components/landing/Testimonios";
+import Tecnologias from "@/components/landing/Tecnologias";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
-import ScrollProgress from "@/components/ScrollProgress";
 import WhatsAppButton from "@/components/WhatsAppButton";
+import EventosLateral from "@/components/EventosLateral";
 import BlogLateral from "@/components/BlogLateral";
-import AmbientLight from "@/components/AmbientLight";
-import type { Metadata } from "next";
+import "./landing.css";
+
+// Va acá y no en el layout: solo la home usa esta familia.
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  variable: "--font-tight",
+});
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: { url: "/" },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#f6f7f9",
+};
+
 export default function Home() {
   return (
-    // Canvas único. `relative` es lo que ancla la capa de luz al documento
-    // entero; sin eso las aureolas se posicionarían contra el viewport.
-    // Nada de `overflow-hidden` acá: rompería cualquier `position: sticky`
-    // que se use más adelante dentro de una sección.
-    <main className="relative bg-navy-800">
-      <AmbientLight />
-      {/* Los elementos fijos quedan FUERA del wrapper: adentro crearían un
-          contexto de apilamiento propio y sus z-index (navbar 50, progreso 60)
-          pasarían a medirse contra el z-10 del wrapper, no contra la página.
-          Resultado: MobileCTA, que es hermano, se pintaría sobre el navbar. */}
-      <ScrollProgress />
-      <Navbar />
-      {/* El contenido va por encima de la luz, por debajo de los fijos. */}
-      <div className="relative z-10">
-        <Hero />
-        <ClientsBar />
-        <Services />
-        <Partners />
-        <WhyUs />
+    <main className={`lp ${interTight.variable}`}>
+      <Nav />
+      <Portada />
+      <Clientes />
+      <Manifiesto />
+      <Presencia />
+      <Soluciones />
+      <Metodo />
+      <Casos />
+      <Testimonios />
+      <Tecnologias />
+      {/* Contact y Footer son los del resto del sitio, sobre navy: mismo
+          formulario, misma atribución y mismos eventos. */}
+      <div className="lp-cierre">
         <Contact />
         <Footer />
       </div>
       <WhatsAppButton />
-      {/* Los eventos no ocupan la portada: una pestaña fija en el borde derecho
-          abre el panel con la lista. No pinta nada si no hay próximos eventos. */}
       <EventosLateral />
-      {/* Y debajo, la misma idea para el blog: la pestaña sólo aparece si hay
-          notas publicadas, y se corre sola si la de eventos está ocupando el
-          centro del borde. */}
       <BlogLateral />
     </main>
   );

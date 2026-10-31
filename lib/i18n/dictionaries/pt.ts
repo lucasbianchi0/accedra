@@ -1,6 +1,39 @@
 import type { Dict } from "./es";
 
 export const pt: Dict = {
+  landing: {
+    clientes: "As empresas líderes da Argentina confiam em nós",
+    presencia: {
+      eyebrow: "Onde estamos",
+      titulo1: "De Buenos Aires",
+      titulo2: "para todo o país",
+      sub: "Implantamos local por local: de agências bancárias a jazidas onde a conectividade tradicional não chega.",
+      listaTitulo: "Algumas implantações",
+      casaCentral: "Sede",
+      proyectos: "Projetos",
+      sedeLugar: "CABA",
+      despliegues: [
+        { lugar: "Buenos Aires", detalle: "Banco Provincia · 400 agências" },
+        { lugar: "Catamarca · Jujuy", detalle: "Finning · operação de mineração" },
+        { lugar: "San Juan · Santa Cruz", detalle: "Finning · conectividade via satélite" },
+      ],
+    },
+    soluciones: { eyebrow: "Soluções" },
+    metodo: {
+      eyebrow: "Como trabalhamos",
+      titulo: "Um único responsável, de ponta a ponta.",
+      pasos: [
+        { titulo: "Levantamento", desc: "Auditamos sua infraestrutura e os pontos críticos da operação." },
+        { titulo: "Desenho", desc: "Definimos arquitetura, tecnologia e prioridades sob medida para o negócio." },
+        { titulo: "Implementação", desc: "Implantamos em janelas coordenadas e com mínima interrupção." },
+        { titulo: "Operação", desc: "Monitoramento proativo e suporte gerenciado, sem intermediários." },
+      ],
+    },
+    casos: { eyebrow: "Casos de sucesso", ver: "Ver caso" },
+    testimonios: { eyebrow: "Depoimentos" },
+    tecnologias: { eyebrow: "Tecnologias" },
+  },
+
   nav: {
     services: "Soluções",
     partners: "Partners",
