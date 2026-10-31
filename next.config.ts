@@ -56,7 +56,10 @@ const HEADERS_SEGURIDAD = [
 
 const nextConfig: NextConfig = {
   async headers() {
-    return [{ source: "/:path*", headers: HEADERS_SEGURIDAD }];
+    // Un preview con dominio propio no debe indexarse: duplicaría el sitio.
+    const soloPreview =
+      process.env.VERCEL_ENV === "preview" ? [{ key: "X-Robots-Tag", value: "noindex, nofollow" }] : [];
+    return [{ source: "/:path*", headers: [...HEADERS_SEGURIDAD, ...soloPreview] }];
   },
   images: {
     // Sin el optimizador de Vercel: con la cuota del plan agotada `/_next/image`
