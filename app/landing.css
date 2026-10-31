@@ -391,7 +391,7 @@
 @media (min-width: 1024px) { .lp-manifiesto { padding-block: 10.5rem 8rem; } }
 .lp-manifiesto p {
   font-family: var(--font-tight), sans-serif;
-  font-size: clamp(2.25rem, 5.6vw, 5.5rem);
+  font-size: clamp(2rem, 4.4vw, 4.25rem);
   font-weight: 500;
   line-height: 1.04;
   letter-spacing: -0.045em;
