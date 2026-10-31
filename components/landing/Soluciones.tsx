@@ -7,7 +7,7 @@ import { track } from "@/lib/track";
 import { useT } from "@/lib/i18n/useT";
 import { Entra, Palabras } from "./Entra";
 import { FlechaCirculo } from "./Cta";
-import Ilustracion from "./Ilustraciones";
+import Ilustracion, { Metal } from "./Ilustraciones";
 
 // Mismo orden que t.services.columns.
 // `c` es el color de identidad de cada solución (el mismo de Services.tsx);
@@ -35,6 +35,7 @@ export default function Soluciones() {
         <Entra as="p" demora={200} className="lp-sub">{t.services.subtitle}</Entra>
       </div>
 
+      <Metal />
       <div className="lp-soluciones">
         {SOLUCIONES.map((s, i) => {
           const c = t.services.columns[i];

@@ -30,33 +30,69 @@ function Lienzo({
   );
 }
 
+/* El metal: un solo juego de degradés para todos los objetos. Se monta una vez
+ * por página (Soluciones) y cada SVG lo referencia por id. */
+export function Metal() {
+  return (
+    <svg width="0" height="0" className="absolute" aria-hidden>
+      <defs>
+        <linearGradient id="lp-m-frente" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#FCFDFE" />
+          <stop offset=".38" stopColor="#E0E5EB" />
+          <stop offset=".58" stopColor="#F4F6F8" />
+          <stop offset="1" stopColor="#C6CDD7" />
+        </linearGradient>
+        <linearGradient id="lp-m-lado" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#A9B3C0" />
+          <stop offset="1" stopColor="#D6DCE3" />
+        </linearGradient>
+        <linearGradient id="lp-m-tapa" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stopColor="#E3E7EC" />
+          <stop offset="1" stopColor="#FFFFFF" />
+        </linearGradient>
+        <linearGradient id="lp-m-panel" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#FAFBFC" />
+          <stop offset="1" stopColor="#D9DFE6" />
+        </linearGradient>
+        <linearGradient id="lp-m-hueco" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#AAB3C0" />
+          <stop offset="1" stopColor="#C4CBD5" />
+        </linearGradient>
+        <linearGradient id="lp-m-reflejo" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="#fff" stopOpacity="0" />
+          <stop offset=".5" stopColor="#fff" stopOpacity=".85" />
+          <stop offset="1" stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id="lp-m-piso">
+          <stop offset="0" stopColor="#0D1A2D" stopOpacity=".3" />
+          <stop offset="1" stopColor="#0D1A2D" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+    </svg>
+  );
+}
+
+/* Franja de luz que cruza el objeto al pasar el mouse. */
+function Reflejo({ id, forma }: { id: string; forma: React.ReactNode }) {
+  return (
+    <>
+      <clipPath id={id}>{forma}</clipPath>
+      <g clipPath={`url(#${id})`}>
+        <rect x="-60" y="-20" width="70" height="300" fill="url(#lp-m-reflejo)" transform="rotate(16)" className="lp-reflejo" />
+      </g>
+    </>
+  );
+}
+
 function Networking() {
-  const cordones = ["#60A5FA", VERDE, AMBAR, "#7C6CF6", ROJO, "#22D3EE"];
+  const cordones = ["#60A5FA", VERDE, "#7C6CF6", "#60A5FA", VERDE, "#22D3EE"];
   const unidades = [
     { y: 66, nombre: "CORE-SW-48" },
     { y: 92, nombre: "ACCESS-SW-24" },
   ];
   return (
     <Lienzo caja="8 -14 262 252">
-      <defs>
-        <linearGradient id="lp-rack-frente" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#1B2C47" />
-          <stop offset="1" stopColor="#0B1524" />
-        </linearGradient>
-        <linearGradient id="lp-rack-lado" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#0A1424" />
-          <stop offset="1" stopColor="#1A2A44" />
-        </linearGradient>
-        <linearGradient id="lp-rack-tapa" x1="0" y1="1" x2="1" y2="0">
-          <stop offset="0" stopColor="#24395A" />
-          <stop offset="1" stopColor="#32496E" />
-        </linearGradient>
-        <radialGradient id="lp-rack-piso">
-          <stop offset="0" stopColor="#0D1A2D" stopOpacity=".26" />
-          <stop offset="1" stopColor="#0D1A2D" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <ellipse cx="176" cy="229" rx="120" ry="10" fill="url(#lp-rack-piso)" />
+      <ellipse cx="172" cy="228" rx="104" ry="9" fill="url(#lp-m-piso)" />
 
       {/* Cables que suben del gabinete: la red sigue fuera de cuadro. */}
       {["#60A5FA", VERDE, "#7C6CF6"].map((c, k) => {
@@ -70,26 +106,26 @@ function Networking() {
       })}
 
       {/* Gabinete */}
-      <path d="M92 22 L126 8 H262 L228 22 Z" fill="url(#lp-rack-tapa)" />
-      <path d="M228 22 L262 8 V210 L228 226 Z" fill="url(#lp-rack-lado)" />
+      <path d="M92 22 L126 8 H262 L228 22 Z" fill="url(#lp-m-tapa)" stroke="#fff" />
+      <path d="M228 22 L262 8 V210 L228 226 Z" fill="url(#lp-m-lado)" />
       {Array.from({ length: 9 }).map((_, k) => (
-        <line key={k} x1="236" y1={44 + k * 17} x2="254" y2={36 + k * 17} stroke="#2B3F5F" strokeWidth="1.5" />
+        <line key={k} x1="236" y1={44 + k * 17} x2="254" y2={36 + k * 17} stroke="#8E99A8" strokeOpacity=".7" strokeWidth="1.5" />
       ))}
-      <rect x="92" y="22" width="136" height="204" rx="3" fill="url(#lp-rack-frente)" />
-      <rect x="99" y="29" width="122" height="190" rx="2" fill="#070F1B" />
+      <rect x="92" y="22" width="136" height="204" rx="3" fill="url(#lp-m-frente)" stroke="#fff" />
+      <rect x="99" y="29" width="122" height="190" rx="2" fill="url(#lp-m-hueco)" />
       {[0, 1].map((k) => (
         <g key={k}>
           {Array.from({ length: 19 }).map((_, f) => (
-            <circle key={f} cx={103 + k * 114} cy={33 + f * 10} r=".9" fill="#3A506F" />
+            <circle key={f} cx={103 + k * 114} cy={33 + f * 10} r=".9" fill="#7D8999" />
           ))}
         </g>
       ))}
 
       {/* Patch panel con cordones de colores */}
-      <rect x="107" y="33" width="106" height="28" rx="2" fill="#16253C" stroke="#2B3F5F" />
+      <rect x="107" y="33" width="106" height="28" rx="2" fill="url(#lp-m-panel)" stroke="#fff" strokeWidth=".7" />
       {Array.from({ length: 12 }).map((_, k) => (
         <g key={k}>
-          <rect x={111 + k * 8.2} y="37" width="6" height="6" rx="1" fill="#0A1424" stroke="#3A506F" strokeWidth=".6" />
+          <rect x={111 + k * 8.2} y="37" width="6" height="6" rx="1" fill="#2A3647" />
           <path
             d={`M${114 + k * 8.2} 41 C${114 + k * 8.2} 56 ${122 + k * 8.2} 56 ${122 + k * 8.2} 41`}
             stroke={cordones[k % cordones.length]}
@@ -102,18 +138,18 @@ function Networking() {
       {/* Switches */}
       {unidades.map((u, f) => (
         <g key={u.nombre}>
-          <rect x="107" y={u.y} width="106" height="22" rx="2" fill="#13233A" stroke="var(--c)" strokeOpacity=".55" />
-          <text x="112" y={u.y + 8.5} fontSize="5.4" fontWeight="600" fill="#C8D6E8" letterSpacing=".04em">{u.nombre}</text>
+          <rect x="107" y={u.y} width="106" height="22" rx="2" fill="url(#lp-m-panel)" stroke="#fff" strokeWidth=".7" />
+          <text x="112" y={u.y + 8.5} fontSize="5.4" fontWeight="600" fill="#45546A" letterSpacing=".04em">{u.nombre}</text>
           {Array.from({ length: 16 }).map((_, k) => {
             const luz = (k * 3 + f) % 4 !== 0;
             return (
               <g key={k}>
-                <rect x={112 + k * 6} y={u.y + 12} width="4.6" height="6" rx=".8" fill="#0A1424" />
+                <rect x={112 + k * 6} y={u.y + 12} width="4.6" height="6" rx=".8" fill="#2A3647" />
                 <circle
                   cx={114.3 + k * 6}
                   cy={u.y + 14}
                   r=".95"
-                  fill={luz ? (k % 3 ? VERDE : "#60A5FA") : "#2B3F5F"}
+                  fill={luz ? (k % 3 ? "#34D399" : "#60A5FA") : "#55637A"}
                   className={luz ? "lp-led" : undefined}
                   style={i(k + f * 3)}
                 />
@@ -127,24 +163,26 @@ function Networking() {
       {/* Servidores */}
       {[118, 140].map((y, f) => (
         <g key={y}>
-          <rect x="107" y={y} width="106" height="18" rx="2" fill="#16253C" stroke="#2B3F5F" />
+          <rect x="107" y={y} width="106" height="18" rx="2" fill="url(#lp-m-panel)" stroke="#fff" strokeWidth=".7" />
           {Array.from({ length: 22 }).map((_, k) => (
-            <line key={k} x1={112 + k * 3} y1={y + 5} x2={112 + k * 3} y2={y + 13} stroke="#2B3F5F" strokeWidth="1.2" />
+            <line key={k} x1={112 + k * 3} y1={y + 5} x2={112 + k * 3} y2={y + 13} stroke="#9AA5B4" strokeWidth="1.2" />
           ))}
-          <rect x="182" y={y + 5} width="14" height="8" rx="1" fill="#0A1424" />
-          <circle cx="202" cy={y + 9} r="1.6" fill="#60A5FA" className="lp-led" style={i(f + 4)} />
+          <rect x="182" y={y + 5} width="14" height="8" rx="1" fill="#2A3647" />
+          <circle cx="202" cy={y + 9} r="1.6" fill="#3B82F6" className="lp-led" style={i(f + 4)} />
           <circle cx="207" cy={y + 9} r="1.6" fill={VERDE} className="lp-led" style={i(f + 7)} />
         </g>
       ))}
 
       {/* UPS */}
-      <rect x="107" y="162" width="106" height="50" rx="2" fill="#13233A" stroke="#2B3F5F" />
-      <rect x="114" y="170" width="46" height="20" rx="2" fill="#0A1E33" stroke="var(--c)" strokeOpacity=".6" />
-      <text x="119" y="183" fontSize="8" fontWeight="600" fill="var(--c-medio)">UPS 100%</text>
+      <rect x="107" y="162" width="106" height="50" rx="2" fill="url(#lp-m-panel)" stroke="#fff" strokeWidth=".7" />
+      <rect x="114" y="170" width="46" height="20" rx="2" fill="#2A3647" />
+      <text x="119" y="183" fontSize="8" fontWeight="600" fill="#8DBBF5">UPS 100%</text>
       {[0, 1, 2, 3, 4].map((k) => (
-        <rect key={k} x={168 + k * 8} y={172} width="6" height="16" rx="1" fill={k < 4 ? VERDE : "#2B3F5F"} className={k < 4 ? "lp-led" : undefined} style={i(k)} />
+        <rect key={k} x={168 + k * 8} y={172} width="6" height="16" rx="1" fill={k < 4 ? VERDE : "#AAB3C0"} className={k < 4 ? "lp-led" : undefined} style={i(k)} />
       ))}
-      <rect x="114" y="196" width="92" height="9" rx="1.5" fill="#0A1424" />
+      <rect x="114" y="196" width="92" height="9" rx="1.5" fill="#AAB3C0" />
+
+      <Reflejo id="lp-c-rack" forma={<path d="M92 22 L126 8 H262 V210 L228 226 H92 Z" />} />
 
       {/* Estado */}
       <g className="lp-aparece" style={i(4)}>
@@ -159,33 +197,51 @@ function Networking() {
 
 function Firma() {
   return (
-    <Lienzo>
-      <rect x="34" y="52" width="252" height="146" rx="20" fill={TINTA} />
-      {[0, 1, 2].map((k) => (
-        <rect key={k} x="48" y={76 + k * 28} width="12" height="12" rx="4" fill={k === 0 ? AZUL : "#23344E"} />
+    <Lienzo caja="0 0 320 240" clase="lp-ilu-giro">
+      <ellipse cx="192" cy="231" rx="84" ry="7" fill="url(#lp-m-piso)" />
+
+      {/* Tableta */}
+      <rect x="126" y="4" width="134" height="222" rx="15" fill="url(#lp-m-frente)" stroke="#fff" strokeWidth="1.2" />
+      <rect x="126.5" y="4.5" width="133" height="221" rx="14.5" stroke="#8E99A8" strokeWidth="1" />
+      <rect x="135" y="15" width="116" height="200" rx="5" fill="#fff" stroke="#AEB7C4" strokeWidth=".8" />
+      <circle cx="193" cy="9.5" r="1.5" fill="#8E99A8" />
+
+      {/* Documento */}
+      <text x="145" y="33" fontSize="8.5" fontWeight="700" fill={TINTA}>Solicitud de crédito</text>
+      <line x1="145" y1="40" x2="241" y2="40" stroke={LINEA} />
+      {[50, 60, 70, 88, 98, 108].map((y, k) => (
+        <rect key={y} x="145" y={y} width={[96, 88, 64, 96, 80, 90][k]} height="4" rx="2" fill="#E6EBF2" className="lp-linea-codigo" style={i(k)} />
       ))}
-      <rect x="72" y="66" width="200" height="118" rx="10" fill="#fff" />
-      <text x="88" y="90" fontSize="10.5" fontWeight="600" fill="#45546A">Firma biométrica</text>
+      <rect x="145" y="124" width="96" height="58" rx="5" fill="#F5F7FA" stroke={LINEA} />
+      <text x="152" y="136" fontSize="6.5" fontWeight="600" fill="#5B6A80">Firma del titular</text>
       <path
-        d="M90 136 C104 104 116 150 132 122 S162 104 180 130 S216 100 252 124"
+        d="M154 164 C162 142 168 174 178 152 S194 144 202 162 S218 146 232 156"
         stroke={AZUL}
-        strokeWidth="3"
+        strokeWidth="2.6"
         strokeLinecap="round"
         pathLength={1}
         className="lp-dibuja"
       />
-      <line x1="88" y1="156" x2="256" y2="156" stroke={LINEA} strokeDasharray="4 4" />
-      <text x="88" y="172" fontSize="8.5" fill="#6B7A90">Presión · velocidad · trazo</text>
-      <g className="lp-aparece" style={i(5)}>
-        <path d="M222 168l3.4 3.4 6-7" stroke="#0E9F6E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <text x="236" y="172" fontSize="8.5" fontWeight="600" fill="#0E9F6E">Válida</text>
-      </g>
+      <rect x="145" y="192" width="96" height="14" rx="4" fill={AZUL} />
+      <text x="193" y="201.5" fontSize="7" fontWeight="600" fill="#fff" textAnchor="middle">Confirmar firma</text>
+
+      <Reflejo id="lp-c-tableta" forma={<rect x="126" y="4" width="134" height="222" rx="15" />} />
+
+      {/* Lápiz */}
       <g className="lp-lapiz">
-        <g transform="rotate(26 252 124)">
-          <path d="M252 124 L246 108 L258 108 Z" fill="#45546A" />
-          <rect x="246" y="-14" width="12" height="122" rx="5" fill="#23344E" />
-          <rect x="246" y="34" width="12" height="9" fill={AZUL} />
+        <g transform="rotate(30 232 156)">
+          <path d="M232 156 L226 140 L238 140 Z" fill="#8E99A8" />
+          <rect x="226" y="18" width="12" height="122" rx="5" fill="url(#lp-m-lado)" stroke="#fff" strokeWidth=".6" />
+          <rect x="226" y="66" width="12" height="8" fill={AZUL} />
         </g>
+      </g>
+
+      {/* Estado */}
+      <g className="lp-aparece" style={i(5)}>
+        <rect x="6" y="150" width="108" height="30" rx="10" fill="#fff" stroke={LINEA} />
+        <path d="M19 165l3.2 3.2 5.6-6.6" stroke={VERDE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <text x="33" y="162" fontSize="9.5" fontWeight="600" fill={TINTA}>Firma válida</text>
+        <text x="33" y="173" fontSize="7" fill="#5B6A80">Presión · velocidad · trazo</text>
       </g>
     </Lienzo>
   );
@@ -218,13 +274,15 @@ function Consultoria() {
       })}
 
       <g className="lp-orbita" style={i(0)}>
-        <rect x="128" y="58" width="84" height="84" rx="22" fill="#fff" stroke={LINEA} />
-        <image href="/landing/microsoft-365.svg" x="142" y="72" width="56" height="56" preserveAspectRatio="xMidYMid meet" />
+        <rect x="128" y="58" width="84" height="84" rx="22" fill="url(#lp-m-frente)" stroke="#fff" strokeWidth="1.5" />
+        {["#F25022", "#7FBA00", "#00A4EF", "#FFB900"].map((c, k) => (
+          <rect key={c} x={148 + (k % 2) * 23} y={78 + Math.floor(k / 2) * 23} width="21" height="21" fill={c} />
+        ))}
       </g>
 
       {ECOSISTEMA.map((e, k) => (
         <g key={e.nombre} className="lp-orbita" style={i(k + 1)}>
-          <rect x={e.x - 27} y={e.y - 27} width="54" height="54" rx="15" fill="#fff" stroke={LINEA} />
+          <rect x={e.x - 27} y={e.y - 27} width="54" height="54" rx="15" fill="url(#lp-m-frente)" stroke="#fff" strokeWidth="1.2" />
           <image href={e.logo} x={e.x - 16} y={e.y - 16} width="32" height="32" preserveAspectRatio="xMidYMid meet" />
           <text x={e.x} y={e.y + 39} fontSize="8.5" fontWeight="600" fill="#45546A" textAnchor="middle">{e.nombre}</text>
         </g>
@@ -233,62 +291,95 @@ function Consultoria() {
   );
 }
 
+// Tres equipos apilados: la defensa va por capas.
 function Seguridad() {
-  const escudo = "M170 34 L232 56 V116 C232 158 204 186 170 200 C136 186 108 158 108 116 V56 Z";
+  const X = 64;
+  const ANCHO = 210;
+  const ALTO = 54;
+  const DX = 30;
+  const DY = 18;
+  const capas = [156, 98, 40];
   return (
     <Lienzo caja="0 0 340 240">
-      <defs>
-        <linearGradient id="lp-escudo" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#1B2C47" />
-          <stop offset="1" stopColor="#0B1524" />
-        </linearGradient>
-        <radialGradient id="lp-escudo-piso">
-          <stop offset="0" stopColor="#0D1A2D" stopOpacity=".2" />
-          <stop offset="1" stopColor="#0D1A2D" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <ellipse cx="170" cy="222" rx="96" ry="8" fill="url(#lp-escudo-piso)" />
-      {[118, 88].map((r, k) => (
-        <circle key={r} cx="170" cy="116" r={r} stroke="var(--c-medio)" strokeOpacity={k ? 0.5 : 0.28} className="lp-anillo" style={i(k)} />
+      <ellipse cx="184" cy="226" rx="140" ry="9" fill="url(#lp-m-piso)" />
+      {capas.map((y, f) => (
+        <g key={y}>
+          <path
+            d={`M${X} ${y} L${X + DX} ${y - DY} H${X + ANCHO + DX} L${X + ANCHO} ${y} Z`}
+            fill="url(#lp-m-tapa)"
+            stroke="#fff"
+          />
+          <path
+            d={`M${X + ANCHO} ${y} L${X + ANCHO + DX} ${y - DY} V${y + ALTO - DY} L${X + ANCHO} ${y + ALTO} Z`}
+            fill="url(#lp-m-lado)"
+          />
+          <rect x={X} y={y} width={ANCHO} height={ALTO} rx="2.5" fill="url(#lp-m-frente)" stroke="#fff" />
+
+          {f === 2 ? (
+            <>
+              <rect x={X + 10} y={y + 8} width="38" height="38" rx="9" fill={AZUL} />
+              <path
+                d={`M${X + 29} ${y + 14} l11 4 v9 c0 7 -5 11.5 -11 14 c-6 -2.5 -11 -7 -11 -14 v-9 z`}
+                stroke="#fff"
+                strokeWidth="1.8"
+                strokeLinejoin="round"
+              />
+              <path
+                d={`M${X + 23.5} ${y + 27} l4 4 l7.5 -8.5`}
+                stroke="#fff"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                pathLength={1}
+                className="lp-dibuja"
+              />
+              <text x={X + 58} y={y + 17} fontSize="8.5" fontWeight="700" fill={TINTA} letterSpacing=".04em">NGFW-01</text>
+              <text x={X + 58} y={y + 28} fontSize="7" fill="#5B6A80">Firewall activo</text>
+            </>
+          ) : (
+            Array.from({ length: 26 }).map((_, k) => (
+              <line key={k} x1={X + 12 + k * 3.4} y1={y + 12} x2={X + 12 + k * 3.4} y2={y + 42} stroke="#A4AEBC" strokeWidth="1.4" />
+            ))
+          )}
+
+          {/* Puertos y luces */}
+          {Array.from({ length: f === 2 ? 8 : 6 }).map((_, k, lista) => {
+            const x = X + ANCHO - 10 - (lista.length - k) * 12;
+            const yp = f === 2 ? y + 34 : y + 21;
+            return (
+              <g key={k}>
+                <rect x={x} y={yp} width="9.5" height="9" rx="1.4" fill="#2A3647" />
+                <circle cx={x + 4.75} cy={yp + 4.5} r="1.3" fill={k % 3 === 2 ? "#55637A" : "#34D399"} className={k % 3 === 2 ? undefined : "lp-led"} style={i(k)} />
+              </g>
+            );
+          })}
+        </g>
       ))}
-      <path d={escudo} fill="url(#lp-escudo)" />
-      <path d={escudo} stroke="#32496E" strokeWidth="1.5" transform="translate(170 116) scale(.86) translate(-170 -116)" />
-      <path
-        d="M144 116 L163 135 L198 96"
-        stroke="var(--c)"
-        strokeWidth="9"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        pathLength={1}
-        className="lp-dibuja"
-      />
+
+      <Reflejo id="lp-c-firewall" forma={<path d={`M${X} 40 L${X + DX} 22 H${X + ANCHO + DX} V192 L${X + ANCHO} 210 H${X} Z`} />} />
+
+      {/* Estado */}
       <g className="lp-aparece" style={i(3)}>
-        <rect x="226" y="160" width="92" height="30" rx="10" fill="#fff" stroke={LINEA} />
-        <circle cx="241" cy="175" r="4" fill={VERDE} className="lp-led" />
-        <text x="251" y="172" fontSize="9.5" fontWeight="600" fill={TINTA}>Zero Trust</text>
-        <text x="251" y="183" fontSize="7.5" fill="#5B6A80">Red protegida</text>
+        <rect x="6" y="176" width="104" height="30" rx="10" fill="#fff" stroke={LINEA} />
+        <circle cx="21" cy="191" r="4" fill={VERDE} className="lp-led" />
+        <text x="31" y="188" fontSize="9.5" fontWeight="600" fill={TINTA}>Zero Trust</text>
+        <text x="31" y="199" fontSize="7.5" fill="#5B6A80">Tráfico verificado</text>
       </g>
-      <rect x="108" y="34" width="124" height="26" className="lp-escaner" fill="url(#lp-escaner)" />
-      <defs>
-        <linearGradient id="lp-escaner" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={AZUL} stopOpacity="0" />
-          <stop offset="1" stopColor={AZUL} stopOpacity=".3" />
-        </linearGradient>
-      </defs>
     </Lienzo>
   );
 }
 
 function SoftwareAI() {
-  const rosa = "#F472B6";
-  const celeste = "#60A5FA";
+  const rosa = "#EC6FAE";
+  const celeste = "#5B9BF2";
+  const gris = "#D5DBE3";
   const codigo: [number, number, number, string][][] = [
     [[0, 0, 22, rosa], [26, 0, 34, celeste]],
-    [[10, 11, 30, VERDE], [44, 11, 22, "#3A506F"]],
+    [[10, 11, 30, VERDE], [44, 11, 22, gris]],
     [[10, 22, 18, AMBAR], [32, 22, 40, "var(--c-medio)"]],
     [[20, 33, 44, celeste], [68, 33, 16, rosa]],
     [[20, 44, 30, VERDE]],
-    [[10, 55, 26, "#3A506F"], [40, 55, 28, AMBAR]],
+    [[10, 55, 26, gris], [40, 55, 28, AMBAR]],
     [[0, 66, 14, rosa]],
     [[0, 88, 22, rosa], [26, 88, 30, "var(--c-medio)"]],
     [[10, 99, 38, celeste], [52, 99, 20, VERDE]],
@@ -297,76 +388,78 @@ function SoftwareAI() {
     <Lienzo caja="0 0 340 240" clase="lp-ilu-giro">
       <defs>
         <linearGradient id="lp-base" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#EEF1F5" />
-          <stop offset="1" stopColor="#BFC8D4" />
+          <stop offset="0" stopColor="#FBFCFD" />
+          <stop offset=".55" stopColor="#E0E5EB" />
+          <stop offset="1" stopColor="#B4BDC9" />
         </linearGradient>
-        <radialGradient id="lp-base-piso">
-          <stop offset="0" stopColor="#0D1A2D" stopOpacity=".22" />
-          <stop offset="1" stopColor="#0D1A2D" stopOpacity="0" />
-        </radialGradient>
       </defs>
-      <ellipse cx="170" cy="226" rx="160" ry="9" fill="url(#lp-base-piso)" />
+      <ellipse cx="170" cy="227" rx="164" ry="9" fill="url(#lp-m-piso)" />
 
       {/* Tapa y pantalla */}
-      <rect x="32" y="8" width="276" height="188" rx="12" fill="#0B1322" stroke="#2B3F5F" />
-      <rect x="40" y="16" width="260" height="170" rx="5" fill="#0D1A2D" />
+      <rect x="32" y="8" width="276" height="188" rx="12" fill="url(#lp-m-frente)" stroke="#fff" />
+      <rect x="32.5" y="8.5" width="275" height="187" rx="11.5" stroke="#AEB7C4" strokeWidth=".6" />
+      <rect x="40" y="16" width="260" height="170" rx="5" fill="#FDFDFE" stroke="#D5DBE3" strokeWidth=".6" />
 
       {/* Barra de título */}
-      <rect x="40" y="16" width="260" height="16" rx="5" fill="#101F36" />
+      <rect x="40" y="16" width="260" height="16" rx="5" fill="#EFF2F6" />
       {[ROJO, AMBAR, VERDE].map((c, k) => (
         <circle key={c} cx={50 + k * 9} cy="24" r="2.6" fill={c} />
       ))}
-      <rect x="86" y="19" width="48" height="11" rx="3" fill="#0D1A2D" />
-      <text x="92" y="27.5" fontSize="6.5" fill="#C8D6E8">app.tsx</text>
+      <rect x="86" y="19" width="48" height="11" rx="3" fill="#fff" />
+      <text x="92" y="27.5" fontSize="6.5" fill="#45546A">app.tsx</text>
 
       {/* Explorador */}
-      <rect x="40" y="32" width="44" height="154" fill="#0A1424" />
+      <rect x="40" y="32" width="44" height="154" fill="#F5F7FA" />
       {[0, 1, 2, 3, 4, 5, 6].map((k) => (
-        <rect key={k} x={k % 3 ? 52 : 46} y={42 + k * 11} width={k % 3 ? 24 : 30} height="4" rx="2" fill={k === 2 ? "var(--c)" : "#2B3F5F"} />
+        <rect key={k} x={k % 3 ? 52 : 46} y={42 + k * 11} width={k % 3 ? 24 : 30} height="4" rx="2" fill={k === 2 ? "var(--c)" : gris} />
       ))}
 
       {/* Editor */}
       {codigo.map((linea, k) => (
         <g key={k}>
-          <text x="89" y={46 + linea[0][1] + 3} fontSize="6" fill="#4A5F7E">{k + 1}</text>
+          <text x="89" y={46 + linea[0][1] + 3} fontSize="6" fill="#AEB9C8">{k + 1}</text>
           {linea.map(([x, y, w, c], j) => (
             <rect key={j} x={100 + x} y={42 + y} width={w} height="5" rx="2.5" fill={c} className="lp-linea-codigo" style={i(k)} />
           ))}
         </g>
       ))}
-      <rect x="84" y="115" width="124" height="15" fill="var(--c)" fillOpacity=".16" />
-      <rect x="100" y="120" width="46" height="5" rx="2.5" fill="var(--c-medio)" />
-      <rect x="149" y="117" width="1.6" height="11" fill="#fff" className="lp-cursor" />
-      <text x="202" y="125.5" fontSize="6" fontWeight="600" fill="var(--c-medio)" textAnchor="end">IA sugiere</text>
+      <rect x="84" y="115" width="124" height="15" fill="var(--c)" fillOpacity=".12" />
+      <rect x="100" y="120" width="46" height="5" rx="2.5" fill="var(--c)" />
+      <rect x="149" y="117" width="1.6" height="11" fill={TINTA} className="lp-cursor" />
+      <text x="202" y="125.5" fontSize="6" fontWeight="600" fill="var(--c-texto)" textAnchor="end">IA sugiere</text>
 
       {/* Terminal */}
-      <rect x="84" y="158" width="124" height="28" fill="#0A1424" />
-      <path d="M90 168l3 2.5-3 2.5" stroke={VERDE} strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-      <text x="98" y="173" fontSize="6.5" fill={VERDE}>Build OK · 1.2s</text>
+      <rect x="84" y="158" width="124" height="28" fill="#F5F7FA" />
+      <path d="M90 168l3 2.5-3 2.5" stroke="#047857" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="98" y="173" fontSize="6.5" fill="#047857">Build OK · 1.2s</text>
 
       {/* Panel de IA */}
-      <rect x="208" y="32" width="92" height="154" fill="#101F36" />
+      <rect x="208" y="32" width="92" height="154" fill="#F1F4F8" />
       <rect x="216" y="40" width="16" height="16" rx="5" fill="var(--c)" />
       <path d="M224 44l1.3 3.1 3.1 1.3-3.1 1.3-1.3 3.1-1.3-3.1-3.1-1.3 3.1-1.3z" fill="#fff" />
-      <text x="237" y="46" fontSize="7" fontWeight="600" fill="#fff">Copiloto</text>
-      <text x="237" y="54" fontSize="5.5" fill="#8EA3BF">Modelo activo</text>
+      <text x="237" y="46" fontSize="7" fontWeight="600" fill={TINTA}>Copiloto</text>
+      <text x="237" y="54" fontSize="5.5" fill="#5B6A80">Modelo activo</text>
       <g className="lp-aparece" style={i(1)}>
-        <rect x="216" y="64" width="76" height="26" rx="6" fill="#0D1A2D" />
-        <rect x="222" y="70" width="58" height="4" rx="2" fill="#3A506F" />
-        <rect x="222" y="79" width="42" height="4" rx="2" fill="#3A506F" />
+        <rect x="216" y="64" width="76" height="26" rx="6" fill="#fff" />
+        <rect x="222" y="70" width="58" height="4" rx="2" fill={gris} />
+        <rect x="222" y="79" width="42" height="4" rx="2" fill={gris} />
       </g>
       <g className="lp-aparece" style={i(3)}>
-        <rect x="216" y="96" width="76" height="52" rx="6" fill="var(--c)" fillOpacity=".2" />
+        <rect x="216" y="96" width="76" height="52" rx="6" fill="var(--c)" fillOpacity=".12" />
         {[20, 32, 26, 42].map((h, k) => (
           <rect key={k} x={224 + k * 14} y={142 - h} width="9" height={h} rx="2" fill={k === 3 ? "var(--c)" : "var(--c-medio)"} className="lp-barra" style={i(k)} />
         ))}
       </g>
-      <rect x="216" y="156" width="76" height="20" rx="6" fill="#0D1A2D" stroke="#2B3F5F" />
-      <text x="222" y="169" fontSize="6.5" fill="#8EA3BF">Preguntá algo…</text>
+      <rect x="216" y="156" width="76" height="20" rx="6" fill="#fff" stroke={gris} />
+      <text x="222" y="169" fontSize="6.5" fill="#5B6A80">Preguntá algo…</text>
+
+      {/* Luz sobre el vidrio */}
+      <path d="M40 16 H150 L84 186 H40 Z" fill="#fff" fillOpacity=".1" pointerEvents="none" />
+      <Reflejo id="lp-c-pantalla" forma={<rect x="32" y="8" width="276" height="188" rx="12" />} />
 
       {/* Base */}
-      <path d="M32 196 H308 L334 214 Q336 222 326 222 H14 Q4 222 6 214 Z" fill="url(#lp-base)" />
-      <path d="M140 196 H200 Q198 203 190 203 H150 Q142 203 140 196 Z" fill="#AEB8C5" />
+      <path d="M32 196 H308 L334 214 Q336 222 326 222 H14 Q4 222 6 214 Z" fill="url(#lp-base)" stroke="#fff" strokeWidth=".8" />
+      <path d="M140 196 H200 Q198 203 190 203 H150 Q142 203 140 196 Z" fill="#B4BDC9" />
     </Lienzo>
   );
 }
