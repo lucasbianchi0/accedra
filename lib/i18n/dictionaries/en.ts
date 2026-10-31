@@ -12,6 +12,16 @@ export const en: Dict = {
       casaCentral: "Headquarters",
       proyectos: "Projects",
       sedeLugar: "CABA",
+      mapaAria: "Map of Argentina with its provinces and the Malvinas Islands",
+      detalles: {
+        "ciudad-de-buenos-aires": "Headquarters",
+        "buenos-aires": "Banco Provincia · biometric signature",
+        catamarca: "Finning · mining connectivity",
+        jujuy: "Finning · mining connectivity",
+        "san-juan": "Finning · mining connectivity",
+        "santa-cruz": "Finning · mining connectivity",
+        malvinas: "Argentina",
+      },
       despliegues: [
         { lugar: "Buenos Aires Province", detalle: "Banco Provincia · biometric signature" },
         { lugar: "Catamarca · Jujuy · San Juan · Santa Cruz", detalle: "Finning · mining connectivity" },

@@ -13,6 +13,16 @@ export const es = {
       casaCentral: "Casa central",
       proyectos: "Proyectos",
       sedeLugar: "CABA",
+      mapaAria: "Mapa de la Argentina con sus provincias y las Islas Malvinas",
+      detalles: {
+        "ciudad-de-buenos-aires": "Casa central",
+        "buenos-aires": "Banco Provincia · firma biométrica",
+        catamarca: "Finning · conectividad minera",
+        jujuy: "Finning · conectividad minera",
+        "san-juan": "Finning · conectividad minera",
+        "santa-cruz": "Finning · conectividad minera",
+        malvinas: "Argentina",
+      },
       despliegues: [
         { lugar: "Provincia de Buenos Aires", detalle: "Banco Provincia · firma biométrica" },
         { lugar: "Catamarca · Jujuy · San Juan · Santa Cruz", detalle: "Finning · conectividad minera" },

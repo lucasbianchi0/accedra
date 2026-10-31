@@ -12,6 +12,16 @@ export const pt: Dict = {
       casaCentral: "Sede",
       proyectos: "Projetos",
       sedeLugar: "CABA",
+      mapaAria: "Mapa da Argentina com suas províncias e as Ilhas Malvinas",
+      detalles: {
+        "ciudad-de-buenos-aires": "Sede",
+        "buenos-aires": "Banco Provincia · assinatura biométrica",
+        catamarca: "Finning · conectividade para mineração",
+        jujuy: "Finning · conectividade para mineração",
+        "san-juan": "Finning · conectividade para mineração",
+        "santa-cruz": "Finning · conectividade para mineração",
+        malvinas: "Argentina",
+      },
       despliegues: [
         { lugar: "Província de Buenos Aires", detalle: "Banco Provincia · assinatura biométrica" },
         { lugar: "Catamarca · Jujuy · San Juan · Santa Cruz", detalle: "Finning · conectividade para mineração" },
