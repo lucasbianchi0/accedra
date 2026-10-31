@@ -195,7 +195,7 @@ export default function HubNotas({ todas }: { todas: NotaSitio[] }) {
     const afuera = (e: PointerEvent) => {
       const t = e.target as Node;
       // La pantalla completa de teléfono vive fuera de `caja` —no puede estar
-      // adentro: `hero-enter` anima `filter`, y un ancestro con filtro rompe
+      // adentro: `hero-enter` anima `transform`, y un ancestro transformado rompe
       // el `position: fixed` de sus descendientes—, así que cuenta aparte.
       if (caja.current?.contains(t) || pantalla.current?.contains(t)) return;
       setAbierto(false);

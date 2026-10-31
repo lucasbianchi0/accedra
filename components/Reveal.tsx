@@ -58,7 +58,11 @@ export const enter = (
     "--enter-y": y,
     "--enter-dur": dur,
     "--enter-delay": delay,
-    ...(blur ? { "--enter-blur": blur } : {}),
+    // Sólo con desenfoque se anima `filter`: en el iPhone una animación con
+    // `filter` no la corre la GPU sino el hilo principal, que al cargar está
+    // ocupado con el JS, y lo que entraba en ese momento (los botones de la
+    // portada) se salteaba los cuadros y aparecía de golpe al final.
+    ...(blur ? { "--enter-blur": blur, animationName: "hero-enter-blur" } : {}),
   }) as CSSProperties;
 
 /* ── Presets ───────────────────────────────────────────────────────────────

@@ -443,7 +443,7 @@ h1, h2, h3, h4, .section-title, .gradient-text {
    cada elemento pasa su desplazamiento, blur, duración y delay por variables
    para conservar la cascada original. `both` aplica el estado inicial durante
    el delay, que es lo que hacía `initial` en framer. */
-@keyframes hero-enter {
+@keyframes hero-enter-blur {
   from {
     /* `--enter-from` existe por el <h1>: Chrome no toma como candidato a LCP
        un elemento en opacity 0 EXACTO, y lo sella recién cuando la opacidad
@@ -461,6 +461,19 @@ h1, h2, h3, h4, .section-title, .gradient-text {
     filter: blur(0px);
   }
 }
+/* La de siempre, sin `filter`: opacidad y desplazamiento los corre la GPU aun
+   con el hilo principal ocupado. `hero-enter-blur` sólo para quien pide
+   desenfoque (ver `enter` en Reveal.tsx). */
+@keyframes hero-enter {
+  from {
+    opacity: var(--enter-from, 0);
+    transform: translateY(var(--enter-y, 16px));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 
 .hero-enter {
   animation: hero-enter var(--enter-dur, 1.1s) cubic-bezier(0.16, 1, 0.3, 1)
@@ -470,7 +483,7 @@ h1, h2, h3, h4, .section-title, .gradient-text {
 /* Equivalente CSS de <MotionConfig reducedMotion="user">, que es lo que cubría
    estos elementos cuando los animaba framer. */
 @media (prefers-reduced-motion: reduce) {
-  .hero-enter { animation: none; }
+  .hero-enter { animation: none !important; }
 }
 
 /* ── Reveals de scroll ─────────────────────────────────────────────────────
