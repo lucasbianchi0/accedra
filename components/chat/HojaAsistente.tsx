@@ -16,9 +16,8 @@ import { track } from "@/lib/track";
  * La hoja de Accedra AI: sube desde abajo y ocupa el 60 % de la pantalla; el
  * resto de la página se oscurece y se desenfoca.
  *
- * La despiertan "Accedra AI" en el menú y "Preguntale a nuestro asistente"
- * en las portadas. El robotito flotante abre otra cosa —el chat clásico a la
- * derecha (ChatPanel)—, pero los dos muestran la misma conversación: vive en
+ * La despiertan "Accedra AI" en el menú, "Preguntale a nuestro asistente" en
+ * las portadas y el robotito flotante. La conversación vive en
  * `lib/chat/store` y sigue al navegar.
  *
  * Antes del primer mensaje es una bienvenida mínima: la marca, la pregunta de

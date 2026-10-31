@@ -6,32 +6,27 @@ import ChatLauncher from "./ChatLauncher";
 import { enviar } from "@/lib/chat/store";
 
 /**
- * El asistente, disponible en todo el sitio, con dos formas de abrirse:
+ * El asistente, disponible en todo el sitio. Se abra desde donde se abra —el
+ * robotito, los guiños, "Accedra AI" en el menú o el botón de las portadas—
+ * despierta la misma hoja ancha que sube desde abajo (HojaAsistente). Antes el
+ * robotito abría en escritorio un chat chico a la derecha; quedó una sola
+ * forma, la grande.
  *
- *  - El robotito flotante abre el chat clásico a la derecha (ChatPanel).
- *  - "Accedra AI" en el menú y "Preguntale a nuestro asistente" en las
- *    portadas despiertan la hoja ancha que sube desde abajo (HojaAsistente).
- *
- * Son dos piezas distintas que hacen lo mismo: la conversación vive en
- * `lib/chat/store`, así que lo que se habló en una aparece en la otra.
- *
- * Las dos se cargan recién cuando hace falta —es código que la mayoría de las
- * visitas no usa y no tiene por qué competir con el LCP— y se precargan en el
- * primer gesto de intención (hover o foco). Una vez montadas no se desmontan
- * al cerrarlas, así corre la animación de salida.
+ * La hoja se carga recién cuando hace falta —es código que la mayoría de las
+ * visitas no usa y no tiene por qué competir con el LCP— y se precarga en el
+ * primer gesto de intención (hover o foco). Una vez montada no se desmonta al
+ * cerrarla, así corre la animación de salida.
  */
 
-const cargarPanel = () => import("./ChatPanel");
 const cargarHoja = () => import("./HojaAsistente");
-const ChatPanel = dynamic(cargarPanel, { ssr: false });
 const HojaAsistente = dynamic(cargarHoja, { ssr: false });
 
 type Ctx = {
-  /** Algo del asistente está abierto (panel u hoja). */
+  /** La hoja del asistente está abierta. */
   abierto: boolean;
-  /** Abre el chat de la derecha. Con texto, lo manda como mensaje. */
+  /** Despierta la hoja ancha desde abajo. Con texto, lo manda como mensaje. */
   abrir: (texto?: string, origen?: string) => void;
-  /** Despierta la hoja ancha desde abajo. */
+  /** Lo mismo que `abrir`; queda por los llamados que ya lo usan. */
   abrirHoja: (texto?: string, origen?: string) => void;
   cerrar: () => void;
   precargar: () => void;
@@ -48,44 +43,38 @@ export function useChat(): Ctx {
   return ctx;
 }
 
-type Vista = "panel" | "hoja" | null;
-
 export default function ChatProvider({ children }: { children: React.ReactNode }) {
-  const [vista, setVista] = useState<Vista>(null);
-  const [montados, setMontados] = useState({ panel: false, hoja: false });
+  const [abierto, setAbierto] = useState(false);
+  const [montada, setMontada] = useState(false);
   const [heroVisible, setHeroVisible] = useState(false);
 
-  const abrirEn = useCallback((v: "panel" | "hoja", texto?: string, origen = "flotante") => {
-    setMontados((m) => (m[v] ? m : { ...m, [v]: true }));
-    setVista(v);
+  const abrir = useCallback((texto?: string, origen = "flotante") => {
+    setMontada(true);
+    setAbierto(true);
     if (texto?.trim()) void enviar(texto, origen);
   }, []);
-  const abrir = useCallback((texto?: string, origen?: string) => abrirEn("panel", texto, origen), [abrirEn]);
-  const abrirHoja = useCallback((texto?: string, origen?: string) => abrirEn("hoja", texto, origen), [abrirEn]);
-  const cerrar = useCallback(() => setVista(null), []);
-  const precargar = useCallback(() => void cargarPanel(), []);
-  const precargarHoja = useCallback(() => void cargarHoja(), []);
+  const cerrar = useCallback(() => setAbierto(false), []);
+  const precargar = useCallback(() => void cargarHoja(), []);
 
   const valor = useMemo(
     () => ({
-      abierto: vista !== null,
+      abierto,
       abrir,
-      abrirHoja,
+      abrirHoja: abrir,
       cerrar,
       precargar,
-      precargarHoja,
+      precargarHoja: precargar,
       heroVisible,
       setHeroVisible,
     }),
-    [vista, abrir, abrirHoja, cerrar, precargar, precargarHoja, heroVisible],
+    [abierto, abrir, cerrar, precargar, heroVisible],
   );
 
   return (
     <ChatCtx.Provider value={valor}>
       {children}
       <ChatLauncher />
-      {montados.panel && <ChatPanel abierto={vista === "panel"} onCerrar={cerrar} />}
-      {montados.hoja && <HojaAsistente abierto={vista === "hoja"} onCerrar={cerrar} />}
+      {montada && <HojaAsistente abierto={abierto} onCerrar={cerrar} />}
     </ChatCtx.Provider>
   );
 }
