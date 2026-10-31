@@ -7,7 +7,6 @@ import type { CSSProperties } from "react";
 const TINTA = "#0D1A2D";
 // Toman el color de identidad de la tarjeta (--c, landing.css).
 const AZUL = "var(--c)";
-const TINTE = "var(--c-tinte)";
 const ROJO = "#E5484D";
 const VERDE = "#10B981";
 const AMBAR = "#F5A524";
@@ -204,7 +203,6 @@ const ECOSISTEMA = [
 
 function Consultoria() {
   const centro = { x: 170, y: 100 };
-  const ventanas = ["#F25022", "#7FBA00", "#00A4EF", "#FFB900"];
   return (
     <Lienzo caja="0 0 340 240">
       <ellipse cx="170" cy="122" rx="146" ry="86" stroke="var(--c-medio)" strokeDasharray="3 6" strokeOpacity=".7" />
@@ -221,9 +219,7 @@ function Consultoria() {
 
       <g className="lp-orbita" style={i(0)}>
         <rect x="128" y="58" width="84" height="84" rx="22" fill="#fff" stroke={LINEA} />
-        {ventanas.map((c, k) => (
-          <rect key={c} x={148 + (k % 2) * 23} y={78 + Math.floor(k / 2) * 23} width="21" height="21" fill={c} />
-        ))}
+        <image href="/landing/microsoft-365.svg" x="142" y="72" width="56" height="56" preserveAspectRatio="xMidYMid meet" />
       </g>
 
       {ECOSISTEMA.map((e, k) => (
@@ -238,35 +234,45 @@ function Consultoria() {
 }
 
 function Seguridad() {
+  const escudo = "M170 34 L232 56 V116 C232 158 204 186 170 200 C136 186 108 158 108 116 V56 Z";
   return (
-    <Lienzo>
-      <rect x="28" y="20" width="264" height="178" rx="16" fill="#fff" stroke={LINEA} />
-      <rect x="44" y="36" width="36" height="36" rx="10" fill={AZUL} />
-      <path d="M62 44l11 4v8c0 7-5 11-11 13-6-2-11-6-11-13v-8z" stroke="#fff" strokeWidth="1.7" strokeLinejoin="round" />
-      <path d="M57.5 56l3.2 3.2 6-6.4" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" pathLength={1} className="lp-dibuja" />
-      <text x="92" y="51" fontSize="12" fontWeight="600" fill={TINTA}>Firewall · Zero Trust</text>
-      <text x="92" y="66" fontSize="9" fill="#6B7A90">Monitoreo en tiempo real</text>
-      {[
-        ["203.0.113.5", "Fuerza bruta"],
-        ["45.148.10.2", "Port scan"],
-      ].map(([ip, tipo], k) => (
-        <g key={ip} className="lp-aparece" style={i(k + 1)}>
-          <rect x="44" y={86 + k * 32} width="232" height="26" rx="7" fill="#FDF0F0" />
-          <text x="56" y={103 + k * 32} fontSize="9.5" fontWeight="600" fill={TINTA}>{ip}</text>
-          <text x="124" y={103 + k * 32} fontSize="8.5" fill="#6B7A90">{tipo}</text>
-          <text x="264" y={103 + k * 32} fontSize="8.5" fontWeight="600" fill={ROJO} textAnchor="end">Bloqueado</text>
-        </g>
+    <Lienzo caja="0 0 340 240">
+      <defs>
+        <linearGradient id="lp-escudo" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#1B2C47" />
+          <stop offset="1" stopColor="#0B1524" />
+        </linearGradient>
+        <radialGradient id="lp-escudo-piso">
+          <stop offset="0" stopColor="#0D1A2D" stopOpacity=".2" />
+          <stop offset="1" stopColor="#0D1A2D" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <ellipse cx="170" cy="222" rx="96" ry="8" fill="url(#lp-escudo-piso)" />
+      {[118, 88].map((r, k) => (
+        <circle key={r} cx="170" cy="116" r={r} stroke="var(--c-medio)" strokeOpacity={k ? 0.5 : 0.28} className="lp-anillo" style={i(k)} />
       ))}
+      <path d={escudo} fill="url(#lp-escudo)" />
+      <path d={escudo} stroke="#32496E" strokeWidth="1.5" transform="translate(170 116) scale(.86) translate(-170 -116)" />
+      <path
+        d="M144 116 L163 135 L198 96"
+        stroke="var(--c)"
+        strokeWidth="9"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        pathLength={1}
+        className="lp-dibuja"
+      />
       <g className="lp-aparece" style={i(3)}>
-        <rect x="44" y="150" width="232" height="30" rx="7" fill={TINTE} />
-        <path d="M56 165l3.4 3.4 6-7" stroke={AZUL} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        <text x="74" y="169" fontSize="9.5" fontWeight="600" fill="var(--c-texto)">12 amenazas neutralizadas hoy</text>
+        <rect x="226" y="160" width="92" height="30" rx="10" fill="#fff" stroke={LINEA} />
+        <circle cx="241" cy="175" r="4" fill={VERDE} className="lp-led" />
+        <text x="251" y="172" fontSize="9.5" fontWeight="600" fill={TINTA}>Zero Trust</text>
+        <text x="251" y="183" fontSize="7.5" fill="#5B6A80">Red protegida</text>
       </g>
-      <rect x="29" y="20" width="262" height="30" className="lp-escaner" fill="url(#lp-escaner)" />
+      <rect x="108" y="34" width="124" height="26" className="lp-escaner" fill="url(#lp-escaner)" />
       <defs>
         <linearGradient id="lp-escaner" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor={AZUL} stopOpacity="0" />
-          <stop offset="1" stopColor={AZUL} stopOpacity=".14" />
+          <stop offset="1" stopColor={AZUL} stopOpacity=".3" />
         </linearGradient>
       </defs>
     </Lienzo>
