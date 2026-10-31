@@ -270,77 +270,86 @@ function Consultoria() {
   );
 }
 
-// Tres equipos apilados: la defensa va por capas.
+// Lo que se vende es visibilidad y protección por capas: la consola es el
+// producto, y el firewall al lado es el equipo que la sostiene.
+const CAPAS = ["Red", "Endpoints", "Email", "Nube", "Acceso remoto"];
+
 function Seguridad() {
-  const X = 64;
-  const ANCHO = 210;
-  const ALTO = 54;
-  const DX = 30;
-  const DY = 18;
-  const capas = [156, 98, 40];
   return (
     <Lienzo caja="0 0 340 240">
-      <ellipse cx="184" cy="226" rx="140" ry="9" fill="url(#lp-m-piso)" />
-      {capas.map((y, f) => (
-        <g key={y}>
-          <path
-            d={`M${X} ${y} L${X + DX} ${y - DY} H${X + ANCHO + DX} L${X + ANCHO} ${y} Z`}
-            fill="url(#lp-m-tapa)"
-            stroke="#8E99A8" strokeWidth=".9"
-          />
-          <path
-            d={`M${X + ANCHO} ${y} L${X + ANCHO + DX} ${y - DY} V${y + ALTO - DY} L${X + ANCHO} ${y + ALTO} Z`}
-            fill="url(#lp-m-lado)"
-          />
-          <rect x={X} y={y} width={ANCHO} height={ALTO} rx="2.5" fill="url(#lp-m-frente)" stroke="#8E99A8" strokeWidth=".9" />
+      <ellipse cx="172" cy="229" rx="150" ry="9" fill="url(#lp-m-piso)" />
 
-          {f === 2 ? (
-            <>
-              <rect x={X + 10} y={y + 8} width="38" height="38" rx="9" fill={AZUL} />
-              <path
-                d={`M${X + 29} ${y + 14} l11 4 v9 c0 7 -5 11.5 -11 14 c-6 -2.5 -11 -7 -11 -14 v-9 z`}
-                stroke="#fff"
-                strokeWidth="1.8"
-                strokeLinejoin="round"
-              />
-              <path
-                d={`M${X + 23.5} ${y + 27} l4 4 l7.5 -8.5`}
-                stroke="#fff"
-                strokeWidth="2.2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                pathLength={1}
-                className="lp-dibuja"
-              />
-              <text x={X + 58} y={y + 17} fontSize="8.5" fontWeight="700" fill={TINTA} letterSpacing=".04em">NGFW-01</text>
-              <text x={X + 58} y={y + 28} fontSize="7" fill="#5B6A80">Firewall activo</text>
-            </>
-          ) : (
-            Array.from({ length: 26 }).map((_, k) => (
-              <line key={k} x1={X + 12 + k * 3.4} y1={y + 12} x2={X + 12 + k * 3.4} y2={y + 42} stroke="#A4AEBC" strokeWidth="1.4" />
-            ))
-          )}
+      {/* Pie del monitor */}
+      <path d="M150 166 H190 L196 208 H144 Z" fill="url(#lp-m-lado)" />
+      <path d="M108 208 H232 Q238 208 238 214 V216 H102 V214 Q102 208 108 208 Z" fill="url(#lp-m-frente)" stroke="#8E99A8" strokeWidth=".9" />
 
-          {/* Puertos y luces */}
-          {Array.from({ length: f === 2 ? 8 : 6 }).map((_, k, lista) => {
-            const x = X + ANCHO - 10 - (lista.length - k) * 12;
-            const yp = f === 2 ? y + 34 : y + 21;
-            return (
-              <g key={k}>
-                <rect x={x} y={yp} width="9.5" height="9" rx="1.4" fill="#2A3647" />
-                <circle cx={x + 4.75} cy={yp + 4.5} r="1.3" fill={k % 3 === 2 ? "#55637A" : "#34D399"} className={k % 3 === 2 ? undefined : "lp-led"} style={i(k)} />
-              </g>
-            );
-          })}
+      {/* Monitor */}
+      <rect x="30" y="4" width="280" height="166" rx="10" fill="url(#lp-m-frente)" stroke="#8E99A8" strokeWidth=".9" />
+      <rect x="38" y="12" width="264" height="150" rx="4" fill="#FDFDFE" stroke="#AEB7C4" strokeWidth=".8" />
+
+      {/* Barra de la consola */}
+      <rect x="38" y="12" width="264" height="17" rx="4" fill="#EFF2F6" />
+      <text x="47" y="23.5" fontSize="7.5" fontWeight="700" fill={TINTA}>Consola de seguridad</text>
+      <circle cx="268" cy="20.5" r="2.4" fill={VERDE} className="lp-led" />
+      <text x="274" y="23.5" fontSize="6.5" fontWeight="600" fill="#047857">En vivo</text>
+
+      {/* Estado general */}
+      <circle cx="84" cy="70" r="27" stroke={LINEA} strokeWidth="6" />
+      <circle
+        cx="84"
+        cy="70"
+        r="27"
+        stroke={VERDE}
+        strokeWidth="6"
+        strokeLinecap="round"
+        pathLength={1}
+        className="lp-dibuja"
+        transform="rotate(-90 84 70)"
+      />
+      <path d="M84 56 l11 4 v8 c0 8 -5 12 -11 15 c-6 -3 -11 -7 -11 -15 v-8 z" fill={AZUL} />
+      <path d="M78.5 69 l4 4 l7 -8" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <text x="84" y="114" fontSize="8.5" fontWeight="700" fill={TINTA} textAnchor="middle">Protegido</text>
+      <text x="84" y="125" fontSize="6.5" fill="#5B6A80" textAnchor="middle">12 amenazas</text>
+      <text x="84" y="134" fontSize="6.5" fill="#5B6A80" textAnchor="middle">bloqueadas hoy</text>
+
+      {/* Capas */}
+      {CAPAS.map((capa, k) => (
+        <g key={capa} className="lp-aparece" style={i(k)}>
+          <rect x="126" y={36 + k * 24} width="86" height="20" rx="5" fill="#F5F7FA" />
+          <text x="133" y={49 + k * 24} fontSize="7.5" fontWeight="500" fill="#45546A">{capa}</text>
+          <circle cx="201" cy={46 + k * 24} r="5" fill="var(--c)" fillOpacity=".16" />
+          <path d={`M198.6 ${46 + k * 24}l1.8 1.8 3-3.4`} stroke="#047857" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
         </g>
       ))}
 
+      {/* Tráfico */}
+      <rect x="220" y="36" width="74" height="116" rx="6" fill="#F5F7FA" />
+      <text x="227" y="49" fontSize="7" fontWeight="600" fill="#45546A">Tráfico</text>
+      <path d="M227 112 L238 100 L248 106 L259 86 L269 94 L287 68" stroke="var(--c)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" pathLength={1} className="lp-dibuja" />
+      <path d="M227 128 H287" stroke={LINEA} />
+      <circle cx="259" cy="86" r="3" fill={ROJO} className="lp-aparece" style={i(4)} />
+      <text x="227" y="143" fontSize="6.5" fill="#5B6A80">Tráfico verificado</text>
+
+      {/* Firewall */}
+      <g>
+        <path d="M216 186 L228 176 H330 L318 186 Z" fill="url(#lp-m-tapa)" stroke="#8E99A8" strokeWidth=".9" />
+        <path d="M318 186 L330 176 V206 L318 218 Z" fill="url(#lp-m-lado)" />
+        <rect x="216" y="186" width="102" height="32" rx="2" fill="url(#lp-m-frente)" stroke="#8E99A8" strokeWidth=".9" />
+        <text x="223" y="197" fontSize="6.5" fontWeight="700" fill={TINTA} letterSpacing=".04em">NGFW-01</text>
+        {Array.from({ length: 7 }).map((_, k) => (
+          <g key={k}>
+            <rect x={223 + k * 12.5} y="202" width="9.5" height="9" rx="1.4" fill="#2A3647" />
+            <circle cx={227.75 + k * 12.5} cy="206.5" r="1.3" fill={k % 3 === 2 ? "#55637A" : "#34D399"} className={k % 3 === 2 ? undefined : "lp-led"} style={i(k)} />
+          </g>
+        ))}
+      </g>
+
       {/* Estado */}
-      <g className="lp-aparece" style={i(3)}>
-        <rect x="6" y="176" width="104" height="30" rx="10" fill="#fff" stroke={LINEA} />
-        <circle cx="21" cy="191" r="4" fill={VERDE} className="lp-led" />
-        <text x="31" y="188" fontSize="9.5" fontWeight="600" fill={TINTA}>Zero Trust</text>
-        <text x="31" y="199" fontSize="7.5" fill="#5B6A80">Tráfico verificado</text>
+      <g className="lp-aparece" style={i(5)}>
+        <rect x="6" y="180" width="96" height="30" rx="10" fill="#fff" stroke={LINEA} />
+        <circle cx="21" cy="195" r="4" fill={VERDE} className="lp-led" />
+        <text x="31" y="192" fontSize="9.5" fontWeight="600" fill={TINTA}>Zero Trust</text>
+        <text x="31" y="203" fontSize="7.5" fill="#5B6A80">Acceso seguro</text>
       </g>
     </Lienzo>
   );
