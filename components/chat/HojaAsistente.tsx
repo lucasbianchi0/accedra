@@ -146,6 +146,7 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
         // vez: el teclado sube en varios pasos. Sin esconder ni mover nada
         // más: la bienvenida se desliza dentro de la hoja.
         const teclado = base - vv.height > 150;
+        el.dataset.teclado = teclado ? "true" : "false";
         if (teclado && vv.height !== alto) {
           const foco = document.activeElement;
           if (foco instanceof HTMLElement && el.contains(foco)) {
@@ -164,6 +165,7 @@ export default function HojaAsistente({ abierto, onCerrar }: { abierto: boolean;
       vv.removeEventListener("scroll", ajustar);
       el.style.height = "";
       el.style.top = "";
+      delete el.dataset.teclado;
     };
   }, [abierto]);
 
@@ -356,6 +358,15 @@ function Bienvenida({ solucion }: { solucion?: string }) {
   const frases = industria ? industria.ejemplos : EJEMPLOS_MEZCLADOS;
   const escribiendo = useMaquina(frases, !texto && !enfocado);
 
+  // El campo crece con el texto hasta cinco líneas (en el teléfono arranca en una).
+  const campo = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    const el = campo.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 140)}px`;
+  }, [texto]);
+
   const mandar = (t: string) => {
     if (!t.trim()) return;
     // Con una industria elegida, el asistente arranca sabiendo el rubro.
@@ -371,34 +382,36 @@ function Bienvenida({ solucion }: { solucion?: string }) {
   };
 
   return (
+    // Celular y tablet, como una app de chat: el campo es una sola línea
+    // pegada abajo —el teclado la empuja y queda justo arriba de él— y el
+    // saludo se centra en lo que sobra. Con el teclado abierto el robot, el
+    // "Hola" y la promesa del PDF se esconden (`data-teclado` de la hoja):
+    // quedan la pregunta, los rubros y el campo.
+    //
+    // Escritorio: todo junto y centrado, con el campo grande que escribe
+    // ejemplos solo.
+    //
     // `my-auto` y no `justify-center`: si el contenido no entra, justify-center
     // lo recorta arriba (donde no se puede scrollear); my-auto sólo centra
     // cuando sobra lugar.
-    //
-    // En celular y tablet el campo va abajo, como en una app de chat: el
-    // saludo se centra en lo que queda (los dos `mt-auto`) y el campo queda
-    // pegado al borde, así el teclado lo empuja hacia arriba sin que nada más
-    // se corra. En escritorio todo junto y centrado.
-    <div className="flex flex-1 flex-col">
+    <div className="flex flex-1 flex-col items-center text-center lg:my-auto lg:flex-none lg:pb-4">
       {/* `hoja-entra`: cada hijo entra escalonado cuando la hoja termina de subir. */}
-      <div className="hoja-entra flex flex-1 flex-col items-center text-center lg:my-auto lg:flex-none lg:pb-4">
-        <MascotaRetrato size={112} className="mt-auto lg:mt-0 lg:h-[96px] lg:w-[96px]" />
-        <p className="mt-1 text-[14px] text-gray-400">
+      <div className="hoja-entra my-auto flex w-full flex-col items-center py-4 lg:my-0 lg:py-0">
+        <MascotaRetrato size={96} className="in-data-[teclado=true]:hidden" />
+        <p className="mt-1 text-[14px] text-gray-400 in-data-[teclado=true]:hidden">
           Hola, soy el asistente de <NombreAccedraAI className="font-semibold text-white" />
         </p>
-        <h2 className="font-display mt-1.5 text-[26px] font-semibold leading-tight tracking-[-0.015em] text-white sm:text-[34px]">
+        <h2 className="font-display mt-1.5 text-[26px] font-semibold leading-tight tracking-[-0.015em] text-white sm:text-[34px] in-data-[teclado=true]:mt-0 in-data-[teclado=true]:text-[22px]">
           {titulo}
         </h2>
-        <PromesaPdf className="mt-4" />
+        <PromesaPdf className="mt-4 in-data-[teclado=true]:hidden" />
 
         {/* Industrias: elegir una cambia los ejemplos y le dice el rubro al asistente. */}
         <div
           role="radiogroup"
           aria-label="Tu industria"
-          // `mb-6` en el teléfono: con el campo abajo, separa los rubros de él
-          // cuando el saludo ocupa todo el alto.
           // En el teléfono se deslizan de costado; el fundido a la derecha avisa que hay más.
-          className="no-scrollbar -mx-4 mb-6 mt-6 flex max-w-[calc(100%+2rem)] gap-2 sm:gap-1.5 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,#000_82%,transparent)] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none] lg:mb-0"
+          className="no-scrollbar -mx-4 mt-5 flex max-w-[calc(100%+2rem)] gap-2 sm:gap-1.5 overflow-x-auto px-4 [mask-image:linear-gradient(to_right,#000_82%,transparent)] sm:mx-0 sm:max-w-none sm:flex-wrap sm:justify-center sm:px-0 sm:[mask-image:none] lg:mt-6 in-data-[teclado=true]:mt-3"
         >
           {INDUSTRIAS.map((ind) => {
             const activa = industria?.id === ind.id;
@@ -424,16 +437,19 @@ function Bienvenida({ solucion }: { solucion?: string }) {
             );
           })}
         </div>
+      </div>
 
+      <div className="hoja-entra w-full lg:mt-4">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             mandar(texto);
           }}
-          className="campo-ai sticky bottom-0 mt-auto w-full rounded-[22px] text-left lg:relative lg:mt-4"
+          className="campo-ai relative flex w-full items-end gap-1 rounded-[26px] py-1.5 pl-4 pr-1.5 text-left lg:block lg:rounded-[22px] lg:p-0"
         >
           <textarea
-            rows={2}
+            ref={campo}
+            rows={1}
             value={texto}
             maxLength={1200}
             onChange={(e) => setTexto(e.target.value)}
@@ -451,22 +467,24 @@ function Bienvenida({ solucion }: { solucion?: string }) {
                 mandar(texto);
               }
             }}
-            placeholder={enfocado ? "Contanos tu caso…" : undefined}
+            // En el teléfono el placeholder fijo, como en las apps; en
+            // escritorio sólo con foco (sin foco se ve el ejemplo que se escribe).
+            placeholder="Contanos tu caso…"
             aria-label="Contanos tu caso"
-            className="chat-campo relative block w-full resize-none bg-transparent px-5 pt-4 text-[16px] leading-relaxed text-white placeholder:text-gray-500 outline-none"
+            className="chat-campo relative block min-w-0 flex-1 resize-none bg-transparent py-2 text-[16px] leading-snug text-white placeholder:text-gray-500 outline-none lg:min-h-[76px] lg:w-full lg:px-5 lg:pb-0 lg:pt-4 lg:leading-relaxed lg:placeholder:text-transparent lg:focus:placeholder:text-gray-500"
           />
           {/* El ejemplo va encima y no como placeholder: uno que cambia cada
               40 ms lo releen los lectores de pantalla en cada cambio. */}
           {!texto && !enfocado && (
             <p
               aria-hidden
-              className="pointer-events-none absolute inset-x-5 top-4 text-[16px] leading-relaxed text-gray-400"
+              className="pointer-events-none absolute inset-x-5 top-4 hidden text-[16px] leading-relaxed text-gray-400 lg:block"
             >
               {escribiendo}
               <span className="hero-cursor ml-0.5 inline-block h-[1.05em] w-[2px] translate-y-[3px] rounded-full bg-[#B9A5FB]" />
             </p>
           )}
-          <div className="flex items-center gap-2 px-3 pb-3">
+          <div className="flex shrink-0 items-center gap-1 lg:gap-2 lg:px-3 lg:pb-3">
             <a
               href={whatsappDeLaCharla(mensajes)}
               target="_blank"
@@ -474,7 +492,7 @@ function Bienvenida({ solucion }: { solucion?: string }) {
               onClick={() => track({ type: "click", name: "whatsapp", target: origen })}
               aria-label="Hablar con una persona por WhatsApp"
               title="Hablar con una persona"
-              className="ml-auto grid h-9 w-9 place-items-center rounded-full text-gray-400 transition-colors hover:bg-white/5 hover:text-[#25D366]"
+              className="grid h-9 w-9 place-items-center rounded-full text-gray-400 transition-colors hover:bg-white/5 hover:text-[#25D366] lg:ml-auto"
             >
               <IconoWhatsApp size={16} />
             </a>
