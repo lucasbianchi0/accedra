@@ -479,6 +479,10 @@ h1, h2, h3, h4, .section-title, .gradient-text {
   animation: hero-enter var(--enter-dur, 1.1s) cubic-bezier(0.16, 1, 0.3, 1)
     var(--enter-delay, 0s) both;
 }
+/* Una capa propia desde el primer cuadro y para siempre. Safari promueve la
+   caja a capa mientras corre la animación y la suelta al terminar: ese
+   cambio la repinta y se veía como un parpadeo de los botones. */
+.hero-capa { will-change: opacity, transform; }
 
 /* Equivalente CSS de <MotionConfig reducedMotion="user">, que es lo que cubría
    estos elementos cuando los animaba framer. */
@@ -586,17 +590,24 @@ h1, h2, h3, h4, .section-title, .gradient-text {
 }
 .animate-breathe { animation: breathe 9s ease-in-out infinite; }
 
-/* Shine sweep for premium buttons/cards (add .shine to a relative, overflow-hidden element) */
-.shine::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
-  transform: translateX(-120%);
-  transition: transform 0.7s ease;
-  pointer-events: none;
+/* Shine sweep for premium buttons/cards (add .shine to a relative, overflow-hidden element)
+   Sólo donde hay hover: en el teléfono no se ve nunca, y el iPhone no recorta
+   bien una franja corrida dentro de un borde redondeado mientras el padre se
+   anima — se escapaba al costado del botón durante la entrada de la portada.
+   `isolation` hace que el recorte aguante en Safari de escritorio. */
+@media (hover: hover) {
+  .shine { isolation: isolate; }
+  .shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
+    transform: translateX(-120%);
+    transition: transform 0.7s ease;
+    pointer-events: none;
+  }
+  .shine:hover::after { transform: translateX(120%); }
 }
-.shine:hover::after { transform: translateX(120%); }
 
 /* Beams verticales que caen (fondo de secciones oscuras) */
 @keyframes beam-fall {

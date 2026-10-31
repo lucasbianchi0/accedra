@@ -65,14 +65,17 @@ export default function Hero() {
             <span className="text-gray-200 font-medium">{t.hero.subtitleStrong}</span>.
           </p>
 
-          {/* CTAs */}
+          {/* CTAs. `hero-capa`: la caja entra en una capa propia que no se
+              suelta al terminar (ver globals.css). Sin `transition-all` en los
+              botones: animaba también la sombra con cualquier cambio de la
+              carga, y en el iPhone la caja parpadeaba. */}
           <div
-            className="hero-enter flex flex-col sm:flex-row gap-4"
+            className="hero-enter hero-capa flex flex-col sm:flex-row gap-4"
             style={ENTER.ctas}
           >
             <a
               href="#contacto"
-              className="relative overflow-hidden shine inline-flex items-center justify-center gap-2 text-white font-semibold px-8 py-4 rounded-full transition-all duration-200 hover:-translate-y-0.5 hover:gap-3 group text-base"
+              className="relative overflow-hidden shine inline-flex items-center justify-center gap-2 text-white font-semibold px-8 py-4 rounded-full transition-[transform,gap] duration-200 hover:-translate-y-0.5 hover:gap-3 group text-base"
               style={{ background: "#2560BC", boxShadow: "0 8px 28px rgba(43,111,212,0.35)" }}
             >
               {t.services.ctaButton}
