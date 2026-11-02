@@ -107,7 +107,7 @@ export type Relevamiento = {
   /** "Cómo se suele resolver": las alternativas, con lo que conviene de cada una. */
   enfoques?: { titulo: string; detalle: string }[];
   /** Notas del blog para profundizar y, si hay, el próximo evento del tema. */
-  lecturas?: { slug: string; titulo: string; resumen: string }[];
+  lecturas?: { slug: string; titulo: string; resumen: string; imagen?: string | null }[];
   evento?: { slug: string; titulo: string; fecha: string; modalidad: string } | null;
   /** ISO, la fecha en que se armó. */
   fecha: string;
@@ -131,6 +131,8 @@ export type TarjetaNota = {
   resumen: string;
   categoria: string | null;
   href: string;
+  /** La foto de portada de la nota, si tiene. */
+  imagen?: string | null;
 };
 
 /** Un evento próximo: workshop, webinar o charla. */

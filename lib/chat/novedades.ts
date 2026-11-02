@@ -51,6 +51,7 @@ async function leer(): Promise<Novedades> {
     resumen: n.resumen.slice(0, 220),
     categoria: n.categoria ?? null,
     href: `/blog/${n.slug}`,
+    imagen: n.portadaUrl,
   }));
 
   const eventos: TarjetaEvento[] = eventosCrudos.proximos

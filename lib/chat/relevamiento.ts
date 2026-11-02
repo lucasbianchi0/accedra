@@ -125,7 +125,7 @@ export function armarRelevamiento(entrada: Record<string, unknown>): TarjetaRele
   const lecturas = lista(entrada.notas, 2, 120)
     .map(notaPorSlug)
     .filter((n): n is NonNullable<typeof n> => Boolean(n))
-    .map((n) => ({ slug: n.slug, titulo: n.titulo, resumen: n.resumen }));
+    .map((n) => ({ slug: n.slug, titulo: n.titulo, resumen: n.resumen, imagen: n.imagen ?? null }));
   const ev = eventoPorSlug(texto(entrada.evento, 120));
 
   const datos: Relevamiento = {

@@ -81,14 +81,23 @@ export async function leerNotaPorSlug(slug: string): Promise<NotaSitio | null> {
  * cada revalidación y no tiene por qué traer resúmenes ni portadas.
  */
 export async function leerNotasParaIndice(): Promise<
-  { slug: string; titulo: string; resumen: string; publicadoEn: string; revisadoEn: string; categoria: Categoria | null }[]
+  {
+    slug: string;
+    titulo: string;
+    resumen: string;
+    publicadoEn: string;
+    revisadoEn: string;
+    categoria: Categoria | null;
+    /** La foto de portada, si el backoffice la cargó: la usa el PDF del relevamiento. */
+    portadaUrl: string | null;
+  }[]
 > {
   const db = getSupabaseAdmin();
   if (!db) return [];
 
   const { data, error } = await db
     .from("notas")
-    .select("slug, titulo, resumen, publicado_en, revisado_en, categoria")
+    .select("slug, titulo, resumen, publicado_en, revisado_en, categoria, portada_ruta")
     .eq("publicado", true)
     .lte("publicado_en", new Date().toISOString())
     .order("publicado_en", { ascending: false });
@@ -105,5 +114,6 @@ export async function leerNotasParaIndice(): Promise<
     publicadoEn: String(f.publicado_en ?? ""),
     revisadoEn: String(f.revisado_en ?? ""),
     categoria: (f.categoria as Categoria | null) ?? null,
+    portadaUrl: f.portada_ruta ? urlPublicaDe(db)(String(f.portada_ruta)) : null,
   }));
 }
