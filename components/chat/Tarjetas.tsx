@@ -14,6 +14,7 @@ import type {
   TarjetaRelevamiento,
   TarjetaSolucion,
 } from "@/lib/chat/tipos";
+import { SERVICIO_SIMPLE } from "@/lib/chat/tipos";
 import { WHATSAPP_PHONE } from "@/lib/whatsapp";
 import { forSubmit } from "@/lib/attribution";
 import { currentSessionId, track } from "@/lib/track";
@@ -208,7 +209,7 @@ export function Relevamiento({ t }: { t: TarjetaRelevamiento }) {
 
   // Lo mismo que dice la portada del PDF: qué servicio y dónde.
   const resumen = [
-    t.datos.servicio || t.datos.areas[0]?.nombre,
+    t.datos.servicio || SERVICIO_SIMPLE[t.datos.areas[0]?.solucion] || t.datos.areas[0]?.nombre,
     t.datos.ubicacion,
     t.datos.casos.length ? `${t.datos.casos.length} ${t.datos.casos.length === 1 ? "caso parecido" : "casos parecidos"}` : "",
   ].filter(Boolean);
@@ -220,6 +221,7 @@ export function Relevamiento({ t }: { t: TarjetaRelevamiento }) {
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#B9A5FB]">Relevamiento</p>
         <p className="truncate text-[14px] font-semibold text-white">{t.datos.empresa}</p>
         <p className="mt-0.5 text-[12px] text-gray-400">{resumen.join(" · ")}</p>
+        <p className="mt-1 text-[12px] text-gray-300">Lo revisa un analista técnico de Accedra para darte el plan de acción adecuado.</p>
         {estado === "error" && <p className="mt-1 text-[12px] text-red-300">No se pudo descargar. Probá de nuevo.</p>}
       </div>
       <button

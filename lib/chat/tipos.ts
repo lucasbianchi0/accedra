@@ -228,3 +228,15 @@ export function notaDeTarjeta(t: Tarjeta): string {
       return `[Invité al evento "${t.titulo}" del ${t.fecha}]`;
   }
 }
+
+/**
+ * Cada solución dicha como la entiende un cliente. "Conectividad Crítica" es
+ * nuestra marca; en un relevamiento se lee mejor "Redes, wifi y conectividad".
+ */
+export const SERVICIO_SIMPLE: Record<string, string> = {
+  networking: "Redes, wifi y conectividad",
+  "firma-biometrica": "Firma digital y biométrica",
+  consultoria: "Microsoft 365 y nube",
+  seguridad: "Ciberseguridad",
+  "software-ai": "Software a medida e IA",
+};

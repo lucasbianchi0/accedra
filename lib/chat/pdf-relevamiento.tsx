@@ -19,7 +19,7 @@ import {
 import { ORG, SITE_URL } from "@/lib/seo/site";
 import { WORDMARK_TRAZOS, WORDMARK_VIEWBOX } from "./logo-pdf";
 import { tarjetaCaso } from "./conocimiento";
-import type { Relevamiento } from "./tipos";
+import { SERVICIO_SIMPLE, type Relevamiento } from "./tipos";
 
 /**
  * El PDF de relevamiento, con la estética de la propuesta comercial del
@@ -111,30 +111,40 @@ const s = StyleSheet.create({
   subtitulo: { fontFamily: "Tight", fontWeight: 500, fontSize: 15.5, color: TINTA, letterSpacing: -0.3, marginBottom: 8 },
   eyebrow: { fontSize: 8.5, color: AZUL, fontWeight: 600, letterSpacing: 0.9 },
   parrafo: { fontSize: 10.2, lineHeight: 1.6 },
-  enlace: { fontSize: 9.5, color: AZUL, fontWeight: 600, textDecoration: "none" },
+  boton: {
+    alignSelf: "flex-start",
+    backgroundColor: AZUL,
+    color: "#fff",
+    fontSize: 9.5,
+    fontWeight: 700,
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    textDecoration: "none",
+  },
 
   canales: { flexDirection: "row", flexWrap: "wrap", gap: 7 },
   canal: {
     width: "48.9%",
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 8,
-    paddingVertical: 7,
-    paddingHorizontal: 11,
+    borderRadius: 10,
+    paddingVertical: 11,
+    paddingHorizontal: 13,
     textDecoration: "none",
   },
   canalIcono: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: "rgba(255,255,255,0.18)",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 9,
   },
-  canalNombre: { fontSize: 9.5, color: "#fff", fontWeight: 700, lineHeight: 1.25 },
-  canalDato: { fontSize: 8, color: "rgba(255,255,255,0.85)", marginTop: 1, lineHeight: 1.25 },
-  canalFlecha: { marginLeft: "auto", fontSize: 11, color: "#fff" },
+  canalNombre: { fontSize: 11.5, color: "#fff", fontWeight: 700, lineHeight: 1.25 },
+  canalDato: { fontSize: 9.5, color: "rgba(255,255,255,0.9)", marginTop: 2, lineHeight: 1.25 },
+  canalFlecha: { marginLeft: "auto", fontSize: 13, color: "#fff" },
 });
 
 /* ── Piezas ───────────────────────────────────────────────────────────────── */
@@ -161,7 +171,7 @@ type TipoCanal = "whatsapp" | "mail" | "linkedin" | "web";
 function IconoCanal({ tipo }: { tipo: TipoCanal }) {
   return (
     <View style={s.canalIcono}>
-      <Svg viewBox="0 0 24 24" style={{ width: 11, height: 11 }}>
+      <Svg viewBox="0 0 24 24" style={{ width: 14, height: 14 }}>
         {tipo === "web" ? (
           <>
             <Circle cx="12" cy="12" r="9.5" stroke="#fff" strokeWidth={1.8} fill="none" />
@@ -244,7 +254,7 @@ const fechaLarga = (iso: string) =>
 /* ── El documento ─────────────────────────────────────────────────────────── */
 
 function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
-  const servicio = d.servicio || d.areas[0]?.nombre || "";
+  const servicio = d.servicio || SERVICIO_SIMPLE[d.areas[0]?.solucion] || d.areas[0]?.nombre || "";
   const titulo = d.titulo || [servicio, d.ubicacion].filter(Boolean).join(" · ") || "Tu caso";
   const tamano = tamanoTitulo(titulo);
   const fecha = fechaLarga(d.fecha);
@@ -292,7 +302,7 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
             <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,.6)" }}>{d.referencia}</Text>
           </View>
 
-          <View style={{ position: "absolute", left: 42, right: 42, bottom: 40 }}>
+          <View style={{ position: "absolute", left: 42, right: 42, bottom: 48 }}>
             <Text style={{ fontSize: 10, letterSpacing: 0.9, color: CIELO, fontWeight: 600 }}>RELEVAMIENTO PRELIMINAR</Text>
             <Text
               style={{
@@ -315,8 +325,8 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
             <View
               style={{
                 flexDirection: "row",
-                marginTop: 28,
-                paddingTop: 16,
+                marginTop: 34,
+                paddingTop: 18,
                 borderTopWidth: 0.5,
                 borderTopColor: "rgba(255,255,255,.28)",
               }}
@@ -327,10 +337,6 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
               <DatoPortada ancho="22%" rotulo="Fecha" valor={fecha} />
             </View>
 
-            <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,.65)", marginTop: 24, marginBottom: 8 }}>
-              Hablemos · lunes a viernes de 9 a 18
-            </Text>
-            <Canales canales={canales} />
           </View>
         </View>
       </Page>
@@ -372,21 +378,24 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
               <Text style={{ fontSize: 10.2, lineHeight: 1.55 }}>{h.texto}</Text>
             </Punto>
           ))}
-          <View style={{ marginTop: 6 }}>
-            {d.areas.map((a) => (
-              <View key={a.solucion} style={{ flexDirection: "row", paddingVertical: 7, borderTopWidth: 0.5, borderTopColor: LINEA }} wrap={false}>
-                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: a.accent, marginTop: 4, marginRight: 10 }} />
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: "Tight", fontWeight: 600, fontSize: 12, color: TINTA }}>{a.nombre}</Text>
-                  <Text style={{ fontSize: 10, lineHeight: 1.5, marginTop: 2 }}>{a.propuesta}</Text>
-                  <Link src={`${SITE_URL}/soluciones/${a.solucion}`} style={[s.enlace, { marginTop: 2 }]}>
-                    Conocé {a.nombre} →
-                  </Link>
-                </View>
-              </View>
-            ))}
-          </View>
-          <Text style={{ fontSize: 9, color: GRIS, marginTop: 4 }}>
+          {/* Lo que haríamos, en palabras del cliente: el nombre de la línea
+              ("Conectividad Crítica") es nuestro y no se entiende de afuera. */}
+          {d.areas.map((a) => (
+            <View
+              key={a.solucion}
+              style={{ marginTop: 10, padding: 14, backgroundColor: PAPEL, borderRadius: 10, borderLeftWidth: 3, borderLeftColor: a.accent }}
+              wrap={false}
+            >
+              <Text style={{ fontSize: 8.5, color: GRIS, fontWeight: 600, letterSpacing: 0.6 }}>
+                {`QUÉ HARÍAMOS · ${(SERVICIO_SIMPLE[a.solucion] ?? a.nombre).toUpperCase()}`}
+              </Text>
+              <Text style={{ fontSize: 10.5, color: TINTA, lineHeight: 1.55, marginTop: 5 }}>{a.propuesta}</Text>
+              <Link src={`${SITE_URL}/soluciones/${a.solucion}`} style={[s.boton, { marginTop: 9 }]}>
+                Ver cómo lo hacemos →
+              </Link>
+            </View>
+          ))}
+          <Text style={{ fontSize: 9, color: GRIS, marginTop: 8 }}>
             Es una primera lectura con lo que nos contaste: el especialista la confirma con vos.
           </Text>
         </Seccion>
@@ -409,8 +418,8 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
                     <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 14, color: TINTA, marginTop: 6, lineHeight: 1.25 }}>{c.titulo}</Text>
                     {logro ? <Text style={{ fontSize: 10, color: TINTA2, marginTop: 6, lineHeight: 1.5 }}>{logro}</Text> : null}
                     {caso ? (
-                      <Link src={`${SITE_URL}${caso.href}`} style={[s.enlace, { marginTop: 8 }]}>
-                        Ver el caso →
+                      <Link src={`${SITE_URL}${caso.href}`} style={[s.boton, { marginTop: 9 }]}>
+                        Ver el caso completo →
                       </Link>
                     ) : null}
                   </View>
@@ -421,26 +430,25 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
         )}
 
         {hayLecturas && (
-          <Seccion titulo="Para profundizar" junta>
+          <Seccion titulo="Para leer sobre tu tema" junta>
             {(d.lecturas ?? []).map((l) => (
-              <View key={l.slug} style={{ paddingVertical: 9, borderTopWidth: 0.5, borderTopColor: LINEA }} wrap={false}>
-                <Text style={s.eyebrow}>DEL BLOG DE ACCEDRA</Text>
-                <Link src={`${SITE_URL}/blog/${l.slug}`} style={{ textDecoration: "none" }}>
-                  <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 12, color: TINTA, marginTop: 4 }}>
-                    {l.titulo} <Text style={{ fontFamily: "Inter", color: AZUL }}>→</Text>
-                  </Text>
+              <View key={l.slug} style={{ padding: 14, borderWidth: 0.5, borderColor: LINEA, borderRadius: 10, marginBottom: 8 }} wrap={false}>
+                <Text style={s.eyebrow}>NOTA DE NUESTRO BLOG</Text>
+                <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 13, color: TINTA, marginTop: 5, lineHeight: 1.3 }}>{l.titulo}</Text>
+                {l.resumen ? <Text style={{ fontSize: 9.8, color: TINTA2, marginTop: 4, lineHeight: 1.5 }}>{l.resumen}</Text> : null}
+                <Link src={`${SITE_URL}/blog/${l.slug}`} style={[s.boton, { marginTop: 9 }]}>
+                  Leer la nota →
                 </Link>
               </View>
             ))}
             {d.evento ? (
-              <View style={{ paddingVertical: 9, borderTopWidth: 0.5, borderTopColor: LINEA }} wrap={false}>
+              <View style={{ padding: 14, borderWidth: 0.5, borderColor: LINEA, borderRadius: 10, marginBottom: 8 }} wrap={false}>
                 <Text style={s.eyebrow}>{`PRÓXIMO EVENTO · ${d.evento.modalidad.toUpperCase()}`}</Text>
-                <Link src={`${SITE_URL}/eventos/${d.evento.slug}`} style={{ textDecoration: "none" }}>
-                  <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 12, color: TINTA, marginTop: 4 }}>
-                    {d.evento.titulo} <Text style={{ fontFamily: "Inter", color: AZUL }}>→</Text>
-                  </Text>
+                <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 13, color: TINTA, marginTop: 5, lineHeight: 1.3 }}>{d.evento.titulo}</Text>
+                <Text style={{ fontSize: 9.8, color: TINTA2, marginTop: 4 }}>{d.evento.fecha}</Text>
+                <Link src={`${SITE_URL}/eventos/${d.evento.slug}`} style={[s.boton, { marginTop: 9 }]}>
+                  Quiero ir →
                 </Link>
-                <Text style={{ fontSize: 9.5, color: GRIS, marginTop: 2 }}>{d.evento.fecha}</Text>
               </View>
             ) : null}
           </Seccion>
@@ -452,9 +460,9 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
           <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 22, color: TINTA, letterSpacing: -0.7, marginTop: 6, lineHeight: 1.15 }}>
             Hablemos de <Text style={{ color: AZUL }}>tu caso.</Text>
           </Text>
-          <Text style={{ fontSize: 10.2, color: TINTA2, lineHeight: 1.55, marginTop: 6, marginBottom: 10, maxWidth: 470 }}>
-            Un especialista repasa tu caso con vos y, si hace falta, coordinamos una visita técnica. Con eso armamos la
-            propuesta con alcance y plazos.
+          <Text style={{ fontSize: 10.2, color: TINTA2, lineHeight: 1.55, marginTop: 6, marginBottom: 12, maxWidth: 470 }}>
+            Un analista técnico de Accedra revisa este relevamiento y te contacta con el plan de acción adecuado para tu
+            caso. Si hace falta, coordinamos una visita técnica. Escribinos por donde te quede más cómodo:
           </Text>
           <Canales canales={canales} />
           <Text style={{ fontSize: 8, color: GRIS, lineHeight: 1.5, marginTop: 9 }}>

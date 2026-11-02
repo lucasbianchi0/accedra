@@ -3,7 +3,7 @@ import { SOLUTIONS } from "@/components/solutions/solutionsData";
 import { tarjetaCaso } from "./conocimiento";
 import { claveDeFirma, iguales, sinEnlaces } from "./guardia";
 import { eventoPorSlug, notaPorSlug } from "./novedades";
-import type { Prioridad, Relevamiento, TarjetaRelevamiento } from "./tipos";
+import { SERVICIO_SIMPLE, type Prioridad, type Relevamiento, type TarjetaRelevamiento } from "./tipos";
 
 /**
  * El relevamiento que arma el asistente y se descarga en PDF.
@@ -161,7 +161,7 @@ export function armarRelevamiento(entrada: Record<string, unknown>): TarjetaRele
 
   if (!datos.situacion || datos.hallazgos.length === 0 || datos.areas.length === 0) return null;
   if (!datos.resumen) datos.resumen = `${datos.areas[0].propuesta}`;
-  if (!datos.servicio) datos.servicio = datos.areas[0].nombre;
+  if (!datos.servicio) datos.servicio = SERVICIO_SIMPLE[datos.areas[0].solucion] ?? datos.areas[0].nombre;
   if (!datos.titulo) datos.titulo = [datos.servicio, datos.ubicacion].filter(Boolean).join(" · ");
   if (datos.proximosPasos.length === 0) {
     datos.proximosPasos = [
