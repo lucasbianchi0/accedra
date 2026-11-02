@@ -86,8 +86,8 @@ const s = StyleSheet.create({
     color: TEXTO,
     backgroundColor: "#fff",
     paddingHorizontal: M,
-    paddingTop: 96,
-    paddingBottom: 64,
+    paddingTop: 92,
+    paddingBottom: 54,
     lineHeight: 1.65,
   },
   cabeza: {
@@ -102,7 +102,7 @@ const s = StyleSheet.create({
   chico: { fontSize: 8.5, color: GRIS },
   pie: {
     position: "absolute",
-    bottom: 30,
+    bottom: 24,
     left: M,
     right: M,
     flexDirection: "row",
@@ -218,14 +218,20 @@ function DatoPortada({ rotulo, valor, ancho }: { rotulo: string; valor: string; 
   );
 }
 
-/** El título baja de tamaño con el largo: "Firma digital" y un pedido de tres
- *  partes tienen que entrar en el mismo lugar. */
-const tamanoTitulo = (t: string) => (t.length > 70 ? 26 : t.length > 46 ? 31 : t.length > 26 ? 37 : 44);
+/** El título baja de tamaño con su parte más larga: va un renglón por parte, y
+ *  "Firma digital" y "Cableado estructurado" tienen que entrar en el ancho. */
+const tamanoTitulo = (t: string) => {
+  const partes = t.split(" · ");
+  const larga = Math.max(...partes.map((p) => p.length));
+  // Muchas partes o una muy larga: más chico, para que entre sin cortarse feo.
+  if (partes.length > 3 || larga > 34) return 32;
+  return larga > 24 ? 38 : larga > 16 ? 44 : 54;
+};
 
 /** Con `junta`, la sección entera va en una hoja: el título nunca queda solo al pie. */
 function Seccion({ titulo, children, junta = false }: { titulo: string; children: React.ReactNode; junta?: boolean }) {
   return (
-    <View style={{ marginTop: 22 }} wrap={!junta}>
+    <View style={{ marginTop: 18 }} wrap={!junta}>
       <Text style={s.subtitulo} minPresenceAhead={60}>
         {titulo}
       </Text>
@@ -236,7 +242,7 @@ function Seccion({ titulo, children, junta = false }: { titulo: string; children
 
 function Punto({ children, color = AZUL }: { children: React.ReactNode; color?: string }) {
   return (
-    <View style={{ flexDirection: "row", marginBottom: 4 }} wrap={false}>
+    <View style={{ flexDirection: "row", marginBottom: 2 }} wrap={false}>
       <View style={{ width: 4, height: 4, borderRadius: 2, backgroundColor: color, marginTop: 6.5, marginRight: 12 }} />
       <View style={{ flex: 1 }}>{children}</View>
     </View>
@@ -256,6 +262,7 @@ const fechaLarga = (iso: string) =>
 function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
   const servicio = d.servicio || SERVICIO_SIMPLE[d.areas[0]?.solucion] || d.areas[0]?.nombre || "";
   const titulo = d.titulo || [servicio, d.ubicacion].filter(Boolean).join(" · ") || "Tu caso";
+  // Por partes, un renglón cada una: "Cableado estructurado / Cambio de AP / Pilar".
   const tamano = tamanoTitulo(titulo);
   const fecha = fechaLarga(d.fecha);
   // Sólo lo que la persona dijo: lo que falta lo ve el equipo, no el cliente.
@@ -288,9 +295,9 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
           <Svg style={{ position: "absolute", top: 0, left: 0 }} width="577" height="824" viewBox="0 0 577 824">
             <Defs>
               <LinearGradient id="portada" x1="0" y1="0" x2="0" y2="1">
-                <Stop offset="0" stopColor={NAVY} stopOpacity={0.55} />
-                <Stop offset=".22" stopColor={NAVY} stopOpacity={0.12} />
-                <Stop offset=".42" stopColor={NAVY} stopOpacity={0.88} />
+                <Stop offset="0" stopColor={NAVY} stopOpacity={0.6} />
+                <Stop offset=".3" stopColor={NAVY} stopOpacity={0.72} />
+                <Stop offset=".6" stopColor={NAVY} stopOpacity={0.86} />
                 <Stop offset="1" stopColor={NAVY} stopOpacity={0.98} />
               </LinearGradient>
             </Defs>
@@ -302,8 +309,11 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
             <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,.6)" }}>{d.referencia}</Text>
           </View>
 
-          <View style={{ position: "absolute", left: 42, right: 42, bottom: 48 }}>
-            <Text style={{ fontSize: 10, letterSpacing: 0.9, color: CIELO, fontWeight: 600 }}>RELEVAMIENTO PRELIMINAR</Text>
+          {/* Lo que buscan, grande y al centro: es lo primero que se lee. */}
+          <View
+            style={{ position: "absolute", top: 110, bottom: 150, left: 50, right: 50, justifyContent: "center", alignItems: "center" }}
+          >
+            <Text style={{ fontSize: 10, letterSpacing: 1.4, color: CIELO, fontWeight: 600, textAlign: "center" }}>RELEVAMIENTO PRELIMINAR</Text>
             <Text
               style={{
                 fontFamily: "Tight",
@@ -312,20 +322,27 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
                 color: "#fff",
                 letterSpacing: -tamano * 0.04,
                 lineHeight: 1.05,
-                marginTop: 12,
+                marginTop: 16,
+                textAlign: "center",
               }}
             >
-              {titulo}
+              {titulo.split(" · ").join("\n")}
             </Text>
-            <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 19, color: "rgba(255,255,255,.9)", letterSpacing: -0.4, marginTop: 14 }}>
+            <View style={{ width: 40, height: 2, backgroundColor: CIELO, marginTop: 22 }} />
+            <Text
+              style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 22, color: "rgba(255,255,255,.92)", letterSpacing: -0.4, marginTop: 20, textAlign: "center" }}
+            >
               Para {d.empresa}
             </Text>
-            <Text style={{ fontSize: 10.5, color: "rgba(255,255,255,.78)", lineHeight: 1.6, marginTop: 12, maxWidth: 440 }}>{d.resumen}</Text>
+            <Text style={{ fontSize: 11, color: "rgba(255,255,255,.78)", lineHeight: 1.6, marginTop: 12, maxWidth: 420, textAlign: "center" }}>
+              {d.resumen}
+            </Text>
+          </View>
 
+          <View style={{ position: "absolute", left: 42, right: 42, bottom: 44 }}>
             <View
               style={{
                 flexDirection: "row",
-                marginTop: 34,
                 paddingTop: 18,
                 borderTopWidth: 0.5,
                 borderTopColor: "rgba(255,255,255,.28)",
@@ -356,7 +373,7 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
         </View>
 
         {/* La nota del equipo: lo que diría un especialista en persona. */}
-        <Text style={{ fontSize: 12.5, color: TINTA2, lineHeight: 1.6, maxWidth: 450 }}>{d.nota}</Text>
+        <Text style={{ fontSize: 12, color: TINTA2, lineHeight: 1.5, maxWidth: 450 }}>{d.nota}</Text>
 
         <Seccion titulo="Lo que nos contaste">
           <Text style={s.parrafo}>{d.situacion}</Text>
@@ -383,7 +400,7 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
           {d.areas.map((a) => (
             <View
               key={a.solucion}
-              style={{ marginTop: 10, padding: 14, backgroundColor: PAPEL, borderRadius: 10, borderLeftWidth: 3, borderLeftColor: a.accent }}
+              style={{ marginTop: 8, paddingHorizontal: 14, paddingVertical: 11, backgroundColor: PAPEL, borderRadius: 10, borderLeftWidth: 3, borderLeftColor: a.accent }}
               wrap={false}
             >
               <Text style={{ fontSize: 8.5, color: GRIS, fontWeight: 600, letterSpacing: 0.6 }}>
@@ -400,8 +417,13 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
           </Text>
         </Seccion>
 
+        {/* Cada tarjeta dice por qué está: un cliente con un problema como el
+            suyo y lo que logró, no una ficha suelta con un nombre arriba. */}
         {d.casos.length > 0 && (
-          <Seccion titulo={d.casos.length === 1 ? "Un caso parecido" : "Casos parecidos"} junta>
+          <Seccion titulo="Un cliente con un problema parecido" junta>
+            <Text style={[s.parrafo, { color: TINTA2, marginBottom: 6 }]}>
+              Ya resolvimos un caso como el tuyo. Esto es lo que logramos:
+            </Text>
             {d.casos.map((c) => {
               const caso = tarjetaCaso(c.id);
               const logro = caso?.logro || c.cifra;
@@ -412,14 +434,16 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
                   wrap={false}
                 >
                   {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de react-pdf, sin alt. */}
-                  {caso ? <Image src={`${origen}${caso.imagen}`} style={{ width: 130, objectFit: "cover" }} /> : null}
-                  <View style={{ flex: 1, padding: 13 }}>
-                    <Text style={s.eyebrow}>{c.cliente.toUpperCase()}</Text>
-                    <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 14, color: TINTA, marginTop: 6, lineHeight: 1.25 }}>{c.titulo}</Text>
-                    {logro ? <Text style={{ fontSize: 10, color: TINTA2, marginTop: 6, lineHeight: 1.5 }}>{logro}</Text> : null}
+                  {caso ? <Image src={`${origen}${caso.imagen}`} style={{ width: 118, objectFit: "cover" }} /> : null}
+                  <View style={{ flex: 1, paddingHorizontal: 14, paddingVertical: 11 }}>
+                    <Text style={s.eyebrow}>{`CASO DE ÉXITO · ${c.cliente.toUpperCase()}`}</Text>
+                    {logro ? (
+                      <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 13.5, color: TINTA, marginTop: 5, lineHeight: 1.3 }}>{logro}</Text>
+                    ) : null}
+                    <Text style={{ fontSize: 9.5, color: TINTA2, marginTop: 3, lineHeight: 1.45 }}>{c.titulo}</Text>
                     {caso ? (
-                      <Link src={`${SITE_URL}${caso.href}`} style={[s.boton, { marginTop: 9 }]}>
-                        Ver el caso completo →
+                      <Link src={`${SITE_URL}${caso.href}`} style={[s.boton, { marginTop: 8 }]}>
+                        Ver cómo lo resolvimos →
                       </Link>
                     ) : null}
                   </View>
@@ -430,20 +454,25 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
         )}
 
         {hayLecturas && (
-          <Seccion titulo="Para leer sobre tu tema" junta>
+          <Seccion titulo="Para leer antes de hablar" junta>
+            <Text style={[s.parrafo, { color: TINTA2, marginBottom: 10 }]}>
+              {(d.lecturas?.length ?? 0) > 0
+                ? "Escribimos sobre este tema en nuestro blog. Te sirve para llegar a la charla con el panorama claro:"
+                : "Hacemos un evento sobre este tema. Si te interesa, sumate:"}
+            </Text>
             {(d.lecturas ?? []).map((l) => (
               <View key={l.slug} style={{ padding: 14, borderWidth: 0.5, borderColor: LINEA, borderRadius: 10, marginBottom: 8 }} wrap={false}>
-                <Text style={s.eyebrow}>NOTA DE NUESTRO BLOG</Text>
+                <Text style={s.eyebrow}>NOTA DEL BLOG DE ACCEDRA</Text>
                 <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 13, color: TINTA, marginTop: 5, lineHeight: 1.3 }}>{l.titulo}</Text>
                 {l.resumen ? <Text style={{ fontSize: 9.8, color: TINTA2, marginTop: 4, lineHeight: 1.5 }}>{l.resumen}</Text> : null}
                 <Link src={`${SITE_URL}/blog/${l.slug}`} style={[s.boton, { marginTop: 9 }]}>
-                  Leer la nota →
+                  Leer la nota en el blog →
                 </Link>
               </View>
             ))}
             {d.evento ? (
               <View style={{ padding: 14, borderWidth: 0.5, borderColor: LINEA, borderRadius: 10, marginBottom: 8 }} wrap={false}>
-                <Text style={s.eyebrow}>{`PRÓXIMO EVENTO · ${d.evento.modalidad.toUpperCase()}`}</Text>
+                <Text style={s.eyebrow}>{`EVENTO DE ACCEDRA · ${d.evento.modalidad.toUpperCase()}`}</Text>
                 <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 13, color: TINTA, marginTop: 5, lineHeight: 1.3 }}>{d.evento.titulo}</Text>
                 <Text style={{ fontSize: 9.8, color: TINTA2, marginTop: 4 }}>{d.evento.fecha}</Text>
                 <Link src={`${SITE_URL}/eventos/${d.evento.slug}`} style={[s.boton, { marginTop: 9 }]}>
