@@ -185,11 +185,21 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
   {
     name: "armar_relevamiento",
     description:
-      "Arma el relevamiento preliminar en PDF que la persona descarga: su situación, lo que identificaste, dónde ayuda Accedra, casos parecidos y próximos pasos. Usala UNA vez, cuando ya conocés industria, tamaño y el problema concreto (normalmente junto con pedir_contacto). Escribí en segunda persona hacia la empresa, concreto y sin relleno.",
+      "Arma el relevamiento preliminar en PDF que la persona descarga: lo que nos contó, una primera lectura, cómo lo encara Accedra, un caso parecido si lo hay y el siguiente paso. Usala UNA vez, cuando ya conocés el problema concreto (normalmente junto con pedir_contacto). Escribí en segunda persona hacia la empresa, concreto y corto: es una primera lectura a validar con un especialista, nunca un diagnóstico confirmado.",
     input_schema: {
       type: "object",
       properties: {
         empresa: { type: "string", description: "Nombre de la empresa, o una descripción si no lo dijo (\"Distribuidora con 8 depósitos\")." },
+        titulo: {
+          type: "string",
+          description:
+            "El título de la portada: servicio · lo que piden, concreto · lugar, corto. Ej.: 'Cableado estructurado · Cambio de AP · Pilar, Buenos Aires'. Sin el lugar si no lo dijo.",
+        },
+        ubicacion: { type: "string", description: "Localidad y provincia del trabajo ('Pilar, Buenos Aires'). Vacío si no lo dijo; no lo inventes." },
+        servicio: {
+          type: "string",
+          description: "El tipo de servicio, en dos o tres palabras: 'Cableado estructurado', 'Seguridad', 'Firma digital', 'Equipamiento', 'Conectividad'…",
+        },
         industria: { type: "string" },
         tamano: { type: "string", description: "Empleados y/o sedes, como lo dijo la persona." },
         resumen: {
@@ -206,15 +216,15 @@ const HERRAMIENTAS: Anthropic.Tool[] = [
         hallazgos: {
           type: "array",
           minItems: 2,
-          maxItems: 5,
-          description: "Lo que identificaste: causas probables, riesgos, lo que conviene y lo que no.",
+          maxItems: 3,
+          description:
+            "Tu primera lectura: causas probables y lo que conviene revisar, como hipótesis ('suele venir de…', 'conviene medir…'), nunca como algo confirmado.",
           items: {
             type: "object",
             properties: {
               texto: { type: "string", description: "Una oración." },
-              prioridad: { type: "string", enum: ["alta", "media", "baja"], description: "Alta: frena la operación o es un riesgo serio." },
             },
-            required: ["texto", "prioridad"],
+            required: ["texto"],
           },
         },
         areas: {

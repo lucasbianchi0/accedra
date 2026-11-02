@@ -318,7 +318,7 @@ function textoAlCliente(nombre: string, r: Relevamiento): string {
     "",
     `Te dejamos adjunto el relevamiento preliminar para ${r.empresa} (${r.referencia}), con lo que identificamos en la conversación y dónde te podemos ayudar.`,
     "",
-    "Un especialista de Accedra lo revisa y te contacta para coordinar el relevamiento técnico en sitio, sin costo. Si querés adelantarlo, respondé este correo o escribinos por WhatsApp al +54 11 3300-1233.",
+    "Un especialista de Accedra lo revisa y te contacta para hablar de tu caso y ver los próximos pasos. Si querés adelantarlo, respondé este correo o escribinos por WhatsApp al +54 11 3300-1233.",
     "",
     "Equipo Accedra",
     "accedra.com.ar",
@@ -333,7 +333,7 @@ function htmlAlCliente(nombre: string, r: Relevamiento): string {
 <p style="margin:0 0 28px;font-size:13px;letter-spacing:4px;color:#0b1626">ACCEDRA</p>
 <p style="${p}">Hola ${escapar(nombre)},</p>
 <p style="${p}">Te dejamos adjunto el <strong>relevamiento preliminar para ${escapar(r.empresa)}</strong>, con lo que identificamos en la conversación y dónde te podemos ayudar.</p>
-<p style="${p}">Un especialista de Accedra lo revisa y te contacta para coordinar el <strong>relevamiento técnico en sitio, sin costo</strong>. Si querés adelantarlo, respondé este correo o escribinos por WhatsApp al <a href="https://wa.me/541133001233" style="color:#2b6fd4">+54 11 3300-1233</a>.</p>
+<p style="${p}">Un especialista de Accedra lo revisa y te contacta para <strong>hablar de tu caso</strong> y ver los próximos pasos. Si querés adelantarlo, respondé este correo o escribinos por WhatsApp al <a href="https://wa.me/541133001233" style="color:#2b6fd4">+54 11 3300-1233</a>.</p>
 <p style="margin:28px 0 0;font-size:13px;color:#6b7a90">Equipo Accedra · <a href="https://accedra.com.ar" style="color:#6b7a90">accedra.com.ar</a><br>Referencia ${escapar(r.referencia)}</p>
 </div></body></html>`;
 }

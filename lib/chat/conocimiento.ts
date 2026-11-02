@@ -143,8 +143,9 @@ Nutanix, Pure Storage y HPE Aruba, entre otras.
 Contacto: teléfono ${ORG.phoneDisplay}, email ${ORG.email}, WhatsApp comercial
 +54 11 3300-1233. Horario: lunes a viernes de 9 a 18. Oficina en ${ORG.address.street}, ${ORG.address.locality}.
 
-Cómo trabajamos: relevamiento y diagnóstico sin costo → propuesta con alcance y
-plazos → implementación llave en mano → capacitación → soporte con SLA.
+Cómo trabajamos: relevamiento (según dónde sea, la visita técnica puede tener
+costo: no prometas que es gratis) → propuesta con alcance y plazos →
+implementación llave en mano → capacitación → soporte con SLA.
 
 # Soluciones
 

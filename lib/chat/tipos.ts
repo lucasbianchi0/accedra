@@ -76,6 +76,16 @@ export type Relevamiento = {
   /** "REL-20261029-4F2A": para que el comercial y el cliente hablen del mismo documento. */
   referencia: string;
   empresa: string;
+  /**
+   * Lo que buscan, concreto, para la portada: "Cableado estructurado · Cambio
+   * de AP · Pilar, Buenos Aires". Opcionales los tres: los relevamientos
+   * firmados antes no los traen.
+   */
+  titulo?: string;
+  /** "Pilar, Buenos Aires". Vacío si no lo dijo. */
+  ubicacion?: string;
+  /** El tipo de servicio: "Cableado estructurado", "Firma digital"… */
+  servicio?: string;
   industria: string;
   tamano: string;
   /** Resumen ejecutivo: el problema y la recomendación, en dos oraciones. */

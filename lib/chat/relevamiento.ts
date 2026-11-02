@@ -131,6 +131,9 @@ export function armarRelevamiento(entrada: Record<string, unknown>): TarjetaRele
   const datos: Relevamiento = {
     referencia: referencia(),
     empresa: texto(entrada.empresa, 80) || "Tu empresa",
+    titulo: texto(entrada.titulo, 110),
+    ubicacion: texto(entrada.ubicacion, 80),
+    servicio: texto(entrada.servicio, 60),
     industria: texto(entrada.industria, 60),
     tamano: texto(entrada.tamano, 60),
     resumen: texto(entrada.resumen, 420),
@@ -158,10 +161,13 @@ export function armarRelevamiento(entrada: Record<string, unknown>): TarjetaRele
 
   if (!datos.situacion || datos.hallazgos.length === 0 || datos.areas.length === 0) return null;
   if (!datos.resumen) datos.resumen = `${datos.areas[0].propuesta}`;
+  if (!datos.servicio) datos.servicio = datos.areas[0].nombre;
+  if (!datos.titulo) datos.titulo = [datos.servicio, datos.ubicacion].filter(Boolean).join(" · ");
   if (datos.proximosPasos.length === 0) {
     datos.proximosPasos = [
-      "Relevamiento técnico sin costo con un especialista de Accedra.",
-      "Propuesta con alcance, plazos y prioridades.",
+      "Una charla con un especialista de Accedra para repasar tu caso.",
+      "Si hace falta, una visita técnica para medir en el lugar.",
+      "La propuesta, con alcance y plazos.",
     ];
   }
   const firma = firmar(datos);

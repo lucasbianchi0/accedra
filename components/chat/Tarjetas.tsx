@@ -4,7 +4,6 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BookOpen, CalendarDays, Check, Download, Loader2 } from "lucide-react";
-import { nivelDe } from "@/lib/chat/tipos";
 import type {
   TarjetaCaso,
   TarjetaEvento,
@@ -207,11 +206,11 @@ export function Relevamiento({ t }: { t: TarjetaRelevamiento }) {
     }
   };
 
+  // Lo mismo que dice la portada del PDF: qué servicio y dónde.
   const resumen = [
-    t.datos.puntaje != null ? `Nivel ${nivelDe(t.datos.puntaje).toLowerCase()}` : "",
-    `${t.datos.hallazgos.length} hallazgos`,
-    `${t.datos.areas.length} ${t.datos.areas.length === 1 ? "área" : "áreas"} para ayudarte`,
-    t.datos.casos.length ? `${t.datos.casos.length} ${t.datos.casos.length === 1 ? "caso" : "casos"}` : "",
+    t.datos.servicio || t.datos.areas[0]?.nombre,
+    t.datos.ubicacion,
+    t.datos.casos.length ? `${t.datos.casos.length} ${t.datos.casos.length === 1 ? "caso parecido" : "casos parecidos"}` : "",
   ].filter(Boolean);
 
   return (
