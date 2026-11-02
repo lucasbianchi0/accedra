@@ -51,6 +51,14 @@ const AZUL = "#2560BC";
 const CIELO = "#8DBBF5";
 const NAVY = "#0A1424";
 const TEXTO = "#1F2C40";
+// Cada tarjeta con su color, para que se distingan de un vistazo: la propuesta
+// en azul noche, el caso de éxito en verde y el blog en ámbar.
+const VERDE = "#15803D";
+const VERDE_FONDO = "#EEF8F1";
+const VERDE_BORDE = "#CBE9D4";
+const AMBAR = "#B45309";
+const AMBAR_FONDO = "#FFF7EA";
+const AMBAR_BORDE = "#F6DFB5";
 
 const M = 48;
 
@@ -257,6 +265,99 @@ const fechaLarga = (iso: string) =>
     timeZone: "America/Argentina/Buenos_Aires",
   });
 
+/* ── Las tarjetas: un ícono y una etiqueta que dicen qué es cada una ─────── */
+
+const ICONO_TILDE = "M20 6 9 17l-5-5";
+const ICONO_TROFEO =
+  "M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4ZM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3";
+const ICONO_LIBRO = "M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5v14ZM4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5";
+
+function Insignia({ icono, texto, color, fondo }: { icono: string; texto: string; color: string; fondo: string }) {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center" }}>
+      <View
+        style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: fondo, alignItems: "center", justifyContent: "center", marginRight: 7 }}
+      >
+        <Svg viewBox="0 0 24 24" style={{ width: 11, height: 11 }}>
+          <Path d={icono} stroke={color} strokeWidth={2.4} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        </Svg>
+      </View>
+      <Text style={{ fontSize: 8.5, color, fontWeight: 700, letterSpacing: 0.9 }}>{texto}</Text>
+    </View>
+  );
+}
+
+/** El caso de éxito, en verde. En columna, la foto va arriba. */
+function TarjetaCaso({ c, origen, columna = false }: { c: Relevamiento["casos"][number]; origen: string; columna?: boolean }) {
+  const caso = tarjetaCaso(c.id);
+  const logro = caso?.logro || c.cifra;
+  return (
+    <View
+      style={{
+        flexDirection: columna ? "column" : "row",
+        backgroundColor: VERDE_FONDO,
+        borderWidth: 0.8,
+        borderColor: VERDE_BORDE,
+        borderRadius: 12,
+        overflow: "hidden",
+        marginBottom: 10,
+      }}
+      wrap={false}
+    >
+      {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de react-pdf, sin alt. */}
+      {caso ? <Image src={`${origen}${caso.imagen}`} style={columna ? { height: 74, objectFit: "cover" } : { width: 118, objectFit: "cover" }} /> : null}
+      <View style={{ flex: columna ? undefined : 1, paddingHorizontal: 14, paddingVertical: 11 }}>
+        <Insignia icono={ICONO_TROFEO} texto={`CASO DE ÉXITO · ${c.cliente.toUpperCase()}`} color={VERDE} fondo="#D6F0DE" />
+        {logro ? (
+          <Text style={{ fontFamily: "Tight", fontWeight: 600, fontSize: columna ? 12.5 : 14, color: "#0F3D22", marginTop: 7, lineHeight: 1.3 }}>
+            {logro}
+          </Text>
+        ) : null}
+        <Text style={{ fontSize: 9.5, color: TINTA2, marginTop: 3, lineHeight: 1.45 }}>{c.titulo}</Text>
+        {caso ? (
+          <Link src={`${SITE_URL}${caso.href}`} style={[s.boton, { marginTop: 8, backgroundColor: VERDE }]}>
+            Ver cómo lo resolvimos →
+          </Link>
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+const TARJETA_AMBAR = { padding: 15, backgroundColor: AMBAR_FONDO, borderWidth: 0.8, borderColor: AMBAR_BORDE, borderRadius: 12, marginBottom: 8 };
+const BOTON_AMBAR = { marginTop: 9, backgroundColor: "transparent", color: AMBAR, borderWidth: 1, borderColor: AMBAR };
+
+/** Las notas del blog y el evento, en ámbar. */
+function Lecturas({ d, tope = 2 }: { d: Relevamiento; tope?: number }) {
+  const notas = (d.lecturas ?? []).slice(0, tope);
+  return (
+    <>
+      {notas.map((l) => (
+        <View key={l.slug} style={TARJETA_AMBAR} wrap={false}>
+          <Insignia icono={ICONO_LIBRO} texto="NOTA DEL BLOG DE ACCEDRA" color={AMBAR} fondo="#FCE9C6" />
+          <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 13, color: "#4A2A07", marginTop: 7, lineHeight: 1.3 }}>{l.titulo}</Text>
+          {l.resumen ? <Text style={{ fontSize: 9.8, color: TINTA2, marginTop: 4, lineHeight: 1.5 }}>{l.resumen}</Text> : null}
+          <Link src={`${SITE_URL}/blog/${l.slug}`} style={[s.boton, BOTON_AMBAR]}>
+            Leer la nota en el blog →
+          </Link>
+        </View>
+      ))}
+      {d.evento && notas.length < tope ? (
+        <View style={TARJETA_AMBAR} wrap={false}>
+          <Insignia icono={ICONO_LIBRO} texto={`EVENTO DE ACCEDRA · ${d.evento.modalidad.toUpperCase()}`} color={AMBAR} fondo="#FCE9C6" />
+          <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 13, color: "#4A2A07", marginTop: 7, lineHeight: 1.3 }}>
+            {d.evento.titulo}
+          </Text>
+          <Text style={{ fontSize: 9.8, color: TINTA2, marginTop: 4 }}>{d.evento.fecha}</Text>
+          <Link src={`${SITE_URL}/eventos/${d.evento.slug}`} style={[s.boton, BOTON_AMBAR]}>
+            Quiero ir →
+          </Link>
+        </View>
+      ) : null}
+    </>
+  );
+}
+
 /* ── El documento ─────────────────────────────────────────────────────────── */
 
 function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
@@ -398,16 +499,16 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
           {/* Lo que haríamos, en palabras del cliente: el nombre de la línea
               ("Conectividad Crítica") es nuestro y no se entiende de afuera. */}
           {d.areas.map((a) => (
-            <View
-              key={a.solucion}
-              style={{ marginTop: 8, paddingHorizontal: 14, paddingVertical: 11, backgroundColor: PAPEL, borderRadius: 10, borderLeftWidth: 3, borderLeftColor: a.accent }}
-              wrap={false}
-            >
-              <Text style={{ fontSize: 8.5, color: GRIS, fontWeight: 600, letterSpacing: 0.6 }}>
-                {`QUÉ HARÍAMOS · ${(SERVICIO_SIMPLE[a.solucion] ?? a.nombre).toUpperCase()}`}
+            <View key={a.solucion} style={{ marginTop: 10, padding: 16, backgroundColor: NAVY, borderRadius: 12 }} wrap={false}>
+              <Insignia icono={ICONO_TILDE} texto="NUESTRA PROPUESTA" color={CIELO} fondo="rgba(141,187,245,.16)" />
+              <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 13.5, color: "#fff", marginTop: 9 }}>
+                {SERVICIO_SIMPLE[a.solucion] ?? a.nombre}
               </Text>
-              <Text style={{ fontSize: 10.5, color: TINTA, lineHeight: 1.55, marginTop: 5 }}>{a.propuesta}</Text>
-              <Link src={`${SITE_URL}/soluciones/${a.solucion}`} style={[s.boton, { marginTop: 9 }]}>
+              <Text style={{ fontSize: 10.2, color: "rgba(255,255,255,.82)", lineHeight: 1.55, marginTop: 4 }}>{a.propuesta}</Text>
+              <Link
+                src={`${SITE_URL}/soluciones/${a.solucion}`}
+                style={[s.boton, { marginTop: 10, backgroundColor: "#fff", color: NAVY }]}
+              >
                 Ver cómo lo hacemos →
               </Link>
             </View>
@@ -418,80 +519,59 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
         </Seccion>
 
         {/* Cada tarjeta dice por qué está: un cliente con un problema como el
-            suyo y lo que logró, no una ficha suelta con un nombre arriba. */}
-        {d.casos.length > 0 && (
-          <Seccion titulo="Un cliente con un problema parecido" junta>
-            <Text style={[s.parrafo, { color: TINTA2, marginBottom: 6 }]}>
-              Ya resolvimos un caso como el tuyo. Esto es lo que logramos:
-            </Text>
-            {d.casos.map((c) => {
-              const caso = tarjetaCaso(c.id);
-              const logro = caso?.logro || c.cifra;
-              return (
-                <View
-                  key={c.id}
-                  style={{ flexDirection: "row", borderWidth: 0.5, borderColor: LINEA, borderRadius: 10, overflow: "hidden", marginBottom: 10 }}
-                  wrap={false}
-                >
-                  {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de react-pdf, sin alt. */}
-                  {caso ? <Image src={`${origen}${caso.imagen}`} style={{ width: 118, objectFit: "cover" }} /> : null}
-                  <View style={{ flex: 1, paddingHorizontal: 14, paddingVertical: 11 }}>
-                    <Text style={s.eyebrow}>{`CASO DE ÉXITO · ${c.cliente.toUpperCase()}`}</Text>
-                    {logro ? (
-                      <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 13.5, color: TINTA, marginTop: 5, lineHeight: 1.3 }}>{logro}</Text>
-                    ) : null}
-                    <Text style={{ fontSize: 9.5, color: TINTA2, marginTop: 3, lineHeight: 1.45 }}>{c.titulo}</Text>
-                    {caso ? (
-                      <Link src={`${SITE_URL}${caso.href}`} style={[s.boton, { marginTop: 8 }]}>
-                        Ver cómo lo resolvimos →
-                      </Link>
-                    ) : null}
-                  </View>
-                </View>
-              );
-            })}
-          </Seccion>
-        )}
-
-        {hayLecturas && (
-          <Seccion titulo="Para leer antes de hablar" junta>
-            <Text style={[s.parrafo, { color: TINTA2, marginBottom: 10 }]}>
-              {(d.lecturas?.length ?? 0) > 0
-                ? "Escribimos sobre este tema en nuestro blog. Te sirve para llegar a la charla con el panorama claro:"
-                : "Hacemos un evento sobre este tema. Si te interesa, sumate:"}
-            </Text>
-            {(d.lecturas ?? []).map((l) => (
-              <View key={l.slug} style={{ padding: 14, borderWidth: 0.5, borderColor: LINEA, borderRadius: 10, marginBottom: 8 }} wrap={false}>
-                <Text style={s.eyebrow}>NOTA DEL BLOG DE ACCEDRA</Text>
-                <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 13, color: TINTA, marginTop: 5, lineHeight: 1.3 }}>{l.titulo}</Text>
-                {l.resumen ? <Text style={{ fontSize: 9.8, color: TINTA2, marginTop: 4, lineHeight: 1.5 }}>{l.resumen}</Text> : null}
-                <Link src={`${SITE_URL}/blog/${l.slug}`} style={[s.boton, { marginTop: 9 }]}>
-                  Leer la nota en el blog →
-                </Link>
-              </View>
-            ))}
-            {d.evento ? (
-              <View style={{ padding: 14, borderWidth: 0.5, borderColor: LINEA, borderRadius: 10, marginBottom: 8 }} wrap={false}>
-                <Text style={s.eyebrow}>{`EVENTO DE ACCEDRA · ${d.evento.modalidad.toUpperCase()}`}</Text>
-                <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 13, color: TINTA, marginTop: 5, lineHeight: 1.3 }}>{d.evento.titulo}</Text>
-                <Text style={{ fontSize: 9.8, color: TINTA2, marginTop: 4 }}>{d.evento.fecha}</Text>
-                <Link src={`${SITE_URL}/eventos/${d.evento.slug}`} style={[s.boton, { marginTop: 9 }]}>
-                  Quiero ir →
-                </Link>
-              </View>
-            ) : null}
-          </Seccion>
+            suyo y lo que logró, no una ficha suelta con un nombre arriba. Con
+            caso y blog, van lado a lado: así no suman una hoja. */}
+        {d.casos.length > 0 && hayLecturas ? (
+          <View style={{ marginTop: 18, flexDirection: "row", gap: 14 }} wrap={false}>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.subtitulo, { fontSize: 14, marginBottom: 3 }]}>Un cliente con un problema parecido</Text>
+              <Text style={{ fontSize: 9.5, color: TINTA2, marginBottom: 8 }}>Ya resolvimos un caso como el tuyo:</Text>
+              {d.casos.slice(0, 1).map((c) => (
+                <TarjetaCaso key={c.id} c={c} origen={origen} columna />
+              ))}
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[s.subtitulo, { fontSize: 14, marginBottom: 3 }]}>Para leer antes de hablar</Text>
+              <Text style={{ fontSize: 9.5, color: TINTA2, marginBottom: 8 }}>
+                {(d.lecturas?.length ?? 0) > 0 ? "Escribimos sobre este tema en el blog:" : "Hacemos un evento sobre este tema:"}
+              </Text>
+              <Lecturas d={d} tope={1} />
+            </View>
+          </View>
+        ) : (
+          <>
+            {d.casos.length > 0 && (
+              <Seccion titulo="Un cliente con un problema parecido" junta>
+                <Text style={[s.parrafo, { color: TINTA2, marginBottom: 6 }]}>
+                  Ya resolvimos un caso como el tuyo. Esto es lo que logramos:
+                </Text>
+                {d.casos.map((c) => (
+                  <TarjetaCaso key={c.id} c={c} origen={origen} />
+                ))}
+              </Seccion>
+            )}
+            {hayLecturas && (
+              <Seccion titulo="Para leer antes de hablar" junta>
+                <Text style={[s.parrafo, { color: TINTA2, marginBottom: 10 }]}>
+                  {(d.lecturas?.length ?? 0) > 0
+                    ? "Escribimos sobre este tema en nuestro blog. Te sirve para llegar a la charla con el panorama claro:"
+                    : "Hacemos un evento sobre este tema. Si te interesa, sumate:"}
+                </Text>
+                <Lecturas d={d} />
+              </Seccion>
+            )}
+          </>
         )}
 
         {/* ── Siguiente paso: hablar con alguien ── */}
-        <View style={{ marginTop: 26 }} wrap={false}>
+        <View style={{ marginTop: 22 }} wrap={false}>
           <Text style={s.eyebrow}>SIGUIENTE PASO</Text>
           <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 22, color: TINTA, letterSpacing: -0.7, marginTop: 6, lineHeight: 1.15 }}>
             Hablemos de <Text style={{ color: AZUL }}>tu caso.</Text>
           </Text>
           <Text style={{ fontSize: 10.2, color: TINTA2, lineHeight: 1.55, marginTop: 6, marginBottom: 12, maxWidth: 470 }}>
             Un analista técnico de Accedra revisa este relevamiento y te contacta con el plan de acción adecuado para tu
-            caso. Si hace falta, coordinamos una visita técnica. Escribinos por donde te quede más cómodo:
+            caso. Si hace falta, coordinamos una visita técnica.
           </Text>
           <Canales canales={canales} />
           <Text style={{ fontSize: 8, color: GRIS, lineHeight: 1.5, marginTop: 9 }}>
@@ -502,28 +582,27 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
 
         {/* ── Cierre: quiénes somos, breve, como la franja de la propuesta. Va al
             pie de la última hoja: si no entra con el resto, queda de contratapa. ── */}
-        <View style={{ marginTop: "auto", paddingTop: 20 }} wrap={false}>
+        <View style={{ marginTop: "auto", paddingTop: 14 }} wrap={false}>
         <View style={{ borderRadius: 12, overflow: "hidden", backgroundColor: NAVY, position: "relative" }} wrap={false}>
           {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de react-pdf, sin alt. */}
           <Image
             src={`${origen}/relevamiento/banda.jpg`}
             style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }}
           />
-          <View style={{ paddingHorizontal: 22, paddingVertical: 18 }}>
+          <View style={{ paddingHorizontal: 20, paddingVertical: 14 }}>
             <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <Wordmark ancho={104} color="#fff" />
+              <Wordmark ancho={92} color="#fff" />
               {/* eslint-disable-next-line jsx-a11y/alt-text -- Image de react-pdf, sin alt. */}
-              <Image src={`${origen}/relevamiento/partners-blanco.png`} style={{ width: 250, height: 25, opacity: 0.9 }} />
+              <Image src={`${origen}/relevamiento/partners-blanco.png`} style={{ width: 230, height: 23, opacity: 0.9 }} />
             </View>
-            <Text style={{ fontSize: 9.5, color: "rgba(255,255,255,.85)", lineHeight: 1.55, marginTop: 12, maxWidth: 440 }}>
-              Desde {ORG.foundingYear} diseñamos, implementamos y damos soporte a la infraestructura tecnológica de empresas en
-              todo el país: redes, seguridad, firma digital, datos y automatización, llave en mano.
+            <Text style={{ fontSize: 9.5, color: "rgba(255,255,255,.85)", lineHeight: 1.4, marginTop: 8 }}>
+              Desde {ORG.foundingYear}, infraestructura tecnológica llave en mano para empresas de todo el país.
             </Text>
             <View
               style={{
                 flexDirection: "row",
-                marginTop: 12,
-                paddingTop: 10,
+                marginTop: 8,
+                paddingTop: 8,
                 borderTopWidth: 0.5,
                 borderTopColor: "rgba(255,255,255,.25)",
               }}
@@ -535,7 +614,7 @@ function Documento({ d, origen }: { d: Relevamiento; origen: string }) {
                 ["100+", "clientes"],
               ].map(([v, r]) => (
                 <View key={r} style={{ flex: 1 }}>
-                  <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 16, color: "#fff", letterSpacing: -0.5 }}>{v}</Text>
+                  <Text style={{ fontFamily: "Tight", fontWeight: 500, fontSize: 14, color: "#fff", letterSpacing: -0.4 }}>{v}</Text>
                   <Text style={{ fontSize: 8.5, color: "rgba(255,255,255,.7)" }}>{r}</Text>
                 </View>
               ))}
